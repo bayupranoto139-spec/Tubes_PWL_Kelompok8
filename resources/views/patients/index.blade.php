@@ -28,11 +28,10 @@
 
             </div>
 
-            <button class="bg-gradient-to-r from-blue-600 to-cyan-500 text-white px-6 py-4 rounded-2xl shadow-xl hover:scale-105 transition">
-
-                + Add Patient
-
-            </button>
+           <a href="/patients/create"
+   class="bg-blue-500 text-white px-4 py-2 rounded-lg">
+    + Add Patient
+</a>
 
         </div>
 

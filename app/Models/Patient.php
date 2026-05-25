@@ -15,6 +15,8 @@ class Patient extends Model
         'insurance_provider', 'insurance_policy_number',
     ];
 
+    
+
     protected $casts = [
         'blood_type' => 'string',
     ];
