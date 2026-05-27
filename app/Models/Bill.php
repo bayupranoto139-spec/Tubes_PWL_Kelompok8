@@ -4,48 +4,66 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Bill extends Model
 {
-     use HasFactory;
+    use HasFactory, SoftDeletes;
 
     protected $fillable = [
-        'patient_id', 'appointment_id', 'total_amount', 'status', 'payment_due_date',
+        'patient_enrollment_id', 'appointment_id',
+        'total_amount', 'status', 'payment_due_date',
+        'payment_method', 'payment_date', 'reference_number',
     ];
 
     protected $casts = [
-        'total_amount' => 'decimal:2',
-        'status' => 'string',
+        'total_amount'     => 'decimal:2',
+        'status'           => 'string',
         'payment_due_date' => 'date',
+        'payment_date'     => 'datetime',
     ];
 
-    // Relasi ke pasien
-    public function patient()
+    
+    public function patientEnrollment()
     {
-        return $this->belongsTo(Patient::class);
+        return $this->belongsTo(PatientEnrollment::class);
     }
 
-    // Relasi ke appointment (nullable)
     public function appointment()
     {
         return $this->belongsTo(Appointment::class);
     }
 
-    // Relasi ke payments
-    public function payments()
+    public function billItems()
     {
-        return $this->hasMany(Payment::class);
+        return $this->hasMany(BillItem::class);
     }
 
-    // Hitung total yang sudah dibayar
-    public function getPaidAmountAttribute()
-    {
-        return $this->payments->sum('amount');
-    }
-
-    // Cek apakah lunas
-    public function isPaid()
+    
+    public function isPaid(): bool
     {
         return $this->status === 'paid';
+    }
+
+    public function isOverdue(): bool
+    {
+        return !$this->isPaid() && $this->payment_due_date->isPast();
+    }
+
+    public function recalculateTotal(): void
+    {
+        $this->update([
+            'total_amount' => $this->billItems()->sum('subtotal'),
+        ]);
+    }
+
+    public function markAsPaid(string $method, string $reference = null): void
+    {
+        $this->update([
+            'status'           => 'paid',
+            'payment_method'   => $method,
+            'payment_date'     => now(),
+            'reference_number' => $reference,
+        ]);
     }
 }
