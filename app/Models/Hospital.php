@@ -17,20 +17,16 @@ class Hospital extends Model
         'is_active' => 'boolean',
     ];
 
-    // Relasi: satu rumah sakit memiliki banyak user (admin, dokter, staff)
     public function users()
     {
         return $this->hasMany(User::class);
     }
 
-    // Relasi: satu rumah sakit memiliki banyak pasien (melalui patients)
-    public function patients()
+    public function patientEnrollments()
     {
-        return $this->hasMany(Patient::class);
+        return $this->hasMany(PatientEnrollment::class);
     }
 
-    // Relasi: satu rumah sakit memiliki banyak dokter (melalui users dan doctors)
-    // Tapi karena doctors tidak punya hospital_id, kita perlu relasi melalui users
     public function doctors()
     {
         return $this->hasManyThrough(Doctor::class, User::class, 'hospital_id', 'user_id');
