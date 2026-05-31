@@ -14,6 +14,8 @@ class Bill extends Model
         'patient_enrollment_id', 'appointment_id',
         'total_amount', 'status', 'payment_due_date',
         'payment_method', 'payment_date', 'reference_number',
+        'snap_token',
+        'midtrans_order_id',
     ];
 
     protected $casts = [
