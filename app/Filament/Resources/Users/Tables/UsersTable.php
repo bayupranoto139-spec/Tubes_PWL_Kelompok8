@@ -75,11 +75,12 @@ class UsersTable
                     })
 
                     ->color(fn (string $state): string => match ($state) {
-
-                        'pasien' => 'info',
-
-                        default => 'gray',
-
+                        'super_admin' => 'danger',
+                        'admin_rs'    => 'warning',
+                        'dokter'      => 'success',
+                        'staff'       => 'primary',
+                        'pasien'      => 'info',
+                        default       => 'gray',
                     }),
 
                 /*

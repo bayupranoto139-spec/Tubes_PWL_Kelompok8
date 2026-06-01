@@ -1,20 +1,22 @@
 <?php
 
-namespace App\Filament\Resources\Staff;
+namespace App\Filament\Resources\Bills;
 
-use App\Filament\Resources\Staff\Pages\CreateStaff;
-use App\Filament\Resources\Staff\Pages\EditStaff;
-use App\Filament\Resources\Staff\Pages\ListStaff;
-use App\Filament\Resources\Staff\Schemas\StaffForm;
-use App\Filament\Resources\Staff\Tables\StaffTable;
-use App\Models\User;
+use App\Filament\Resources\Bills\Pages\CreateBill;
+use App\Filament\Resources\Bills\Pages\EditBill;
+use App\Filament\Resources\Bills\Pages\ListBills;
+use App\Filament\Resources\Bills\Schemas\BillForm;
+use App\Filament\Resources\Bills\Tables\BillsTable;
+use App\Models\Bill;
 use BackedEnum;
 use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
+use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\SoftDeletingScope;
 
-class StaffResource extends Resource
+class BillResource extends Resource
 {
     /*
     |--------------------------------------------------------------------------
@@ -22,15 +24,7 @@ class StaffResource extends Resource
     |--------------------------------------------------------------------------
     */
 
-    protected static ?string $model = User::class;
-
-    /*
-    |--------------------------------------------------------------------------
-    | PAGE WIDTH
-    |--------------------------------------------------------------------------
-    */
-
-    protected static ?string $maxContentWidth = 'full';
+    protected static ?string $model = Bill::class;
 
     /*
     |--------------------------------------------------------------------------
@@ -39,15 +33,15 @@ class StaffResource extends Resource
     */
 
     protected static string|BackedEnum|null $navigationIcon =
-        'heroicon-o-user-group';
+        Heroicon::OutlinedBanknotes;
 
-    protected static ?string $navigationLabel = 'Staff';
+    protected static ?string $navigationLabel = 'Bills';
 
-    protected static ?string $modelLabel = 'Staff';
+    protected static ?string $modelLabel = 'Bill';
 
-    protected static ?string $pluralModelLabel = 'Staff';
+    protected static ?string $pluralModelLabel = 'Bills';
 
-    protected static ?int $navigationSort = 3;
+    protected static ?int $navigationSort = 8;
 
     /*
     |--------------------------------------------------------------------------
@@ -62,6 +56,7 @@ class StaffResource extends Resource
             [
                 'super_admin',
                 'admin_rs',
+                'staff',
             ]
         );
     }
@@ -73,6 +68,7 @@ class StaffResource extends Resource
             [
                 'super_admin',
                 'admin_rs',
+                'staff',
             ]
         );
     }
@@ -84,6 +80,7 @@ class StaffResource extends Resource
             [
                 'super_admin',
                 'admin_rs',
+                'staff',
             ]
         );
     }
@@ -96,7 +93,7 @@ class StaffResource extends Resource
 
     public static function form(Schema $schema): Schema
     {
-        return StaffForm::configure($schema);
+        return BillForm::configure($schema);
     }
 
     /*
@@ -107,7 +104,7 @@ class StaffResource extends Resource
 
     public static function table(Table $table): Table
     {
-        return StaffTable::configure($table);
+        return BillsTable::configure($table);
     }
 
     /*
@@ -118,14 +115,7 @@ class StaffResource extends Resource
 
     public static function getEloquentQuery(): Builder
     {
-        $query = parent::getEloquentQuery()
-
-            ->whereIn('role', [
-                'super_admin',
-                'admin_rs',
-                'dokter',
-                'staff',
-            ]);
+        $query = parent::getEloquentQuery();
 
         $user = filament()->auth()->user();
 
@@ -135,9 +125,12 @@ class StaffResource extends Resource
 
         if ($user->role === 'admin_rs') {
 
-            $query->where(
-                'hospital_id',
-                $user->hospital_id
+            $query->whereHas(
+                'patientEnrollment',
+                fn ($q) => $q->where(
+                    'hospital_id',
+                    $user->hospital_id
+                )
             );
         }
 
@@ -164,9 +157,23 @@ class StaffResource extends Resource
     public static function getPages(): array
     {
         return [
-            'index' => ListStaff::route('/'),
-            'create' => CreateStaff::route('/create'),
-            'edit' => EditStaff::route('/{record}/edit'),
+            'index' => ListBills::route('/'),
+            'create' => CreateBill::route('/create'),
+            'edit' => EditBill::route('/{record}/edit'),
         ];
+    }
+
+    /*
+    |--------------------------------------------------------------------------
+    | SOFT DELETE
+    |--------------------------------------------------------------------------
+    */
+
+    public static function getRecordRouteBindingEloquentQuery(): Builder
+    {
+        return parent::getRecordRouteBindingEloquentQuery()
+            ->withoutGlobalScopes([
+                SoftDeletingScope::class,
+            ]);
     }
 }

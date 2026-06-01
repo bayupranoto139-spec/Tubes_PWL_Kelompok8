@@ -2,24 +2,50 @@
 
 namespace App\Filament\Pages;
 
-use Filament\Pages\Page;
 use BackedEnum;
+use Filament\Pages\Page;
 
 class Settings extends Page
 {
-    // ICON SIDEBAR
-    protected static string | BackedEnum | null $navigationIcon =
+    /*
+    |--------------------------------------------------------------------------
+    | NAVIGATION
+    |--------------------------------------------------------------------------
+    */
+
+    protected static string|BackedEnum|null $navigationIcon =
         'heroicon-o-cog-6-tooth';
 
-    // BLADE VIEW
-    protected string $view = 'filament.pages.settings';
+    protected static ?string $navigationLabel =
+        'Settings';
 
-    // MENU SIDEBAR
-    protected static ?string $navigationLabel = 'Settings';
+    protected static ?string $title =
+        'System Settings';
 
-    // TITLE PAGE
-    protected static ?string $title = 'System Settings';
+    protected static ?int $navigationSort = 10;
 
-    // URUTAN MENU
-    protected static ?int $navigationSort = 99;
+    /*
+    |--------------------------------------------------------------------------
+    | ACCESS CONTROL
+    |--------------------------------------------------------------------------
+    */
+
+    public static function shouldRegisterNavigation(): bool
+    {
+        return filament()->auth()->user()?->role === 'super_admin';
+    }
+
+    public static function canAccess(): bool
+    {
+        return filament()->auth()->user()?->role === 'super_admin';
+    }
+
+    /*
+    |--------------------------------------------------------------------------
+    | VIEW
+    |--------------------------------------------------------------------------
+    */
+
+    protected string $view =
+        'filament.pages.settings';
 }

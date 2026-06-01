@@ -5,54 +5,67 @@ namespace App\Filament\Pages;
 use App\Models\Appointment;
 use App\Models\Bill;
 use App\Models\User;
-use Filament\Pages\Page;
 use BackedEnum;
+use Filament\Pages\Page;
 
 class ReportsDashboard extends Page
 {
     /*
     |--------------------------------------------------------------------------
-    | SIDEBAR
+    | NAVIGATION
     |--------------------------------------------------------------------------
     */
 
-    protected static string | BackedEnum | null $navigationIcon =
-        'heroicon-o-document-text';
+    protected static string|BackedEnum|null $navigationIcon =
+        'heroicon-o-document-chart-bar';
 
     protected static ?string $navigationLabel = 'Reports';
 
-    protected static ?string $title = 'Reports';
+    protected static ?string $title = 'Reports Dashboard';
 
-    protected static ?int $navigationSort = 4;
-
+    protected static ?int $navigationSort = 9;
 
     /*
     |--------------------------------------------------------------------------
-    | BLADE VIEW
+    | ACCESS CONTROL
+    |--------------------------------------------------------------------------
+    */
+
+    public static function shouldRegisterNavigation(): bool
+    {
+        return filament()->auth()->user()?->role === 'super_admin';
+    }
+
+    public static function canAccess(): bool
+    {
+        return filament()->auth()->user()?->role === 'super_admin';
+    }
+
+    /*
+    |--------------------------------------------------------------------------
+    | VIEW
     |--------------------------------------------------------------------------
     */
 
     protected string $view = 'filament.pages.reports-dashboard';
 
-
     /*
     |--------------------------------------------------------------------------
-    | CARD STATS
+    | SUMMARY CARDS
     |--------------------------------------------------------------------------
     */
 
     public int $totalVisits = 0;
 
-    public int $totalRevenue = 0;
+    public float $totalRevenue = 0;
 
     public int $newPatients = 0;
 
     public int $appointments = 0;
 
-
     /*
     |--------------------------------------------------------------------------
-    | DASHBOARD DATA
+    | DASHBOARD ARRAYS
     |--------------------------------------------------------------------------
     */
 
@@ -62,10 +75,9 @@ class ReportsDashboard extends Page
 
     public array $recentAppointments = [];
 
-
     /*
     |--------------------------------------------------------------------------
-    | LOAD DASHBOARD DATA
+    | LOAD DATA
     |--------------------------------------------------------------------------
     */
 
@@ -73,12 +85,13 @@ class ReportsDashboard extends Page
     {
         /*
         |--------------------------------------------------------------------------
-        | TOTAL VISITS
+        | TOTAL PATIENTS
         |--------------------------------------------------------------------------
         */
 
-        $this->totalVisits = User::where('role', 'pasien')->count();
-
+        $this->totalVisits = User::query()
+            ->where('role', 'pasien')
+            ->count();
 
         /*
         |--------------------------------------------------------------------------
@@ -86,8 +99,8 @@ class ReportsDashboard extends Page
         |--------------------------------------------------------------------------
         */
 
-        $this->totalRevenue = Bill::sum('total_amount') ?? 0;
-
+        $this->totalRevenue = (float) Bill::query()
+            ->sum('total_amount');
 
         /*
         |--------------------------------------------------------------------------
@@ -95,8 +108,10 @@ class ReportsDashboard extends Page
         |--------------------------------------------------------------------------
         */
 
-        $this->newPatients = User::where('role', 'pasien')->count();
-
+        $this->newPatients = User::query()
+            ->where('role', 'pasien')
+            ->whereMonth('created_at', now()->month)
+            ->count();
 
         /*
         |--------------------------------------------------------------------------
@@ -104,38 +119,33 @@ class ReportsDashboard extends Page
         |--------------------------------------------------------------------------
         */
 
-        $this->appointments = Appointment::count();
-
+        $this->appointments = Appointment::query()
+            ->count();
 
         /*
         |--------------------------------------------------------------------------
-        | TOP DOCTORS BY VISITS
+        | TOP DOCTORS
         |--------------------------------------------------------------------------
         */
 
-        $this->topDoctors = Appointment::selectRaw(
-                'doctor_id,
-                COUNT(*) as total_visits'
-            )
+        $this->topDoctors = Appointment::query()
+            ->selectRaw('doctor_id, COUNT(*) as total_visits')
             ->with('doctor.user')
             ->groupBy('doctor_id')
             ->orderByDesc('total_visits')
-            ->take(5)
+            ->limit(5)
             ->get()
             ->map(function ($item) {
 
                 return [
 
-                    'name' =>
-                        $item->doctor?->name ?? '-',
+                    'name' => $item->doctor?->user?->name ?? '-',
 
-                    'visits' =>
-                        $item->total_visits,
+                    'visits' => $item->total_visits,
 
                 ];
             })
             ->toArray();
-
 
         /*
         |--------------------------------------------------------------------------
@@ -143,32 +153,27 @@ class ReportsDashboard extends Page
         |--------------------------------------------------------------------------
         */
 
-        $this->hospitalRevenue = Bill::with(
-                'patientEnrollment.hospital'
-            )
+        $this->hospitalRevenue = Bill::query()
+            ->with('patientEnrollment.hospital')
             ->get()
             ->groupBy(function ($bill) {
 
-                return $bill->patientEnrollment?->hospital?->name
+                return $bill
+                    ->patientEnrollment?->hospital?->name
                     ?? 'Unknown Hospital';
-
             })
             ->map(function ($bills, $hospitalName) {
 
                 return [
 
-                    'hospital' =>
-                        $hospitalName,
+                    'hospital' => $hospitalName,
 
-                    'revenue' =>
-                        $bills->sum('total_amount'),
+                    'revenue' => $bills->sum('total_amount'),
 
                 ];
-
             })
             ->values()
             ->toArray();
-
 
         /*
         |--------------------------------------------------------------------------
@@ -176,37 +181,39 @@ class ReportsDashboard extends Page
         |--------------------------------------------------------------------------
         */
 
-        $this->recentAppointments = Appointment::with([
+        $this->recentAppointments = Appointment::query()
+            ->with([
                 'patientEnrollment.user',
                 'doctor.user.hospital',
             ])
             ->latest()
-            ->take(5)
+            ->limit(5)
             ->get()
             ->map(function ($appointment) {
 
                 return [
 
                     'patient' =>
-                        $appointment->patientEnrollment?->user?->name ?? '-',
+                        $appointment->patientEnrollment?->user?->name
+                        ?? '-',
 
                     'doctor' =>
-                        $appointment->doctor?->name ?? '-',
+                        $appointment->doctor?->user?->name
+                        ?? '-',
 
                     'hospital' =>
-                        $appointment->doctor?->user?->hospital?->name ?? '-',
+                        $appointment->doctor?->user?->hospital?->name
+                        ?? '-',
 
                     'date' =>
                         $appointment->scheduled_at
-                            ? $appointment->scheduled_at
-                                ->format('d M Y H:i')
+                            ? $appointment->scheduled_at->format('d M Y H:i')
                             : '-',
 
                     'status' =>
-                        ucfirst($appointment->status),
+                        ucfirst($appointment->status ?? '-'),
 
                 ];
-
             })
             ->toArray();
     }

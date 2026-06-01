@@ -7,14 +7,11 @@ use App\Filament\Resources\Users\Pages\EditUser;
 use App\Filament\Resources\Users\Pages\ListUsers;
 use App\Filament\Resources\Users\Schemas\UserForm;
 use App\Filament\Resources\Users\Tables\UsersTable;
-
 use App\Models\User;
-
 use BackedEnum;
 use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
 use Filament\Tables\Table;
-
 use Illuminate\Database\Eloquent\Builder;
 
 class UserResource extends Resource
@@ -33,7 +30,7 @@ class UserResource extends Resource
     |--------------------------------------------------------------------------
     */
 
-    protected static string | BackedEnum | null $navigationIcon =
+    protected static string|BackedEnum|null $navigationIcon =
         'heroicon-o-users';
 
     protected static ?string $navigationLabel = 'Users';
@@ -42,7 +39,46 @@ class UserResource extends Resource
 
     protected static ?string $pluralModelLabel = 'Users';
 
-    protected static ?int $navigationSort = 3;
+    protected static ?int $navigationSort = 2;
+
+    /*
+    |--------------------------------------------------------------------------
+    | ACCESS CONTROL
+    |--------------------------------------------------------------------------
+    */
+
+    public static function shouldRegisterNavigation(): bool
+    {
+        return in_array(
+            filament()->auth()->user()?->role,
+            [
+                'super_admin',
+                'admin_rs',
+            ]
+        );
+    }
+
+    public static function canViewAny(): bool
+    {
+        return in_array(
+            filament()->auth()->user()?->role,
+            [
+                'super_admin',
+                'admin_rs',
+            ]
+        );
+    }
+
+    public static function canCreate(): bool
+    {
+        return in_array(
+            filament()->auth()->user()?->role,
+            [
+                'super_admin',
+                'admin_rs',
+            ]
+        );
+    }
 
     /*
     |--------------------------------------------------------------------------
@@ -68,15 +104,28 @@ class UserResource extends Resource
 
     /*
     |--------------------------------------------------------------------------
-    | ONLY PATIENT
+    | QUERY FILTER
     |--------------------------------------------------------------------------
     */
 
     public static function getEloquentQuery(): Builder
     {
-        return parent::getEloquentQuery()
+        $query = parent::getEloquentQuery();
 
-            ->where('role', 'pasien');
+        $user = filament()->auth()->user();
+
+        if (! $user) {
+            return $query;
+        }
+
+        if ($user->role === 'admin_rs') {
+            $query->where(
+                'hospital_id',
+                $user->hospital_id
+            );
+        }
+
+        return $query;
     }
 
     /*
@@ -87,9 +136,7 @@ class UserResource extends Resource
 
     public static function getRelations(): array
     {
-        return [
-            //
-        ];
+        return [];
     }
 
     /*
@@ -101,13 +148,9 @@ class UserResource extends Resource
     public static function getPages(): array
     {
         return [
-
             'index' => ListUsers::route('/'),
-
             'create' => CreateUser::route('/create'),
-
             'edit' => EditUser::route('/{record}/edit'),
-
         ];
     }
 }

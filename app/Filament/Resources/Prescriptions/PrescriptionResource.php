@@ -1,20 +1,20 @@
 <?php
 
-namespace App\Filament\Resources\Staff;
+namespace App\Filament\Resources\Prescriptions;
 
-use App\Filament\Resources\Staff\Pages\CreateStaff;
-use App\Filament\Resources\Staff\Pages\EditStaff;
-use App\Filament\Resources\Staff\Pages\ListStaff;
-use App\Filament\Resources\Staff\Schemas\StaffForm;
-use App\Filament\Resources\Staff\Tables\StaffTable;
-use App\Models\User;
+use App\Filament\Resources\Prescriptions\Pages\CreatePrescription;
+use App\Filament\Resources\Prescriptions\Pages\EditPrescription;
+use App\Filament\Resources\Prescriptions\Pages\ListPrescriptions;
+use App\Filament\Resources\Prescriptions\Schemas\PrescriptionForm;
+use App\Filament\Resources\Prescriptions\Tables\PrescriptionsTable;
+use App\Models\Prescription;
 use BackedEnum;
 use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 
-class StaffResource extends Resource
+class PrescriptionResource extends Resource
 {
     /*
     |--------------------------------------------------------------------------
@@ -22,15 +22,7 @@ class StaffResource extends Resource
     |--------------------------------------------------------------------------
     */
 
-    protected static ?string $model = User::class;
-
-    /*
-    |--------------------------------------------------------------------------
-    | PAGE WIDTH
-    |--------------------------------------------------------------------------
-    */
-
-    protected static ?string $maxContentWidth = 'full';
+    protected static ?string $model = Prescription::class;
 
     /*
     |--------------------------------------------------------------------------
@@ -39,15 +31,18 @@ class StaffResource extends Resource
     */
 
     protected static string|BackedEnum|null $navigationIcon =
-        'heroicon-o-user-group';
+        'heroicon-o-clipboard-document-list';
 
-    protected static ?string $navigationLabel = 'Staff';
+    protected static ?string $navigationLabel =
+        'Prescriptions';
 
-    protected static ?string $modelLabel = 'Staff';
+    protected static ?string $modelLabel =
+        'Prescription';
 
-    protected static ?string $pluralModelLabel = 'Staff';
+    protected static ?string $pluralModelLabel =
+        'Prescriptions';
 
-    protected static ?int $navigationSort = 3;
+    protected static ?int $navigationSort = 7;
 
     /*
     |--------------------------------------------------------------------------
@@ -96,7 +91,7 @@ class StaffResource extends Resource
 
     public static function form(Schema $schema): Schema
     {
-        return StaffForm::configure($schema);
+        return PrescriptionForm::configure($schema);
     }
 
     /*
@@ -107,7 +102,7 @@ class StaffResource extends Resource
 
     public static function table(Table $table): Table
     {
-        return StaffTable::configure($table);
+        return PrescriptionsTable::configure($table);
     }
 
     /*
@@ -118,14 +113,7 @@ class StaffResource extends Resource
 
     public static function getEloquentQuery(): Builder
     {
-        $query = parent::getEloquentQuery()
-
-            ->whereIn('role', [
-                'super_admin',
-                'admin_rs',
-                'dokter',
-                'staff',
-            ]);
+        $query = parent::getEloquentQuery();
 
         $user = filament()->auth()->user();
 
@@ -135,9 +123,12 @@ class StaffResource extends Resource
 
         if ($user->role === 'admin_rs') {
 
-            $query->where(
-                'hospital_id',
-                $user->hospital_id
+            $query->whereHas(
+                'medicalRecord.appointment.patientEnrollment',
+                fn ($q) => $q->where(
+                    'hospital_id',
+                    $user->hospital_id
+                )
             );
         }
 
@@ -164,9 +155,9 @@ class StaffResource extends Resource
     public static function getPages(): array
     {
         return [
-            'index' => ListStaff::route('/'),
-            'create' => CreateStaff::route('/create'),
-            'edit' => EditStaff::route('/{record}/edit'),
+            'index' => ListPrescriptions::route('/'),
+            'create' => CreatePrescription::route('/create'),
+            'edit' => EditPrescription::route('/{record}/edit'),
         ];
     }
 }
