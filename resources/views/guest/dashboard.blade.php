@@ -212,6 +212,122 @@
     </div>
 </section>
 
+{{-- ============================================================ --}}
+{{--  ABOUT SECTION (#about)                                      --}}
+{{-- ============================================================ --}}
+<section id="about" class="py-16 lg:py-20 bg-white">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="grid lg:grid-cols-2 gap-12 items-center">
+            <div class="fade-in">
+                <div class="inline-flex items-center px-4 py-2 rounded-full bg-teal-100 text-teal-700 text-sm font-medium mb-5">
+                    <i class="fa-solid fa-info-circle mr-2"></i>
+                    Tentang Kami
+                </div>
+                <h2 class="text-3xl font-bold text-gray-900 mb-5">
+                    Platform Manajemen Kesehatan <span class="text-teal-600">Terpadu</span>
+                </h2>
+                <p class="text-gray-600 leading-relaxed mb-6">
+                    Health Mesh adalah solusi terintegrasi untuk menghubungkan pasien, dokter, dan fasilitas kesehatan dalam satu ekosistem digital yang efisien dan mudah digunakan.
+                </p>
+                <ul class="space-y-3">
+                    @foreach([
+                        'Manajemen antrian real-time',
+                        'Rekam medis digital yang aman',
+                        'Sistem pembayaran terintegrasi',
+                        'Laporan analitik mendalam',
+                    ] as $item)
+                    <li class="flex items-center gap-3 text-gray-700">
+                        <div class="w-5 h-5 rounded-full bg-teal-100 flex items-center justify-center flex-shrink-0">
+                            <i class="fa-solid fa-check text-teal-600 text-xs"></i>
+                        </div>
+                        {{ $item }}
+                    </li>
+                    @endforeach
+                </ul>
+            </div>
+            <div class="grid grid-cols-2 gap-4 fade-in">
+                @foreach([
+                    ['icon'=>'fa-shield-halved','title'=>'Keamanan Data',  'desc'=>'Data pasien dilindungi enkripsi tingkat enterprise', 'color'=>'teal'],
+                    ['icon'=>'fa-bolt',         'title'=>'Real-time',      'desc'=>'Update antrian dan status secara langsung',          'color'=>'cyan'],
+                    ['icon'=>'fa-chart-line',   'title'=>'Analytics',      'desc'=>'Dashboard laporan komprehensif untuk manajemen',     'color'=>'blue'],
+                    ['icon'=>'fa-mobile-screen','title'=>'Mobile Ready',   'desc'=>'Antarmuka responsif di semua perangkat',             'color'=>'purple'],
+                ] as $card)
+                <div class="bg-gradient-to-br from-{{ $card['color'] }}-50 to-{{ $card['color'] }}-100/50 rounded-2xl p-5 card-hover">
+                    <div class="w-10 h-10 rounded-xl bg-{{ $card['color'] }}-500 flex items-center justify-center mb-3">
+                        <i class="fa-solid {{ $card['icon'] }} text-white"></i>
+                    </div>
+                    <h4 class="font-semibold text-gray-900 mb-1">{{ $card['title'] }}</h4>
+                    <p class="text-xs text-gray-500 leading-relaxed">{{ $card['desc'] }}</p>
+                </div>
+                @endforeach
+            </div>
+        </div>
+    </div>
+</section>
+
+{{-- ============================================================ --}}
+{{--  CONTACT SECTION (#contact)                                  --}}
+{{-- ============================================================ --}}
+<section id="contact" class="py-16 lg:py-20 bg-white">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="text-center mb-12">
+            <div class="inline-flex items-center px-4 py-2 rounded-full bg-teal-100 text-teal-700 text-sm font-medium mb-4">
+                <i class="fa-solid fa-envelope mr-2"></i>
+                Hubungi Kami
+            </div>
+            <h2 class="text-3xl font-bold text-gray-900">Ada Pertanyaan?</h2>
+            <p class="text-gray-500 mt-2">Tim kami siap membantu Anda</p>
+        </div>
+        <div class="grid md:grid-cols-3 gap-6 mb-10 fade-in">
+            @foreach([
+                ['icon'=>'fa-location-dot', 'title'=>'Alamat',   'detail'=>'Jl. Kesehatan No. 123, Jakarta 12345',  'color'=>'teal'],
+                ['icon'=>'fa-phone',        'title'=>'Telepon',  'detail'=>'+62 21 1234 5678',                      'color'=>'cyan'],
+                ['icon'=>'fa-envelope',     'title'=>'Email',    'detail'=>'info@healthmesh.id',                    'color'=>'blue'],
+            ] as $c)
+            <div class="text-center p-6 rounded-2xl bg-gray-50 border border-gray-100 card-hover">
+                <div class="w-12 h-12 rounded-xl bg-{{ $c['color'] }}-100 flex items-center justify-center mx-auto mb-4">
+                    <i class="fa-solid {{ $c['icon'] }} text-{{ $c['color'] }}-600"></i>
+                </div>
+                <h4 class="font-semibold text-gray-900 mb-1">{{ $c['title'] }}</h4>
+                <p class="text-gray-500 text-sm">{{ $c['detail'] }}</p>
+            </div>
+            @endforeach
+        </div>
+
+        {{-- Contact Form (disabled untuk guest, redirect login) --}}
+        <div class="max-w-xl mx-auto bg-gray-50 rounded-2xl p-8 border border-gray-100 fade-in">
+            <h3 class="font-bold text-gray-900 text-lg mb-5">Kirim Pesan</h3>
+            <div class="space-y-4">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Nama</label>
+                    <input type="text" placeholder="Nama lengkap Anda"
+                           onclick="requireLogin('Contact Form')"
+                           readonly
+                           class="w-full px-4 py-3 rounded-xl border border-gray-200 bg-white text-gray-400 cursor-pointer focus:outline-none focus:ring-2 focus:ring-teal-500/30 transition">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Email</label>
+                    <input type="email" placeholder="email@contoh.com"
+                           onclick="requireLogin('Contact Form')"
+                           readonly
+                           class="w-full px-4 py-3 rounded-xl border border-gray-200 bg-white text-gray-400 cursor-pointer focus:outline-none focus:ring-2 focus:ring-teal-500/30 transition">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Pesan</label>
+                    <textarea rows="4" placeholder="Tulis pesan Anda..."
+                              onclick="requireLogin('Contact Form')"
+                              readonly
+                              class="w-full px-4 py-3 rounded-xl border border-gray-200 bg-white text-gray-400 cursor-pointer focus:outline-none focus:ring-2 focus:ring-teal-500/30 transition resize-none"></textarea>
+                </div>
+                <button onclick="requireLogin('Contact Form')"
+                        class="w-full py-3.5 rounded-xl bg-gradient-to-r from-teal-500 to-teal-600 text-white font-semibold hover:from-teal-600 hover:to-teal-700 transition-all shadow-lg shadow-teal-500/25 flex items-center justify-center gap-2">
+                    <i class="fa-solid fa-lock text-sm opacity-70"></i>
+                    Kirim Pesan (Login diperlukan)
+                </button>
+            </div>
+        </div>
+    </div>
+</section>
 
 {{-- ============================================================ --}}
 {{--  CTA LOGIN                                                    --}}
