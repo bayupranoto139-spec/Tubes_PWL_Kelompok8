@@ -16,19 +16,7 @@ use Illuminate\Database\Eloquent\Builder;
 
 class UserResource extends Resource
 {
-    /*
-    |--------------------------------------------------------------------------
-    | MODEL
-    |--------------------------------------------------------------------------
-    */
-
     protected static ?string $model = User::class;
-
-    /*
-    |--------------------------------------------------------------------------
-    | NAVIGATION
-    |--------------------------------------------------------------------------
-    */
 
     protected static string|BackedEnum|null $navigationIcon =
         'heroicon-o-users';
@@ -80,6 +68,22 @@ class UserResource extends Resource
         );
     }
 
+    public static function canEdit($record): bool
+    {
+        return in_array(
+            filament()->auth()->user()?->role,
+            [
+                'super_admin',
+                'admin_rs',
+            ]
+        );
+    }
+
+    public static function canDelete($record): bool
+    {
+        return filament()->auth()->user()?->role === 'super_admin';
+    }
+
     /*
     |--------------------------------------------------------------------------
     | FORM
@@ -104,7 +108,7 @@ class UserResource extends Resource
 
     /*
     |--------------------------------------------------------------------------
-    | QUERY FILTER
+    | QUERY
     |--------------------------------------------------------------------------
     */
 
@@ -118,8 +122,30 @@ class UserResource extends Resource
             return $query;
         }
 
+        /*
+        |--------------------------------------------------------------------------
+        | SUPER ADMIN
+        |--------------------------------------------------------------------------
+        |
+        | Melihat semua user seluruh rumah sakit
+        |
+        */
+
+        if ($user->role === 'super_admin') {
+            return $query;
+        }
+
+        /*
+        |--------------------------------------------------------------------------
+        | ADMIN RS
+        |--------------------------------------------------------------------------
+        |
+        | Hanya melihat user pada rumah sakitnya
+        |
+        */
+
         if ($user->role === 'admin_rs') {
-            $query->where(
+            return $query->where(
                 'hospital_id',
                 $user->hospital_id
             );
@@ -148,9 +174,9 @@ class UserResource extends Resource
     public static function getPages(): array
     {
         return [
-            'index' => ListUsers::route('/'),
+            'index'  => ListUsers::route('/'),
             'create' => CreateUser::route('/create'),
-            'edit' => EditUser::route('/{record}/edit'),
+            'edit'   => EditUser::route('/{record}/edit'),
         ];
     }
 }
