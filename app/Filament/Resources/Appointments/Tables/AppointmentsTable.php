@@ -17,7 +17,7 @@ class AppointmentsTable
             ->columns([
 
                 // PATIENT
-                Tables\Columns\TextColumn::make('patient.user.name')
+                Tables\Columns\TextColumn::make('patientEnrollment.user.name')
                     ->label('Patient')
                     ->searchable()
                     ->sortable(),
