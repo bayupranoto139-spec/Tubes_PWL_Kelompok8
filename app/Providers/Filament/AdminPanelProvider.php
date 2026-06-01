@@ -72,7 +72,7 @@ class AdminPanelProvider extends PanelProvider
                 Authenticate::class,
 
                 // ROLE MIDDLEWARE
-                \App\Http\Middleware\CheckRole::class . ':super_admin,admin_rs,staff',
+                \App\Http\Middleware\CheckRole::class . ':super_admin,admin_rs,staff,dokter',
             ]);
     }
 }
