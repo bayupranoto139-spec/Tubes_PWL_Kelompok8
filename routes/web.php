@@ -34,3 +34,18 @@ Route::get('/patients', [PatientController::class, 'index']);
 Route::get('/payments', [PaymentController::class, 'index']);
 
 Route::post('/payments/pay/{id}', [PaymentController::class, 'pay']);
+
+// Patient Panel Routes
+use App\Http\Controllers\Patient\PatientPanelController;
+
+Route::middleware(['auth'])->prefix('user/patient')->name('patient.')->group(function () {
+    Route::get('/dashboard', [PatientPanelController::class, 'dashboard'])->name('dashboard');
+    Route::get('/appointments', [PatientPanelController::class, 'appointments'])->name('appointments');
+    Route::post('/appointments', [PatientPanelController::class, 'bookAppointment'])->name('appointments.store');
+    Route::post('/appointments/{appointment}/cancel', [PatientPanelController::class, 'cancelAppointment'])->name('appointments.cancel');
+    Route::get('/medical-records', [PatientPanelController::class, 'medicalRecords'])->name('medical-records');
+    Route::get('/bills', [PatientPanelController::class, 'bills'])->name('bills');
+    Route::get('/prescriptions', [PatientPanelController::class, 'prescriptions'])->name('prescriptions');
+    Route::get('/profile', [PatientPanelController::class, 'profile'])->name('profile');
+    Route::post('/profile', [PatientPanelController::class, 'updateProfile'])->name('profile.update');
+});
