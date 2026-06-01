@@ -13,4 +13,10 @@ class CreateUser extends CreateRecord
     {
         return false;
     }
+
+    protected function getRedirectUrl(): string
+    {
+        return static::$resource::getUrl('index');
+    }
 }
+

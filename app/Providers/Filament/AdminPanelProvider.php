@@ -76,6 +76,7 @@ class AdminPanelProvider extends PanelProvider
 
                 // ROLE MIDDLEWARE
                 \App\Http\Middleware\CheckRole::class . ':super_admin,admin_rs,staff',
+
             ]);
     }
 }

@@ -8,4 +8,10 @@ use Filament\Resources\Pages\CreateRecord;
 class CreateSpecialization extends CreateRecord
 {
     protected static string $resource = SpecializationResource::class;
+
+    protected function getRedirectUrl(): string
+    {
+        return static::$resource::getUrl('index');
+    }
 }
+

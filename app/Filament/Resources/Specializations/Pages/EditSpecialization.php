@@ -13,7 +13,11 @@ class EditSpecialization extends EditRecord
     protected function getHeaderActions(): array
     {
         return [
-            DeleteAction::make(),
+            DeleteAction::make()
+                ->after(function () {
+                    $this->redirect(static::getResource()::getUrl('index'));
+                }),
         ];
     }
 }
+
