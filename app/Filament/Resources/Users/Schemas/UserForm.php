@@ -27,6 +27,7 @@ class UserForm
 
             Section::make('Account Information')
                 ->description('Manage user login credentials')
+                ->columnSpanFull()
                 ->schema([
 
                     Grid::make(2)
@@ -34,22 +35,19 @@ class UserForm
 
                             TextInput::make('name')
                                 ->label('Full Name')
-                                ->placeholder('Enter full name')
                                 ->required()
                                 ->maxLength(255),
 
                             TextInput::make('email')
                                 ->label('Email Address')
                                 ->email()
-                                ->placeholder('example@email.com')
                                 ->required()
                                 ->unique(ignoreRecord: true),
 
                             TextInput::make('password')
                                 ->label('Password')
                                 ->password()
-                                ->placeholder('Enter password')
-                                ->required(fn ($record) => $record === null)
+                                ->required(fn ($record) => ! ($record?->exists ?? false))
                                 ->dehydrated(fn ($state) => filled($state))
                                 ->dehydrateStateUsing(
                                     fn ($state) => filled($state)
@@ -63,19 +61,19 @@ class UserForm
                                     filament()->auth()->user()?->role === 'super_admin'
                                         ? [
                                             'admin_rs' => 'Admin Rumah Sakit',
-                                            'dokter' => 'Dokter',
-                                            'staff' => 'Staff',
-                                            'pasien' => 'Pasien',
+                                            'dokter'   => 'Dokter',
+                                            'staff'    => 'Staff',
+                                            'pasien'   => 'Pasien',
                                         ]
                                         : [
                                             'dokter' => 'Dokter',
-                                            'staff' => 'Staff',
+                                            'staff'  => 'Staff',
                                             'pasien' => 'Pasien',
                                         ]
                                 )
+                                ->required()
                                 ->searchable()
-                                ->native(false)
-                                ->required(),
+                                ->native(false),
 
                         ]),
                 ]),
@@ -88,25 +86,30 @@ class UserForm
 
             Section::make('Hospital Information')
                 ->description('Assign hospital to user')
+                ->columnSpanFull()
                 ->schema([
 
                     Select::make('hospital_id')
                         ->label('Hospital')
-                        ->options(
-                            Hospital::query()
-                                ->pluck('name', 'id')
-                                ->toArray()
-                        )
+                        ->relationship('hospital', 'name')
+                        ->searchable()
+                        ->preload()
+                        ->native(false)
+
+                        // otomatis mengikuti hospital admin_rs
                         ->default(
                             filament()->auth()->user()?->hospital_id
                         )
+
+                        // admin_rs tidak boleh ganti hospital
                         ->disabled(
                             filament()->auth()->user()?->role === 'admin_rs'
                         )
-                        ->required()
-                        ->searchable()
-                        ->preload()
-                        ->native(false),
+
+                        // tetap tersimpan walaupun disabled
+                        ->dehydrated()
+
+                        ->required(),
 
                 ]),
 
@@ -118,6 +121,7 @@ class UserForm
 
             Section::make('Personal Information')
                 ->description('User personal details')
+                ->columnSpanFull()
                 ->schema([
 
                     Grid::make(2)
@@ -126,7 +130,7 @@ class UserForm
                             TextInput::make('phone')
                                 ->label('Phone Number')
                                 ->tel()
-                                ->placeholder('08xxxxxxxxxx'),
+                                ->maxLength(20),
 
                             Select::make('gender')
                                 ->label('Gender')
@@ -148,11 +152,9 @@ class UserForm
                     Textarea::make('address')
                         ->label('Address')
                         ->rows(4)
-                        ->placeholder('Enter full address')
                         ->columnSpanFull(),
 
                 ]),
-
         ]);
     }
 }

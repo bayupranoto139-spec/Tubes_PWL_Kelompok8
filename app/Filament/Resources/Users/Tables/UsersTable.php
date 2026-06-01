@@ -4,7 +4,6 @@ namespace App\Filament\Resources\Users\Tables;
 
 use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\EditAction;
-
 use Filament\Tables;
 use Filament\Tables\Table;
 
@@ -22,11 +21,19 @@ class UsersTable
                 |--------------------------------------------------------------------------
                 */
 
-                Tables\Columns\TextColumn::make('id')
 
-                    ->label('ID')
 
-                    ->sortable(),
+                /*
+                |--------------------------------------------------------------------------
+                | HOSPITAL
+                |--------------------------------------------------------------------------
+                */
+
+                Tables\Columns\TextColumn::make('hospital.name')
+                    ->label('Hospital')
+                    ->searchable()
+                    ->sortable()
+                    ->placeholder('-'),
 
                 /*
                 |--------------------------------------------------------------------------
@@ -35,11 +42,8 @@ class UsersTable
                 */
 
                 Tables\Columns\TextColumn::make('name')
-
                     ->label('Name')
-
                     ->searchable()
-
                     ->sortable(),
 
                 /*
@@ -49,10 +53,9 @@ class UsersTable
                 */
 
                 Tables\Columns\TextColumn::make('email')
-
                     ->label('Email')
-
-                    ->searchable(),
+                    ->searchable()
+                    ->copyable(),
 
                 /*
                 |--------------------------------------------------------------------------
@@ -61,25 +64,22 @@ class UsersTable
                 */
 
                 Tables\Columns\TextColumn::make('role')
-
                     ->label('Role')
-
                     ->badge()
-
                     ->formatStateUsing(fn ($state) => match ($state) {
-
-                        'pasien' => 'Patient',
-
-                        default => ucfirst($state),
-
+                        'super_admin' => 'Super Admin',
+                        'admin_rs'    => 'Admin RS',
+                        'dokter'      => 'Dokter',
+                        'staff'       => 'Staff',
+                        'pasien'      => 'Pasien',
+                        default       => ucfirst($state),
                     })
-
-                    ->color(fn (string $state): string => match ($state) {
+                    ->color(fn ($state) => match ($state) {
                         'super_admin' => 'danger',
                         'admin_rs'    => 'warning',
                         'dokter'      => 'success',
-                        'staff'       => 'primary',
-                        'pasien'      => 'info',
+                        'staff'       => 'info',
+                        'pasien'      => 'gray',
                         default       => 'gray',
                     }),
 
@@ -90,8 +90,9 @@ class UsersTable
                 */
 
                 Tables\Columns\TextColumn::make('phone')
-
-                    ->label('Phone'),
+                    ->label('Phone')
+                    ->searchable()
+                    ->placeholder('-'),
 
                 /*
                 |--------------------------------------------------------------------------
@@ -100,18 +101,25 @@ class UsersTable
                 */
 
                 Tables\Columns\TextColumn::make('gender')
-
                     ->label('Gender')
-
+                    ->badge()
                     ->formatStateUsing(fn ($state) => match ($state) {
-
                         'L' => 'Male',
-
                         'P' => 'Female',
-
                         default => '-',
-
                     }),
+
+                /*
+                |--------------------------------------------------------------------------
+                | DATE OF BIRTH
+                |--------------------------------------------------------------------------
+                */
+
+                Tables\Columns\TextColumn::make('date_of_birth')
+                    ->label('Birth Date')
+                    ->date('d M Y')
+                    ->placeholder('-')
+                    ->toggleable(isToggledHiddenByDefault: true),
 
                 /*
                 |--------------------------------------------------------------------------
@@ -120,9 +128,7 @@ class UsersTable
                 */
 
                 Tables\Columns\IconColumn::make('is_active')
-
                     ->label('Active')
-
                     ->boolean(),
 
                 /*
@@ -132,16 +138,17 @@ class UsersTable
                 */
 
                 Tables\Columns\TextColumn::make('created_at')
-
                     ->label('Created')
-
                     ->date('d M Y')
-
                     ->sortable(),
 
             ])
 
-            ->defaultSort('id', 'asc')
+            ->defaultSort('id', 'desc')
+
+            ->filters([
+                //
+            ])
 
             ->actions([
 
