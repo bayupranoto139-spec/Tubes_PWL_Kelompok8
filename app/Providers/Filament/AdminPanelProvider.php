@@ -2,6 +2,7 @@
 
 namespace App\Providers\Filament;
 
+use App\Http\Middleware\CheckRole;
 use Filament\Http\Middleware\Authenticate;
 use Filament\Http\Middleware\AuthenticateSession;
 use Filament\Http\Middleware\DisableBladeIconComponents;
@@ -25,7 +26,9 @@ class AdminPanelProvider extends PanelProvider
             ->default()
             ->id('admin')
             ->path('admin')
-            ->login()
+            ->login(false)
+            ->authGuard('web')
+            ->loginRouteSlug('login')
 
             ->brandName('🩺 Health Mesh')
 
@@ -72,7 +75,7 @@ class AdminPanelProvider extends PanelProvider
                 Authenticate::class,
 
                 // ROLE MIDDLEWARE
-                \App\Http\Middleware\CheckRole::class . ':super_admin,admin_rs,staff,dokter',
+                CheckRole::class.':super_admin,admin_rs',
             ]);
     }
 }

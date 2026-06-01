@@ -9,9 +9,8 @@ use App\Http\Controllers\Doctor\AppointmentController;
 use App\Http\Controllers\Doctor\PrescriptionController;
 use App\Http\Controllers\Doctor\ProfileController;
 
-// -------------------------------------------------------
-// Route yang sudah ada (JANGAN DIHAPUS)
-// -------------------------------------------------------
+require __DIR__.'/auth.php';
+
 Route::get('/', function () {
     return view('welcome');
 });

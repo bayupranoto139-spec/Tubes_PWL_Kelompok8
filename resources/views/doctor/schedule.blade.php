@@ -1,5 +1,5 @@
-<?php include('includes/header.php'); ?>
-<?php include('includes/sidebar.php'); ?>
+@include('doctor.includes.header')
+@include('doctor.includes.sidebar')
 
 <div class="max-w-7xl mx-auto">
     <div class="mb-6">
