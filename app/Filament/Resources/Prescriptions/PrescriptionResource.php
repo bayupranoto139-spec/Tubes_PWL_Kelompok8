@@ -1,33 +1,48 @@
 <?php
 
-namespace App\Filament\Resources\Users;
+namespace App\Filament\Resources\Prescriptions;
 
-use App\Filament\Resources\Users\Pages\CreateUser;
-use App\Filament\Resources\Users\Pages\EditUser;
-use App\Filament\Resources\Users\Pages\ListUsers;
-use App\Filament\Resources\Users\Schemas\UserForm;
-use App\Filament\Resources\Users\Tables\UsersTable;
-use App\Models\User;
+use App\Filament\Resources\Prescriptions\Pages\CreatePrescription;
+use App\Filament\Resources\Prescriptions\Pages\EditPrescription;
+use App\Filament\Resources\Prescriptions\Pages\ListPrescriptions;
+use App\Filament\Resources\Prescriptions\Schemas\PrescriptionForm;
+use App\Filament\Resources\Prescriptions\Tables\PrescriptionsTable;
+use App\Models\Prescription;
 use BackedEnum;
 use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 
-class UserResource extends Resource
+class PrescriptionResource extends Resource
 {
-    protected static ?string $model = User::class;
+    /*
+    |--------------------------------------------------------------------------
+    | MODEL
+    |--------------------------------------------------------------------------
+    */
+
+    protected static ?string $model = Prescription::class;
+
+    /*
+    |--------------------------------------------------------------------------
+    | NAVIGATION
+    |--------------------------------------------------------------------------
+    */
 
     protected static string|BackedEnum|null $navigationIcon =
-        'heroicon-o-users';
+        'heroicon-o-clipboard-document-list';
 
-    protected static ?string $navigationLabel = 'Users';
+    protected static ?string $navigationLabel =
+        'Prescriptions';
 
-    protected static ?string $modelLabel = 'User';
+    protected static ?string $modelLabel =
+        'Prescription';
 
-    protected static ?string $pluralModelLabel = 'Users';
+    protected static ?string $pluralModelLabel =
+        'Prescriptions';
 
-    protected static ?int $navigationSort = 2;
+    protected static ?int $navigationSort = 7;
 
     /*
     |--------------------------------------------------------------------------
@@ -68,22 +83,6 @@ class UserResource extends Resource
         );
     }
 
-    public static function canEdit($record): bool
-    {
-        return in_array(
-            filament()->auth()->user()?->role,
-            [
-                'super_admin',
-                'admin_rs',
-            ]
-        );
-    }
-
-    public static function canDelete($record): bool
-    {
-        return filament()->auth()->user()?->role === 'super_admin';
-    }
-
     /*
     |--------------------------------------------------------------------------
     | FORM
@@ -92,7 +91,7 @@ class UserResource extends Resource
 
     public static function form(Schema $schema): Schema
     {
-        return UserForm::configure($schema);
+        return PrescriptionForm::configure($schema);
     }
 
     /*
@@ -103,12 +102,12 @@ class UserResource extends Resource
 
     public static function table(Table $table): Table
     {
-        return UsersTable::configure($table);
+        return PrescriptionsTable::configure($table);
     }
 
     /*
     |--------------------------------------------------------------------------
-    | QUERY
+    | QUERY FILTER
     |--------------------------------------------------------------------------
     */
 
@@ -122,32 +121,14 @@ class UserResource extends Resource
             return $query;
         }
 
-        /*
-        |--------------------------------------------------------------------------
-        | SUPER ADMIN
-        |--------------------------------------------------------------------------
-        |
-        | Melihat semua user seluruh rumah sakit
-        |
-        */
-
-        if ($user->role === 'super_admin') {
-            return $query;
-        }
-
-        /*
-        |--------------------------------------------------------------------------
-        | ADMIN RS
-        |--------------------------------------------------------------------------
-        |
-        | Hanya melihat user pada rumah sakitnya
-        |
-        */
-
         if ($user->role === 'admin_rs') {
-            return $query->where(
-                'hospital_id',
-                $user->hospital_id
+
+            $query->whereHas(
+                'medicalRecord.appointment.patientEnrollment',
+                fn ($q) => $q->where(
+                    'hospital_id',
+                    $user->hospital_id
+                )
             );
         }
 
@@ -174,9 +155,9 @@ class UserResource extends Resource
     public static function getPages(): array
     {
         return [
-            'index'  => ListUsers::route('/'),
-            'create' => CreateUser::route('/create'),
-            'edit'   => EditUser::route('/{record}/edit'),
+            'index' => ListPrescriptions::route('/'),
+            'create' => CreatePrescription::route('/create'),
+            'edit' => EditPrescription::route('/{record}/edit'),
         ];
     }
 }

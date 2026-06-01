@@ -1,33 +1,47 @@
 <?php
 
-namespace App\Filament\Resources\Users;
+namespace App\Filament\Resources\Bills;
 
-use App\Filament\Resources\Users\Pages\CreateUser;
-use App\Filament\Resources\Users\Pages\EditUser;
-use App\Filament\Resources\Users\Pages\ListUsers;
-use App\Filament\Resources\Users\Schemas\UserForm;
-use App\Filament\Resources\Users\Tables\UsersTable;
-use App\Models\User;
+use App\Filament\Resources\Bills\Pages\CreateBill;
+use App\Filament\Resources\Bills\Pages\EditBill;
+use App\Filament\Resources\Bills\Pages\ListBills;
+use App\Filament\Resources\Bills\Schemas\BillForm;
+use App\Filament\Resources\Bills\Tables\BillsTable;
+use App\Models\Bill;
 use BackedEnum;
 use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
+use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\SoftDeletingScope;
 
-class UserResource extends Resource
+class BillResource extends Resource
 {
-    protected static ?string $model = User::class;
+    /*
+    |--------------------------------------------------------------------------
+    | MODEL
+    |--------------------------------------------------------------------------
+    */
+
+    protected static ?string $model = Bill::class;
+
+    /*
+    |--------------------------------------------------------------------------
+    | NAVIGATION
+    |--------------------------------------------------------------------------
+    */
 
     protected static string|BackedEnum|null $navigationIcon =
-        'heroicon-o-users';
+        Heroicon::OutlinedBanknotes;
 
-    protected static ?string $navigationLabel = 'Users';
+    protected static ?string $navigationLabel = 'Bills';
 
-    protected static ?string $modelLabel = 'User';
+    protected static ?string $modelLabel = 'Bill';
 
-    protected static ?string $pluralModelLabel = 'Users';
+    protected static ?string $pluralModelLabel = 'Bills';
 
-    protected static ?int $navigationSort = 2;
+    protected static ?int $navigationSort = 8;
 
     /*
     |--------------------------------------------------------------------------
@@ -42,6 +56,7 @@ class UserResource extends Resource
             [
                 'super_admin',
                 'admin_rs',
+                'staff',
             ]
         );
     }
@@ -53,6 +68,7 @@ class UserResource extends Resource
             [
                 'super_admin',
                 'admin_rs',
+                'staff',
             ]
         );
     }
@@ -64,24 +80,9 @@ class UserResource extends Resource
             [
                 'super_admin',
                 'admin_rs',
+                'staff',
             ]
         );
-    }
-
-    public static function canEdit($record): bool
-    {
-        return in_array(
-            filament()->auth()->user()?->role,
-            [
-                'super_admin',
-                'admin_rs',
-            ]
-        );
-    }
-
-    public static function canDelete($record): bool
-    {
-        return filament()->auth()->user()?->role === 'super_admin';
     }
 
     /*
@@ -92,7 +93,7 @@ class UserResource extends Resource
 
     public static function form(Schema $schema): Schema
     {
-        return UserForm::configure($schema);
+        return BillForm::configure($schema);
     }
 
     /*
@@ -103,12 +104,12 @@ class UserResource extends Resource
 
     public static function table(Table $table): Table
     {
-        return UsersTable::configure($table);
+        return BillsTable::configure($table);
     }
 
     /*
     |--------------------------------------------------------------------------
-    | QUERY
+    | QUERY FILTER
     |--------------------------------------------------------------------------
     */
 
@@ -122,32 +123,14 @@ class UserResource extends Resource
             return $query;
         }
 
-        /*
-        |--------------------------------------------------------------------------
-        | SUPER ADMIN
-        |--------------------------------------------------------------------------
-        |
-        | Melihat semua user seluruh rumah sakit
-        |
-        */
-
-        if ($user->role === 'super_admin') {
-            return $query;
-        }
-
-        /*
-        |--------------------------------------------------------------------------
-        | ADMIN RS
-        |--------------------------------------------------------------------------
-        |
-        | Hanya melihat user pada rumah sakitnya
-        |
-        */
-
         if ($user->role === 'admin_rs') {
-            return $query->where(
-                'hospital_id',
-                $user->hospital_id
+
+            $query->whereHas(
+                'patientEnrollment',
+                fn ($q) => $q->where(
+                    'hospital_id',
+                    $user->hospital_id
+                )
             );
         }
 
@@ -174,9 +157,23 @@ class UserResource extends Resource
     public static function getPages(): array
     {
         return [
-            'index'  => ListUsers::route('/'),
-            'create' => CreateUser::route('/create'),
-            'edit'   => EditUser::route('/{record}/edit'),
+            'index' => ListBills::route('/'),
+            'create' => CreateBill::route('/create'),
+            'edit' => EditBill::route('/{record}/edit'),
         ];
+    }
+
+    /*
+    |--------------------------------------------------------------------------
+    | SOFT DELETE
+    |--------------------------------------------------------------------------
+    */
+
+    public static function getRecordRouteBindingEloquentQuery(): Builder
+    {
+        return parent::getRecordRouteBindingEloquentQuery()
+            ->withoutGlobalScopes([
+                SoftDeletingScope::class,
+            ]);
     }
 }

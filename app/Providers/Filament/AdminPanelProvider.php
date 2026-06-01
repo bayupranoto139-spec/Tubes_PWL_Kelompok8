@@ -30,7 +30,7 @@ class AdminPanelProvider extends PanelProvider
             ->authGuard('web')
             ->loginRouteSlug('login')
 
-            ->brandName('Health Mesh')
+            ->brandName('🩺 Health Mesh')
 
             ->colors([
                 'primary' => Color::Cyan,
@@ -74,8 +74,10 @@ class AdminPanelProvider extends PanelProvider
             ->authMiddleware([
                 Authenticate::class,
 
-                // ROLE MIDDLEWARE
-                CheckRole::class.':super_admin,admin_rs',
+                
+    \App\Http\Middleware\CheckRole::class . ':super_admin,admin_rs,staff',
+
+               
             ]);
     }
 }

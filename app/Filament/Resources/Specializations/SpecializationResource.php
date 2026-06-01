@@ -15,39 +15,111 @@ use Filament\Tables\Table;
 
 class SpecializationResource extends Resource
 {
+    /*
+    |--------------------------------------------------------------------------
+    | MODEL
+    |--------------------------------------------------------------------------
+    */
+
     protected static ?string $model = Specialization::class;
 
-    // ICON SIDEBAR
-protected static string | BackedEnum | null $navigationIcon = 'fas-stethoscope';
+    /*
+    |--------------------------------------------------------------------------
+    | NAVIGATION
+    |--------------------------------------------------------------------------
+    */
 
-    // NAMA MENU
-    protected static ?string $navigationLabel = 'Specializations';
+    protected static string|BackedEnum|null $navigationIcon =
+    'heroicon-o-identification';
 
+    protected static ?string $navigationLabel =
+        'Specializations';
 
-    // URUTAN MENU
-    protected static ?int $navigationSort = 2;
+    protected static ?string $modelLabel =
+        'Specialization';
 
-    // LABEL MODEL
-    protected static ?string $modelLabel = 'Specialization';
+    protected static ?string $pluralModelLabel =
+        'Specializations';
 
-    protected static ?string $pluralModelLabel = 'Specializations';
+    protected static ?int $navigationSort = 4;
+
+    /*
+    |--------------------------------------------------------------------------
+    | ACCESS CONTROL
+    |--------------------------------------------------------------------------
+    */
+
+    public static function shouldRegisterNavigation(): bool
+    {
+        return in_array(
+            filament()->auth()->user()?->role,
+            [
+                'super_admin',
+                'admin_rs',
+            ]
+        );
+    }
+
+    public static function canViewAny(): bool
+    {
+        return in_array(
+            filament()->auth()->user()?->role,
+            [
+                'super_admin',
+                'admin_rs',
+            ]
+        );
+    }
+
+    public static function canCreate(): bool
+    {
+        return in_array(
+            filament()->auth()->user()?->role,
+            [
+                'super_admin',
+                'admin_rs',
+            ]
+        );
+    }
+
+    /*
+    |--------------------------------------------------------------------------
+    | FORM
+    |--------------------------------------------------------------------------
+    */
 
     public static function form(Schema $schema): Schema
     {
         return SpecializationForm::configure($schema);
     }
 
+    /*
+    |--------------------------------------------------------------------------
+    | TABLE
+    |--------------------------------------------------------------------------
+    */
+
     public static function table(Table $table): Table
     {
         return SpecializationsTable::configure($table);
     }
 
+    /*
+    |--------------------------------------------------------------------------
+    | RELATIONS
+    |--------------------------------------------------------------------------
+    */
+
     public static function getRelations(): array
     {
-        return [
-            //
-        ];
+        return [];
     }
+
+    /*
+    |--------------------------------------------------------------------------
+    | PAGES
+    |--------------------------------------------------------------------------
+    */
 
     public static function getPages(): array
     {
