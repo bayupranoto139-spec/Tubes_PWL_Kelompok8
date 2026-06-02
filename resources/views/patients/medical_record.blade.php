@@ -1,6 +1,7 @@
 @extends('layouts.patient')
 
 @section('title', 'My Medical Records')
+@section('page_title', 'Medical Records')
 
 @section('content')
 <div class="max-w-6xl mx-auto">

@@ -34,7 +34,7 @@
                                     {{ $record->case_status }}
                                 </span>
                             </div>
-                            <p class="text-xs text-slate-500 dark:text-gray-300 font-medium">Consultation with <span class="font-bold text-slate-700 dark:text-white">{{ $record->appointment->doctor->name }}</span> &bull; {{ $record->appointment->doctor->specialization->name }}</p>
+                            <p class="text-xs text-slate-500 dark:text-gray-300 font-medium">Consultation with <span class="font-bold text-slate-700 dark:text-white">{{ optional(optional($record->appointment)->doctor)->name ?? 'Unknown Doctor' }}</span> &bull; {{ optional(optional(optional($record->appointment)->doctor)->specialization)->name ?? 'General Medicine' }}</p>
                         </div>
                     </div>
 
@@ -42,13 +42,13 @@
                         <span class="flex items-center gap-1">
                             <!-- Location Icon -->
                             <svg class="w-3.5 h-3.5 text-slate-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
-                            {{ $record->appointment->patientEnrollment->hospital->name }}
+                            {{ optional(optional(optional($record->appointment)->patientEnrollment)->hospital)->name ?? 'Unknown Hospital' }}
                         </span>
                         <span class="text-slate-300 dark:text-gray-700">&bull;</span>
                         <span class="flex items-center gap-1">
                             <!-- Calendar Icon -->
                             <svg class="w-3.5 h-3.5 text-slate-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
-                            {{ $record->visit_date->format('d M Y') }}
+                            {{ optional($record->visit_date)->format('d M Y') ?? 'Unknown Date' }}
                         </span>
                     </div>
 
@@ -103,11 +103,11 @@
                                         </div>
                                         <div class="space-y-1 flex-1">
                                             <div class="flex items-center justify-between gap-2">
-                                                <h5 class="font-bold text-slate-800 dark:text-white text-sm">{{ $rx->medication->name }}</h5>
-                                                <span class="text-[10px] text-slate-400 dark:text-gray-400 bg-slate-50 dark:bg-gray-900 border border-slate-100 dark:border-gray-800 px-2 py-0.5 rounded font-semibold">{{ $rx->medication->category }}</span>
+                                                <h5 class="font-bold text-slate-800 dark:text-white text-sm">{{ optional($rx->medication)->name ?? 'Medication' }}</h5>
+                                                <span class="text-[10px] text-slate-400 dark:text-gray-400 bg-slate-50 dark:bg-gray-900 border border-slate-100 dark:border-gray-800 px-2 py-0.5 rounded font-semibold">{{ optional($rx->medication)->category ?? 'General' }}</span>
                                             </div>
-                                            @if($rx->medication->generic_name)
-                                                <p class="text-[10px] text-slate-400 dark:text-gray-500 font-medium">Generic: {{ $rx->medication->generic_name }}</p>
+                                            @if(optional($rx->medication)->generic_name)
+                                                <p class="text-[10px] text-slate-400 dark:text-gray-500 font-medium">Generic: {{ optional($rx->medication)->generic_name }}</p>
                                             @endif
                                             
                                             <!-- Dosage details -->
@@ -122,7 +122,7 @@
                                                 </div>
                                                 <div>
                                                     <span class="block text-[9px] text-slate-400 uppercase">Quantity</span>
-                                                    {{ $rx->quantity }} {{ $rx->medication->unit }}
+                                                    {{ $rx->quantity }} {{ optional($rx->medication)->unit ?? '' }}
                                                 </div>
                                             </div>
 

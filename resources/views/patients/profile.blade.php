@@ -1,6 +1,7 @@
 @extends('layouts.patient')
 
 @section('title', 'Patient Profile')
+@section('page_title', 'Profile Settings')
 
 @section('content')
     <div class="rounded-[30px] bg-white p-10 shadow-2xl">

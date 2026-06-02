@@ -9,9 +9,9 @@
             <h1 class="text-5xl font-black text-slate-800">Appointments</h1>
             <p class="text-slate-500 text-lg mt-2">Manage and schedule your visits with our doctors.</p>
         </div>
-        <button class="bg-blue-700 hover:bg-blue-800 text-white px-6 py-3.5 rounded-xl font-bold transition duration-300 shadow-md">
-            + Book Appointment
-        </button>
+        <button class="bg-gradient-to-r from-teal-500 to-cyan-500 hover:from-teal-600 hover:to-cyan-600 text-white px-6 py-3.5 rounded-xl font-bold transition duration-300 shadow-md shadow-teal-500/10 cursor-pointer">
+    + Book Appointment
+</button>
     </div>
 
     <div class="bg-white rounded-[30px] shadow-2xl p-8">

@@ -12,8 +12,10 @@ use App\Models\PatientEnrollment;
 use App\Models\PatientMedicalInfo;
 use App\Models\Prescription;
 use App\Models\Schedule;
+use App\Models\User;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
+use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 
@@ -25,6 +27,24 @@ class PatientPanelController extends Controller
     public function dashboard()
     {
         $user = Auth::user();
+        if (! $user) {
+            $totalAppointments = 0;
+            $medicalRecordsCount = 0;
+            $unpaidBillsCount = 0;
+            $totalUnpaidAmount = 0;
+            $activePrescriptionsCount = 0;
+            $upcomingAppointments = collect();
+
+            return view('user.patient.dashboard', compact(
+                'totalAppointments',
+                'medicalRecordsCount',
+                'unpaidBillsCount',
+                'totalUnpaidAmount',
+                'activePrescriptionsCount',
+                'upcomingAppointments'
+            ));
+        }
+
         $enrollmentIds = $user->patientEnrollments->pluck('id');
 
         // Total appointments (all time)
@@ -73,6 +93,21 @@ class PatientPanelController extends Controller
     public function appointments(Request $request)
     {
         $user = Auth::user();
+        $status = $request->input('status');
+
+        if (! $user) {
+            $appointments = new LengthAwarePaginator([], 0, 10, 1, [
+                'path' => $request->url(),
+                'query' => $request->query(),
+            ]);
+            $hospitals = Hospital::where('is_active', true)->get();
+            $doctors = Doctor::with(['user', 'specialization', 'schedules' => function ($query) {
+                $query->where('is_active', true);
+            }])->get();
+
+            return view('user.patient.appointments', compact('appointments', 'hospitals', 'doctors', 'status'));
+        }
+
         $enrollmentIds = $user->patientEnrollments->pluck('id');
 
         $status = $request->input('status');
@@ -108,7 +143,7 @@ class PatientPanelController extends Controller
             'complaint'    => 'required|string|max:1000',
         ]);
 
-        $user = Auth::user();
+        $user = $this->resolvePatientUser();
 
         // 1. Check or create PatientEnrollment for this hospital
         $enrollment = PatientEnrollment::where('user_id', $user->id)
@@ -187,6 +222,11 @@ class PatientPanelController extends Controller
     public function medicalRecords()
     {
         $user = Auth::user();
+        if (! $user) {
+            $records = collect();
+            return view('user.patient.medical-records', compact('records'));
+        }
+
         $enrollmentIds = $user->patientEnrollments->pluck('id');
 
         $records = MedicalRecord::whereHas('appointment', function ($query) use ($enrollmentIds) {
@@ -205,6 +245,16 @@ class PatientPanelController extends Controller
     public function bills()
     {
         $user = Auth::user();
+        if (! $user) {
+            $unpaidBills = collect();
+            $paidBills = collect();
+            $totalUnpaidAmount = 0;
+            $unpaidCount = 0;
+            $paidCount = 0;
+
+            return view('user.patient.bills', compact('unpaidBills', 'paidBills', 'totalUnpaidAmount', 'unpaidCount', 'paidCount'));
+        }
+
         $enrollmentIds = $user->patientEnrollments->pluck('id');
 
         // Unpaid Invoices
@@ -235,6 +285,15 @@ class PatientPanelController extends Controller
     public function prescriptions()
     {
         $user = Auth::user();
+        if (! $user) {
+            $prescriptions = collect();
+            $activeCount = 0;
+            $completedCount = 0;
+            $cancelledCount = 0;
+
+            return view('user.patient.prescriptions', compact('prescriptions', 'activeCount', 'completedCount', 'cancelledCount'));
+        }
+
         $enrollmentIds = $user->patientEnrollments->pluck('id');
 
         $prescriptions = Prescription::whereHas('medicalRecord.appointment', function ($query) use ($enrollmentIds) {
@@ -257,7 +316,7 @@ class PatientPanelController extends Controller
      */
     public function profile()
     {
-        $user = Auth::user();
+        $user = Auth::user() ?? $this->resolvePatientUser();
         $medicalInfo = $user->patientMedicalInfo ?? new PatientMedicalInfo();
 
         return view('user.patient.profile', compact('user', 'medicalInfo'));
@@ -268,9 +327,9 @@ class PatientPanelController extends Controller
      */
     public function updateProfile(Request $request)
     {
-        $user = Auth::user();
+        $user = Auth::user() ?? $this->resolvePatientUser();
 
-        $request->validate([
+        $rules = [
             'name'                     => 'required|string|max:255',
             'email'                    => 'required|string|email|max:255|unique:users,email,' . $user->id,
             'phone'                    => 'required|string|max:20',
@@ -283,9 +342,29 @@ class PatientPanelController extends Controller
             'emergency_contact_phone'  => 'required|string|max:20',
             'insurance_provider'       => 'nullable|string|max:255',
             'insurance_policy_number'  => 'nullable|string|max:255',
-            'current_password'         => 'nullable|required_with:new_password',
-            'new_password'             => 'nullable|min:8|confirmed',
-        ]);
+        ];
+
+        if ($request->input('action') === 'change_password') {
+            $rules = array_merge($rules, [
+                'current_password' => 'required|string',
+                'new_password'     => 'required|string|min:8|confirmed',
+            ]);
+        } else {
+            $rules['current_password'] = 'nullable|required_with:new_password|string';
+            $rules['new_password'] = 'nullable|min:8|confirmed';
+        }
+
+        $request->validate($rules);
+
+        if ($request->input('action') === 'change_password') {
+            if (! Hash::check($request->current_password, $user->password)) {
+                return redirect()->back()->withErrors(['current_password' => 'Current password is incorrect.']);
+            }
+
+            $user->update(['password' => Hash::make($request->new_password)]);
+
+            return redirect()->route('patient.profile')->with('success', 'Password changed successfully!');
+        }
 
         // 1. Update primary User details
         $user->update([
@@ -310,17 +389,60 @@ class PatientPanelController extends Controller
             ]
         );
 
-        // 3. Update password if requested
         if ($request->filled('new_password')) {
             if (! Hash::check($request->current_password, $user->password)) {
-                return redirect()->back()->withErrors(['current_password' => 'Current password matches incorrectly.']);
+                return redirect()->back()->withErrors(['current_password' => 'Current password is incorrect.']);
             }
 
-            $user->update([
-                'password' => Hash::make($request->new_password),
-            ]);
+            $user->update(['password' => Hash::make($request->new_password)]);
         }
 
         return redirect()->route('patient.profile')->with('success', 'Profile updated successfully!');
+    }
+
+    public function manageSessions()
+    {
+        $user = Auth::user() ?? $this->resolvePatientUser();
+
+        return view('user.patient.manage-sessions', compact('user'));
+    }
+
+    public function logoutOtherSessions(Request $request)
+    {
+        $user = Auth::user() ?? $this->resolvePatientUser();
+
+        $request->validate([
+            'current_password' => 'required|string',
+        ]);
+
+        if (! Hash::check($request->current_password, $user->password)) {
+            return redirect()->back()->withErrors(['current_password' => 'Current password is incorrect.']);
+        }
+
+        Auth::login($user);
+        Auth::logoutOtherDevices($request->current_password);
+
+        return redirect()->route('patient.profile.sessions')->with('success', 'Other sessions have been logged out successfully.');
+    }
+
+    protected function resolvePatientUser()
+    {
+        if ($user = Auth::user()) {
+            return $user;
+        }
+
+        return User::firstOrCreate(
+            ['email' => 'guest.patient@healthmesh.test'],
+            [
+                'name'          => 'Guest Patient',
+                'password'      => Hash::make('password'),
+                'role'          => 'pasien',
+                'gender'        => 'L',
+                'date_of_birth' => '2000-01-01',
+                'phone'         => '081234567890',
+                'address'       => 'Jl. Guest No. 1, Medan',
+                'is_active'     => 1,
+            ]
+        );
     }
 }

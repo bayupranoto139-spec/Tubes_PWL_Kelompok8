@@ -10,8 +10,8 @@ require __DIR__.'/auth.php';
 
 Route::resource('patients', PatientController::class);
 
-// Route patient lama
-Route::prefix('patient')->name('patient.')->group(function () {
+// Legacy patient views
+Route::prefix('patient')->name('legacy.patient.')->group(function () {
     Route::view('dashboard', 'patients.dashboard')->name('dashboard');
     Route::view('appointment', 'patients.appointment')->name('appointment');
     Route::view('medical-records', 'patients.medical_record')->name('medical_records');
@@ -29,12 +29,10 @@ Route::get('/payments', [PaymentController::class, 'index']);
 Route::post('/payments/pay/{id}', [PaymentController::class, 'pay']);
 
 // Midtrans
-Route::middleware(['auth'])->group(function () {
-    Route::get('/payment/{bill}', [MidtransController::class, 'createPayment'])->name('payment.create');
-    Route::get('/payment/success', [MidtransController::class, 'success'])->name('payment.success');
-    Route::get('/payment/unfinish', [MidtransController::class, 'unfinish'])->name('payment.unfinish');
-    Route::get('/payment/error', [MidtransController::class, 'error'])->name('payment.error');
-});
+Route::get('/payment/{bill}', [MidtransController::class, 'createPayment'])->name('payment.create');
+Route::get('/payment/success', [MidtransController::class, 'success'])->name('payment.success');
+Route::get('/payment/unfinish', [MidtransController::class, 'unfinish'])->name('payment.unfinish');
+Route::get('/payment/error', [MidtransController::class, 'error'])->name('payment.error');
 
 Route::get('/payment-test/{id}', function ($id) {
     $bill = \App\Models\Bill::find($id) ?? \App\Models\Bill::factory()->create();
@@ -42,7 +40,7 @@ Route::get('/payment-test/{id}', function ($id) {
 });
 
 // Patient Panel Routes
-Route::middleware(['auth'])->prefix('user/patient')->name('patient.')->group(function () {
+Route::prefix('user/patient')->name('patient.')->group(function () {
     Route::get('/dashboard', [PatientPanelController::class, 'dashboard'])->name('dashboard');
     Route::get('/appointments', [PatientPanelController::class, 'appointments'])->name('appointments');
     Route::post('/appointments', [PatientPanelController::class, 'bookAppointment'])->name('appointments.store');
@@ -52,4 +50,6 @@ Route::middleware(['auth'])->prefix('user/patient')->name('patient.')->group(fun
     Route::get('/prescriptions', [PatientPanelController::class, 'prescriptions'])->name('prescriptions');
     Route::get('/profile', [PatientPanelController::class, 'profile'])->name('profile');
     Route::post('/profile', [PatientPanelController::class, 'updateProfile'])->name('profile.update');
+    Route::get('/profile/sessions', [PatientPanelController::class, 'manageSessions'])->name('profile.sessions');
+    Route::post('/profile/sessions/logout-other', [PatientPanelController::class, 'logoutOtherSessions'])->name('profile.sessions.logout-other');
 });

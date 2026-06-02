@@ -8,7 +8,7 @@
 <div class="relative overflow-hidden bg-gradient-to-r from-teal-500 to-cyan-600 rounded-3xl p-6 md:p-8 text-white shadow-xl shadow-teal-500/10">
     <div class="relative z-10 space-y-2 md:max-w-xl">
         <span class="px-3 py-1 bg-white/20 backdrop-blur-md rounded-full text-xs font-semibold uppercase tracking-wider">Welcome Back</span>
-        <h2 class="text-3xl md:text-4xl font-extrabold tracking-tight">Hello, {{ Auth::user()->name }}! 👋</h2>
+        <h2 class="text-3xl md:text-4xl font-extrabold tracking-tight">Hello, {{ optional(Auth::user())->name ?? 'Guest Patient' }}! 👋</h2>
         <p class="text-teal-50/90 text-sm md:text-base leading-relaxed">
             Welcome to your personalized MedVerse health portal. View your clinical logs, schedule hospital checkups, and manage medical bills in one secure hub.
         </p>

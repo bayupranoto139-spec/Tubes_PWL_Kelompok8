@@ -71,6 +71,17 @@
             
             <form action="{{ route('patient.profile.update') }}" method="POST" class="space-y-6 m-0">
                 @csrf
+
+                @if ($errors->any())
+                    <div class="rounded-3xl border border-red-100 bg-red-50 p-4 text-sm text-red-700">
+                        <strong class="font-semibold">There were problems with your submission:</strong>
+                        <ul class="mt-2 list-disc list-inside space-y-1">
+                            @foreach ($errors->all() as $error)
+                                <li>{{ $error }}</li>
+                            @endforeach
+                        </ul>
+                    </div>
+                @endif
                 
                 <!-- Section 1: Personal Details -->
                 <div class="space-y-4">
@@ -110,7 +121,7 @@
                         <!-- Date of Birth -->
                         <div class="space-y-1.5 sm:col-span-2">
                             <label for="date_of_birth" class="text-xs font-bold text-slate-500 dark:text-gray-400 uppercase tracking-wider">Date of Birth</label>
-                            <input type="date" name="date_of_birth" id="date_of_birth" required value="{{ old('date_of_birth', $user->date_of_birth ? $user->date_of_birth->format('Y-m-d') : '') }}" class="w-full px-4 py-3 rounded-xl border border-slate-200 dark:border-gray-700 bg-transparent text-sm focus:border-teal-500 focus:ring-4 focus:ring-teal-500/10 dark:text-white transition-all outline-none">
+                            <input type="date" name="date_of_birth" id="date_of_birth" required value="{{ old('date_of_birth', optional($user->date_of_birth)->format('Y-m-d') ?? '') }}" class="w-full px-4 py-3 rounded-xl border border-slate-200 dark:border-gray-700 bg-transparent text-sm focus:border-teal-500 focus:ring-4 focus:ring-teal-500/10 dark:text-white transition-all outline-none">
                         </div>
 
                         <!-- Address -->
@@ -198,6 +209,18 @@
                             <label for="new_password_confirmation" class="text-xs font-bold text-slate-500 dark:text-gray-400 uppercase tracking-wider">Confirm New Password</label>
                             <input type="password" name="new_password_confirmation" id="new_password_confirmation" placeholder="••••••••" class="w-full px-4 py-3 rounded-xl border border-slate-200 dark:border-gray-700 bg-transparent text-sm focus:border-teal-500 focus:ring-4 focus:ring-teal-500/10 dark:text-white transition-all outline-none">
                         </div>
+                    </div>
+
+                    <div class="flex flex-col sm:flex-row items-center gap-3 justify-between rounded-3xl border border-slate-200 dark:border-gray-800 p-4 bg-slate-50 dark:bg-gray-950/70">
+                        <button type="submit" name="action" value="change_password" class="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-5 py-3 bg-blue-600 text-white rounded-2xl text-sm font-semibold shadow-lg shadow-blue-500/10 hover:bg-blue-700 transition-all">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 11c0-1.1.9-2 2-2h4a2 2 0 012 2v7a2 2 0 01-2 2h-4a2 2 0 01-2-2v-7zm-4 0V8a4 4 0 118 0v3M8 15h.01"></path></svg>
+                            Change Password
+                        </button>
+
+                        <a href="{{ route('patient.profile.sessions') }}" class="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-5 py-3 bg-slate-900 text-white rounded-2xl text-sm font-semibold shadow-lg shadow-slate-900/10 hover:bg-slate-800 transition-all">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path></svg>
+                            Manage Sessions
+                        </a>
                     </div>
                 </div>
 

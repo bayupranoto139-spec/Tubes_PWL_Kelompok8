@@ -67,24 +67,24 @@
                                 <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z"></path></svg>
                             </span>
                             <div>
-                                <h4 class="font-extrabold text-slate-800 dark:text-white text-base leading-snug">{{ $p->medication->name }}</h4>
-                                <span class="text-[9px] text-slate-400 dark:text-gray-500 font-bold uppercase tracking-wider bg-slate-50 dark:bg-gray-800 border border-slate-100 dark:border-gray-700/60 px-2 py-0.5 rounded">{{ $p->medication->category ?? 'Generic' }}</span>
+                                <h4 class="font-extrabold text-slate-800 dark:text-white text-base leading-snug">{{ optional($p->medication)->name ?? 'Medication' }}</h4>
+                                <span class="text-[9px] text-slate-400 dark:text-gray-500 font-bold uppercase tracking-wider bg-slate-50 dark:bg-gray-800 border border-slate-100 dark:border-gray-700/60 px-2 py-0.5 rounded">{{ optional($p->medication)->category ?? 'Generic' }}</span>
                             </div>
                         </div>
                         
                         <span class="px-2.5 py-0.5 text-[10px] font-extrabold uppercase rounded tracking-wider {{ 
-                            $p->medicalRecord->case_status === 'active' ? 'bg-green-50 text-green-700 dark:bg-green-950/20 dark:text-green-400' : 'bg-slate-100 text-slate-500 dark:bg-slate-950/20 dark:text-slate-400'
+                            optional($p->medicalRecord)->case_status === 'active' ? 'bg-green-50 text-green-700 dark:bg-green-950/20 dark:text-green-400' : 'bg-slate-100 text-slate-500 dark:bg-slate-950/20 dark:text-slate-400'
                         }}">
-                            {{ $p->medicalRecord->case_status === 'active' ? 'Active' : 'Completed' }}
+                            {{ optional($p->medicalRecord)->case_status === 'active' ? 'Active' : 'Completed' }}
                         </span>
                     </div>
 
                     <!-- Drug Generic Name & Price sub-details -->
                     <div class="text-xs text-slate-400 dark:text-gray-400 font-semibold space-y-1 pl-1">
-                        @if($p->medication->generic_name)
-                            <p>Generic Name: <span class="text-slate-700 dark:text-gray-300">{{ $p->medication->generic_name }}</span></p>
+                        @if(optional($p->medication)->generic_name)
+                            <p>Generic Name: <span class="text-slate-700 dark:text-gray-300">{{ optional($p->medication)->generic_name }}</span></p>
                         @endif
-                        <p>Cost per Unit: <span class="text-slate-700 dark:text-gray-300">Rp {{ number_format($p->medication->price, 0, ',', '.') }}</span></p>
+                        <p>Cost per Unit: <span class="text-slate-700 dark:text-gray-300">Rp {{ number_format(optional($p->medication)->price ?? 0, 0, ',', '.') }}</span></p>
                     </div>
 
                     <!-- Dosage Information -->
@@ -99,7 +99,7 @@
                         </div>
                         <div class="space-y-0.5">
                             <span class="block text-[9px] text-slate-400 font-semibold uppercase tracking-wider">Quantity</span>
-                            <span class="text-sm font-black text-slate-800 dark:text-white">{{ $p->quantity }} {{ $p->medication->unit }}</span>
+                            <span class="text-sm font-black text-slate-800 dark:text-white">{{ $p->quantity }} {{ optional($p->medication)->unit ?? '' }}</span>
                         </div>
                     </div>
 
@@ -116,13 +116,10 @@
                 <div class="pt-4 border-t border-slate-100 dark:border-gray-800/60 flex items-center justify-between text-xs text-slate-400 dark:text-gray-400 pl-1 font-semibold">
                     <div class="space-y-0.5">
                         <span class="block text-[9px] text-slate-400 uppercase tracking-widest font-bold">Prescribed By</span>
-                        <span>{{ $p->medicalRecord->appointment->doctor->name }}</span>
+                        <span>{{ optional(optional(optional($p->medicalRecord)->appointment)->doctor)->name ?? 'Unknown Doctor' }}</span>
                     </div>
                     
-                    <span class="text-[10px] text-slate-400 font-bold uppercase tracking-wider">{{ $p->created_at->format('d M Y') }}</span>
-                </div>
-
-            </div>
+                    <span class="text-[10px] text-slate-400 font-bold uppercase tracking-wider">{{ optional($p->created_at)->format('d M Y') ?? '-' }}</span>
         @empty
             <!-- Empty state -->
             <div class="bg-white dark:bg-gray-900 border border-slate-200/60 dark:border-gray-800/60 rounded-3xl p-12 text-center space-y-4 shadow-sm col-span-2">

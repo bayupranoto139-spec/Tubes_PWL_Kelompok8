@@ -71,7 +71,7 @@
                             <span class="text-sm font-black text-slate-800 dark:text-white">INV-{{ sprintf('%06d', $bill->id) }}</span>
                             <span class="px-2 py-0.5 bg-amber-50 text-amber-700 dark:bg-amber-950/20 dark:text-amber-400 text-[10px] font-bold rounded uppercase">Unpaid</span>
                         </div>
-                        <p class="text-xs text-slate-400 dark:text-gray-400">Statement Date: {{ $bill->created_at->format('d M Y') }} &bull; Hospital: {{ $bill->patientEnrollment->hospital->name }}</p>
+                        <p class="text-xs text-slate-400 dark:text-gray-400">Statement Date: {{ optional($bill->created_at)->format('d M Y') ?? 'Unknown Date' }} &bull; Hospital: {{ optional(optional($bill->patientEnrollment)->hospital)->name ?? 'Unknown Hospital' }}</p>
                     </div>
 
                     <div class="flex flex-col sm:flex-row sm:items-center md:justify-end gap-4">
@@ -115,7 +115,7 @@
                     </div>
 
                     <div class="flex items-center justify-between text-xs font-semibold text-slate-500 dark:text-gray-400 px-1 pt-2">
-                        <span>Due Date: <span class="text-red-500 font-bold">{{ $bill->payment_due_date->format('d M Y') }}</span></span>
+                        <span>Due Date: <span class="text-red-500 font-bold">{{ optional($bill->payment_due_date)->format('d M Y') ?? 'N/A' }}</span></span>
                         <span>Total Items: {{ $bill->billItems->count() }}</span>
                     </div>
                 </div>
@@ -160,7 +160,7 @@
                                 <tr class="hover:bg-slate-50/30 dark:hover:bg-gray-800/20 transition-colors">
                                     <td class="px-6 py-4 text-slate-800 dark:text-white font-bold">INV-{{ sprintf('%06d', $paid->id) }}</td>
                                     <td class="px-6 py-4">{{ $paid->payment_date ? $paid->payment_date->format('d M Y \a\t H:i') : $paid->updated_at->format('d M Y') }}</td>
-                                    <td class="px-6 py-4 max-w-xs truncate">{{ $paid->patientEnrollment->hospital->name }}</td>
+                                    <td class="px-6 py-4 max-w-xs truncate">{{ optional(optional($paid->patientEnrollment)->hospital)->name ?? 'Unknown Hospital' }}</td>
                                     <td class="px-6 py-4 uppercase">
                                         <span class="px-2 py-0.5 bg-slate-100 dark:bg-gray-800 border border-slate-200/40 dark:border-gray-700/50 text-[10px] rounded text-slate-500 font-bold uppercase">{{ str_replace('_', ' ', $paid->payment_method ?? 'Cash') }}</span>
                                     </td>

@@ -8,6 +8,7 @@ class AppointmentController extends Controller
 {
     public function index()
     {
-        return view('appointment.index');
+        // Langsung arahkan ke file appointments yang ada di folder patients
+        return view('patients.appointments');
     }
 }
