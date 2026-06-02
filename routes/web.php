@@ -17,6 +17,11 @@ Route::get('/', function () {
     return view('welcome');
 });
 
+
+// Public/Guest dashboard (tanpa login)
+Route::get('/dashboard', [\App\Http\Controllers\GuestDashboardController::class, 'index'])->name('guest.dashboard');
+
+
 Route::middleware(['auth'])->group(function () {
     Route::get('/payment/{bill}', [MidtransController::class, 'createPayment'])->name('payment.create');
     Route::get('/payment/success', [MidtransController::class, 'success'])->name('payment.success');

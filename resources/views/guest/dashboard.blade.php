@@ -80,10 +80,11 @@
 
             {{-- Auth Button (desktop) --}}
             <div class="hidden md:flex items-center space-x-4">
-                <a href="{{ route('filament.admin.auth.login') }}"
+                <a href="/login"
                    class="px-6 py-2.5 rounded-xl bg-gradient-to-r from-teal-500 to-teal-600 text-white font-medium hover:from-teal-600 hover:to-teal-700 transition-all shadow-lg shadow-teal-500/25">
                     Sign In
                 </a>
+
             </div>
 
             {{-- Mobile Hamburger --}}
@@ -114,10 +115,11 @@
             <a href="#contact" @click="mobileOpen=false"
                class="block px-4 py-2 rounded-lg text-gray-600 hover:bg-teal-50 hover:text-teal-600">Contact</a>
             <div class="pt-3 border-t">
-                <a href="{{ route('filament.admin.auth.login') }}" @click="mobileOpen=false"
+                <a href="/login" @click="mobileOpen=false"
                    class="block px-4 py-2.5 rounded-xl bg-gradient-to-r from-teal-500 to-teal-600 text-white text-center font-medium">
                     Sign In
                 </a>
+
             </div>
         </div>
     </div>
@@ -141,12 +143,14 @@
             </h1>
             <p class="text-lg text-gray-600 mb-8 max-w-2xl">
                 Platform manajemen layanan kesehatan terpadu. Pantau statistik rumah sakit, dokter, dan pasien secara real-time.
-                <a href="{{ route('filament.admin.auth.login') }}" class="text-teal-600 font-semibold hover:underline">Sign in</a>
+                <a href="/login" class="text-teal-600 font-semibold hover:underline">Sign in</a>
+
                 untuk mengakses semua fitur.
             </p>
             <div class="flex flex-wrap gap-4">
-                <a href="{{ route('filament.admin.auth.login') }}"
+                <a href="/login"
                    class="inline-flex items-center px-8 py-3.5 rounded-2xl bg-gradient-to-r from-teal-500 to-teal-600 text-white font-semibold shadow-lg shadow-teal-500/30 hover:shadow-xl transition-all">
+
                     <i class="fa-solid fa-right-to-bracket mr-2"></i>
                     Login ke Dashboard
                 </a>
@@ -339,8 +343,9 @@
         <p class="text-teal-100 text-lg max-w-2xl mx-auto mb-8">
             Login sekarang untuk mengelola rumah sakit, dokter, pasien, antrian, rekam medis, dan lebih banyak lagi.
         </p>
-        <a href="{{ route('filament.admin.auth.login') }}"
+        <a href="/login"
            class="inline-flex items-center gap-2 px-10 py-4 rounded-2xl bg-white text-teal-600 font-bold hover:bg-teal-50 transition-all shadow-xl">
+
             <i class="fa-solid fa-right-to-bracket"></i>
             Login ke Dashboard
         </a>
@@ -432,10 +437,11 @@
     <div>
         <p class="font-semibold text-gray-900 text-sm" id="toastTitle">Login Diperlukan</p>
         <p class="text-gray-500 text-xs mt-0.5">Mengarahkan ke halaman login…</p>
-        <a href="{{ route('filament.admin.auth.login') }}"
+        <a href="/login"
            class="mt-2 inline-block text-xs font-semibold text-teal-600 hover:underline">
             Login sekarang →
         </a>
+
     </div>
 </div>
 
@@ -449,7 +455,8 @@ function requireLogin(feature) {
     const toast = document.getElementById('toast');
     document.getElementById('toastTitle').textContent = '🔒 ' + feature;
     toast.classList.add('show');
-    setTimeout(() => { window.location.href = '{{ route("filament.admin.auth.login") }}'; }, 1800);
+    setTimeout(() => { window.location.href = '/login'; }, 1800);
+
     setTimeout(() => toast.classList.remove('show'), 5000);
 }
 

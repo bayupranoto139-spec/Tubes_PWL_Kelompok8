@@ -30,7 +30,10 @@ return Application::configure(basePath: dirname(__DIR__))
                 default => '/login',
             };
         });
+
+
     })
+
     ->withExceptions(function (Exceptions $exceptions): void {
         //
     })->create();
