@@ -14,7 +14,7 @@ return new class extends Migration
         Schema::create('bills', function (Blueprint $table) {
             $table->id();
             $table->foreignId('patient_id')->constrained('patients');
-            $table->foreignId('appointment_id')->nullable()->constrained('appointments');
+            $table->foreignId('appointment_id')->constrained('appointments')->restrictOnDelete();
             $table->decimal('total_amount', 12, 2);
             $table->enum('status', ['unpaid', 'partial', 'paid'])->default('unpaid');
             $table->date('payment_due_date');

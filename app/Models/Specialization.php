@@ -11,7 +11,6 @@ class Specialization extends Model
 
     protected $fillable = ['name', 'description'];
 
-    // Relasi: satu spesialisasi dimiliki banyak dokter
     public function doctors()
     {
         return $this->hasMany(Doctor::class);

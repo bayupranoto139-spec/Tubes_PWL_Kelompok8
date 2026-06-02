@@ -4,64 +4,77 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Appointment extends Model
 {
-    use HasFactory;
+    use HasFactory, SoftDeletes;
 
     protected $fillable = [
-        'patient_id', 'doctor_id', 'scheduled_at', 'status', 'complaint',
+        'patient_enrollment_id', 'doctor_id', 'schedule_id',
+        'scheduled_at', 'status', 'complaint',
     ];
 
     protected $casts = [
         'scheduled_at' => 'datetime',
-        'status' => 'string',
+        'status'       => 'string',
     ];
 
-    protected static function booted()
+    
+    public function patientEnrollment()
     {
-        static::addGlobalScope('hospital', function ($query) {
-            if (auth()->check() && auth()->user()->hospital_id) {
-                $query->whereHas('patient', function ($q) {
-                    $q->where('hospital_id', auth()->user()->hospital_id);
-                });
-            }
-        });
+        return $this->belongsTo(PatientEnrollment::class);
     }
 
-    // Relasi ke pasien
-    public function patient()
-    {
-        return $this->belongsTo(Patient::class);
-    }
-
-    // Relasi ke dokter
     public function doctor()
     {
         return $this->belongsTo(Doctor::class);
     }
 
-    // Relasi ke medical record (hanya satu per appointment)
+    public function schedule()
+    {
+        return $this->belongsTo(Schedule::class);
+    }
+
     public function medicalRecord()
     {
         return $this->hasOne(MedicalRecord::class);
     }
 
-    // Relasi ke bill (bisa ada satu per appointment)
     public function bill()
     {
         return $this->hasOne(Bill::class);
     }
 
-    // Relasi ke queue (opsional, appointment bisa punya antrian)
     public function queue()
     {
         return $this->hasOne(Queue::class);
     }
 
-    // Scope untuk appointment hari ini
+    
     public function scopeToday($query)
     {
         return $query->whereDate('scheduled_at', today());
+    }
+
+    public function scopeScheduled($query)
+    {
+        return $query->where('status', 'scheduled');
+    }
+
+    
+    public function isWalkIn(): bool
+    {
+        return is_null($this->schedule_id);
+    }
+
+    public function isCompleted(): bool
+    {
+        return $this->status === 'completed';
+    }
+
+    public function isCancelled(): bool
+    {
+        return $this->status === 'cancelled';
     }
 }

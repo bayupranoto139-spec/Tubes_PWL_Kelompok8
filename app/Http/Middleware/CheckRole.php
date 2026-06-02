@@ -11,17 +11,20 @@ class CheckRole
 {
     /**
      * Handle an incoming request.
-     *
-     * @param  Closure(Request): (Response)  $next
      */
-    public function handle(Request $request, Closure $next, ...$roles): Response
+    public function handle(
+        Request $request,
+        Closure $next,
+        string ...$roles
+    ): Response
     {
-        if (!Auth::check()) {
+        if (! Auth::check()) {
             return redirect()->route('login');
         }
 
         $userRole = Auth::user()->role;
-        if (!in_array($userRole, $roles)) {
+
+        if (! in_array($userRole, $roles, true)) {
             abort(403, 'Anda tidak memiliki akses ke halaman ini.');
         }
 

@@ -5,6 +5,7 @@ namespace App\Providers;
 use App\Models\MedicalRecord;
 use App\Observers\MedicalRecordObserver;
 use Illuminate\Support\ServiceProvider;
+use Midtrans\Config;
 
 class AppServiceProvider extends ServiceProvider
 {

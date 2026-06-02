@@ -3,12 +3,13 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 
-class User extends Authenticatable 
+class User extends Authenticatable
 {
-    use HasFactory, Notifiable;
+    use HasFactory, Notifiable, SoftDeletes;
 
     protected $fillable = [
         'hospital_id', 'name', 'email', 'password', 'role',
@@ -20,57 +21,59 @@ class User extends Authenticatable
     ];
 
     protected $casts = [
-        'is_active' => 'boolean',
-        'date_of_birth' => 'date',
+        'is_active'         => 'boolean',
+        'date_of_birth'     => 'date',
         'email_verified_at' => 'datetime',
     ];
 
-    // Relasi ke rumah sakit (nullable untuk super admin dan pasien)
+    
     public function hospital()
     {
         return $this->belongsTo(Hospital::class);
     }
 
-    // Relasi one-to-one ke patient (hanya untuk role pasien)
-    public function patient()
+    public function patientMedicalInfo()
     {
-        return $this->hasOne(Patient::class);
+        return $this->hasOne(PatientMedicalInfo::class);
     }
 
-    // Relasi one-to-one ke doctor (hanya untuk role dokter)
+    public function patientEnrollments()
+    {
+        return $this->hasMany(PatientEnrollment::class);
+    }
+
     public function doctor()
     {
         return $this->hasOne(Doctor::class);
     }
 
-    // Relasi one-to-one ke staff (hanya untuk role staff)
     public function staff()
     {
         return $this->hasOne(Staff::class);
     }
 
-    // Helper untuk cek role
-    public function isSuperAdmin()
+    
+    public function isSuperAdmin(): bool
     {
         return $this->role === 'super_admin';
     }
 
-    public function isAdminRs()
+    public function isAdminRs(): bool
     {
         return $this->role === 'admin_rs';
     }
 
-    public function isDokter()
+    public function isDokter(): bool
     {
         return $this->role === 'dokter';
     }
 
-    public function isStaff()
+    public function isStaff(): bool
     {
         return $this->role === 'staff';
     }
 
-    public function isPasien()
+    public function isPasien(): bool
     {
         return $this->role === 'pasien';
     }
