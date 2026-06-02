@@ -32,6 +32,9 @@ class AdminPanelProvider extends PanelProvider
 
             ->brandName('🩺 Health Mesh')
 
+            // Jangan pakai login Filament untuk admin semua role; redirect logout diarahkan ke /login melalui middleware auth custom.
+
+
             ->colors([
                 'primary' => Color::Cyan,
             ])

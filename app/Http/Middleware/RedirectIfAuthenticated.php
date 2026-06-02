@@ -18,9 +18,8 @@ class RedirectIfAuthenticated
                 $user = Auth::guard($guard)->user();
 
                 return redirect(match ($user->role) {
-                    'super_admin', 'admin_rs' => '/admin',
-                    'staff' => '/staff',
-                    'dokter' => '/user/doctor/dashboard',
+                    'super_admin', 'admin_rs', 'staff' => '/admin',
+                    'dokter' => '/doctor/dashboard',
                     'patient', 'pasien' => '/user/patient/dashboard',
                     default => '/login',
                 });
