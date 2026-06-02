@@ -139,6 +139,7 @@ class HospitalResource extends Resource
 
             ->recordActions([
                 Actions\EditAction::make(),
+                Actions\DeleteAction::make(),
             ])
 
             ->toolbarActions([

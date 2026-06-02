@@ -16,6 +16,14 @@ use App\Http\Controllers\User\MedicalRecordController;
 
 
 require __DIR__.'/auth.php';
+use App\Http\Controllers\PatientController;
+use App\Http\Controllers\PaymentController;
+
+
+Route::get('/patients', [PatientController::class, 'index']);
+Route::get('/patients/create', [PatientController::class, 'create']);
+Route::post('/patients/store', [PatientController::class, 'store']);
+
 
 Route::get('/', function () {
     return view('welcome');
@@ -32,40 +40,23 @@ Route::get('/payment-test/{id}', function ($id) {
     $bill = \App\Models\Bill::find($id) ?? \App\Models\Bill::factory()->create();
     return app(\App\Http\Controllers\MidtransController::class)->createPayment($bill);
 });
+Route::get('/patients', [PatientController::class, 'index']);
 
-// -------------------------------------------------------
-// ROUTE BARU: Guest Dashboard (tidak butuh login)
-// -------------------------------------------------------
-Route::get('/dashboard', [GuestDashboardController::class, 'index'])->name('guest.dashboard');
+Route::get('/payments', [PaymentController::class, 'index']);
 
-// -------------------------------------------------------
-// ROUTE BARU: Fitur-fitur yang butuh login
-// Guest yang klik tombol aksi di dashboard akan diarahkan
-// ke sini, lalu middleware akan redirect ke login.
-// -------------------------------------------------------
-Route::middleware([\App\Http\Middleware\RedirectGuestToLogin::class])->group(function () {
-    // Contoh: jika kamu punya fitur/halaman lain di luar Filament
-    // yang juga perlu dibatasi untuk guest, daftarkan di sini.
-    // Route::get('/some-feature', ...)->name('feature.xyz');
-});
+Route::post('/payments/pay/{id}', [PaymentController::class, 'pay']);
 
-// Grouping semua route khusus dokter
-Route::prefix('dashboard')->name('dashboard.')->middleware(['auth', 'role:pasien,dokter'])->group(function () {
+// Patient Panel Routes
+use App\Http\Controllers\Patient\PatientPanelController;
 
-    // Dashboard utama
-    Route::get('/', [UserDashboardController::class, 'index'])->name('index');
-
-    // Profile
-    Route::get('profile', [UserProfileController::class, 'index'])->name('profile');
-    Route::put('profile', [UserProfileController::class, 'update'])->name('profile.update');
-
-    // ── Doctor-only routes ──────────────────────────────────
-    Route::get('today',         [DoctorAppointmentController::class, 'index'])->name('today');
-    Route::get('schedule',      [DoctorScheduleController::class,    'index'])->name('schedule');
-    Route::get('prescriptions', [PrescriptionController::class,      'index'])->name('prescriptions');
-
-    // Examination (form & store)
-    Route::get ('examination/{appointment}', [MedicalRecordController::class, 'create'])->name('examination');
-    Route::post('examination/{appointment}', [MedicalRecordController::class, 'store']) ->name('examination.store');
-
+Route::middleware(['auth'])->prefix('user/patient')->name('patient.')->group(function () {
+    Route::get('/dashboard', [PatientPanelController::class, 'dashboard'])->name('dashboard');
+    Route::get('/appointments', [PatientPanelController::class, 'appointments'])->name('appointments');
+    Route::post('/appointments', [PatientPanelController::class, 'bookAppointment'])->name('appointments.store');
+    Route::post('/appointments/{appointment}/cancel', [PatientPanelController::class, 'cancelAppointment'])->name('appointments.cancel');
+    Route::get('/medical-records', [PatientPanelController::class, 'medicalRecords'])->name('medical-records');
+    Route::get('/bills', [PatientPanelController::class, 'bills'])->name('bills');
+    Route::get('/prescriptions', [PatientPanelController::class, 'prescriptions'])->name('prescriptions');
+    Route::get('/profile', [PatientPanelController::class, 'profile'])->name('profile');
+    Route::post('/profile', [PatientPanelController::class, 'updateProfile'])->name('profile.update');
 });

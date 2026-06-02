@@ -74,10 +74,9 @@ class AdminPanelProvider extends PanelProvider
             ->authMiddleware([
                 Authenticate::class,
 
-                
-    \App\Http\Middleware\CheckRole::class . ':super_admin,admin_rs,staff',
+                // ROLE MIDDLEWARE
+                \App\Http\Middleware\CheckRole::class . ':super_admin,admin_rs,staff',
 
-               
             ]);
     }
 }

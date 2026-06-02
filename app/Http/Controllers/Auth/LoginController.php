@@ -16,11 +16,11 @@ class LoginController extends Controller
     public function login(Request $request)
     {
         $credentials = $request->validate([
-            'email'    => ['required', 'email'],
+            'email' => ['required', 'email'],
             'password' => ['required'],
         ]);
 
-        if (!Auth::attempt($credentials, $request->boolean('remember'))) {
+        if (! Auth::attempt($credentials, $request->boolean('remember'))) {
             return back()
                 ->withErrors(['email' => 'Email atau password salah.'])
                 ->onlyInput('email');
@@ -31,8 +31,9 @@ class LoginController extends Controller
         $user = Auth::user();
 
         // Cek apakah user aktif
-        if (!$user->is_active) {
+        if (! $user->is_active) {
             Auth::logout();
+
             return back()->withErrors(['email' => 'Akun Anda tidak aktif.']);
         }
 
@@ -50,12 +51,12 @@ class LoginController extends Controller
 
     private function redirectByRole($user)
     {
-        return match($user->role) {
-            'super_admin', 'admin_rs' => redirect('/admin'),
-            'staff'                   => redirect('/staff'),
-            'dokter'                  => redirect('/doctor/dashboard'),
-            'pasien'                  => redirect('/dashboard'),
-            default                   => redirect('/login'),
+        return match ($user->role) {
+            'super_admin', 'admin_rs', 'staff' => redirect('/admin'),
+            'dokter' => redirect('/doctor/dashboard'),
+            'patient', 'pasien' => redirect('/user/patient/dashboard'),
+
+            default => redirect('/login'),
         };
     }
 }

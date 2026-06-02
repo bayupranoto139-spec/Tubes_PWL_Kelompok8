@@ -3,6 +3,7 @@
 namespace App\Filament\Resources\Bills\Tables;
 
 use Filament\Actions\BulkActionGroup;
+use Filament\Actions\DeleteAction;
 use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\EditAction;
 use Filament\Actions\ForceDeleteBulkAction;
@@ -79,6 +80,7 @@ class BillsTable
 
             ->recordActions([
                 EditAction::make(),
+                DeleteAction::make(),
             ])
 
             ->toolbarActions([

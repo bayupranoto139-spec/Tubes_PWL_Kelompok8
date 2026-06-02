@@ -26,7 +26,7 @@ return Application::configure(basePath: dirname(__DIR__))
             return match ($user->role) {
                 'super_admin', 'admin_rs', 'staff' => '/admin',
                 'dokter' => '/doctor/dashboard',
-                'pasien' => '/dashboard',
+                'pasien', 'patient' => '/user/patient/dashboard',
                 default => '/login',
             };
         });
