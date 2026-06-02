@@ -29,10 +29,12 @@ class PrescriptionForm
                             ->preload()
                             ->required(),
 
-                        TextInput::make('medication_name')
-                            ->label('Medication Name')
-                            ->required()
-                            ->maxLength(255),
+                        Select::make('medication_id')
+                            ->label('Medication')
+                            ->relationship('medication', 'name')
+                            ->searchable()
+                            ->preload()
+                            ->required(),
 
                         TextInput::make('dosage')
                             ->label('Dosage')

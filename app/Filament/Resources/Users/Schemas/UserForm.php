@@ -141,7 +141,8 @@ class UserForm
                                 ->native(false),
 
                             DatePicker::make('date_of_birth')
-                                ->label('Date of Birth'),
+                                ->label('Date of Birth')
+                                ->maxDate(now()),
 
                             Toggle::make('is_active')
                                 ->label('Active User')

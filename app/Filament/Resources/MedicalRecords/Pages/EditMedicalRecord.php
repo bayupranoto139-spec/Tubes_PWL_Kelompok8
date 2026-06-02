@@ -3,9 +3,6 @@
 namespace App\Filament\Resources\MedicalRecords\Pages;
 
 use App\Filament\Resources\MedicalRecords\MedicalRecordResource;
-use Filament\Actions\DeleteAction;
-use Filament\Actions\ForceDeleteAction;
-use Filament\Actions\RestoreAction;
 use Filament\Resources\Pages\EditRecord;
 
 class EditMedicalRecord extends EditRecord
@@ -14,10 +11,11 @@ class EditMedicalRecord extends EditRecord
 
     protected function getHeaderActions(): array
     {
-        return [
-            DeleteAction::make(),
-            ForceDeleteAction::make(),
-            RestoreAction::make(),
-        ];
+        return [];
+    }
+
+    protected function getRedirectUrl(): string
+    {
+        return static::$resource::getUrl('index');
     }
 }

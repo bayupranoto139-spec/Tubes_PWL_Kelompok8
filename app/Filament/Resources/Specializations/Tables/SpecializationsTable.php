@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\Specializations\Tables;
 
+use Filament\Actions\DeleteAction;
 use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\EditAction;
 use Filament\Tables;
@@ -36,6 +37,7 @@ class SpecializationsTable
 
             ->actions([
                 EditAction::make(),
+                DeleteAction::make(),
             ])
 
             ->bulkActions([
