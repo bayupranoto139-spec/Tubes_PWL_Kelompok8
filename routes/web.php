@@ -8,6 +8,12 @@ use App\Http\Controllers\Doctor\ScheduleController;
 use App\Http\Controllers\Doctor\AppointmentController;
 use App\Http\Controllers\Doctor\PrescriptionController;
 use App\Http\Controllers\Doctor\ProfileController;
+use App\Http\Controllers\User\UserDashboardController;
+use App\Http\Controllers\User\UserProfileController;
+use App\Http\Controllers\User\DoctorScheduleController;
+use App\Http\Controllers\User\DoctorAppointmentController;
+use App\Http\Controllers\User\MedicalRecordController;
+
 
 require __DIR__.'/auth.php';
 
@@ -44,21 +50,22 @@ Route::middleware([\App\Http\Middleware\RedirectGuestToLogin::class])->group(fun
 });
 
 // Grouping semua route khusus dokter
-Route::prefix('doctor')->name('doctor.')->group(function () {
-    
-    // 1. Route Dashboard
-    Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
-    
-    // 2. Route Jadwal Hari Ini (Today)
-    Route::get('/today', [AppointmentController::class, 'today'])->name('today');
-    
-    // 3. Route Semua Jadwal Praktik
-    Route::get('/schedule', [ScheduleController::class, 'index'])->name('schedule');
-    
-    // 4. Route Resep Obat (Prescription)
-    Route::get('/prescription', [PrescriptionController::class, 'index'])->name('prescription');
-    
-    // 5. Route Profil Dokter
-    Route::get('/profile', [ProfileController::class, 'index'])->name('profile');
-    
+Route::prefix('dashboard')->name('dashboard.')->middleware(['auth', 'role:pasien,dokter'])->group(function () {
+
+    // Dashboard utama
+    Route::get('/', [UserDashboardController::class, 'index'])->name('index');
+
+    // Profile
+    Route::get('profile', [UserProfileController::class, 'index'])->name('profile');
+    Route::put('profile', [UserProfileController::class, 'update'])->name('profile.update');
+
+    // ── Doctor-only routes ──────────────────────────────────
+    Route::get('today',         [DoctorAppointmentController::class, 'index'])->name('today');
+    Route::get('schedule',      [DoctorScheduleController::class,    'index'])->name('schedule');
+    Route::get('prescriptions', [PrescriptionController::class,      'index'])->name('prescriptions');
+
+    // Examination (form & store)
+    Route::get ('examination/{appointment}', [MedicalRecordController::class, 'create'])->name('examination');
+    Route::post('examination/{appointment}', [MedicalRecordController::class, 'store']) ->name('examination.store');
+
 });
