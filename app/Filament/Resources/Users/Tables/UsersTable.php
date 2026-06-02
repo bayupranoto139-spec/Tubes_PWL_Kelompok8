@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\Users\Tables;
 
+use Filament\Actions\DeleteAction;
 use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\EditAction;
 use Filament\Tables;
@@ -153,6 +154,7 @@ class UsersTable
             ->actions([
 
                 EditAction::make(),
+                DeleteAction::make(),
 
             ])
 

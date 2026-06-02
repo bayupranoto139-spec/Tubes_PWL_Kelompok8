@@ -3,7 +3,6 @@
 namespace App\Filament\Resources\Specializations\Pages;
 
 use App\Filament\Resources\Specializations\SpecializationResource;
-use Filament\Actions\DeleteAction;
 use Filament\Resources\Pages\EditRecord;
 
 class EditSpecialization extends EditRecord
@@ -12,12 +11,12 @@ class EditSpecialization extends EditRecord
 
     protected function getHeaderActions(): array
     {
-        return [
-            DeleteAction::make()
-                ->after(function () {
-                    $this->redirect(static::getResource()::getUrl('index'));
-                }),
-        ];
+        return [];
+    }
+
+    protected function getRedirectUrl(): string
+    {
+        return static::$resource::getUrl('index');
     }
 }
 
