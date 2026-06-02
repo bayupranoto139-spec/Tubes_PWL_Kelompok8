@@ -20,8 +20,8 @@ class RedirectIfAuthenticated
                 return redirect(match ($user->role) {
                     'super_admin', 'admin_rs' => '/admin',
                     'staff' => '/staff',
-                    'dokter' => '/doctor/dashboard',
-                    'pasien' => '/user/patient/dashboard',
+                    'dokter' => '/user/doctor/dashboard',
+                    'patient', 'pasien' => '/user/patient/dashboard',
                     default => '/login',
                 });
             }

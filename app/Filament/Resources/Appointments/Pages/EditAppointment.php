@@ -3,7 +3,6 @@
 namespace App\Filament\Resources\Appointments\Pages;
 
 use App\Filament\Resources\Appointments\AppointmentResource;
-use Filament\Actions\DeleteAction;
 use Filament\Resources\Pages\EditRecord;
 
 class EditAppointment extends EditRecord
@@ -12,8 +11,12 @@ class EditAppointment extends EditRecord
 
     protected function getHeaderActions(): array
     {
-        return [
-            DeleteAction::make(),
-        ];
+        return [];
+    }
+
+    protected function getRedirectUrl(): string
+    {
+        return static::$resource::getUrl('index');
     }
 }
+

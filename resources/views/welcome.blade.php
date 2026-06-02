@@ -7,6 +7,7 @@
     @livewireStyles
 
     <title>{{ config('app.name', 'Laravel') }}</title>
+    <h1>Halaman Appointment</h1>
 
     <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.bunny.net">

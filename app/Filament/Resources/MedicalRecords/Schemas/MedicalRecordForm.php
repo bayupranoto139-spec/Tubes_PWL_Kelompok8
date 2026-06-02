@@ -8,6 +8,7 @@ use Filament\Forms\Components\Textarea;
 use Filament\Schemas\Components\Grid;
 use Filament\Schemas\Components\Section;
 use Filament\Schemas\Schema;
+use App\Models\Appointment;
 
 class MedicalRecordForm
 {
@@ -29,13 +30,11 @@ class MedicalRecordForm
 
                                 Select::make('appointment_id')
                                     ->label('Appointment')
-                                    ->relationship(
-                                        'appointment',
-                                        'id'
-                                    )
+                                    ->options(fn () => Appointment::doesntHave('medicalRecord')->pluck('id', 'id'))
                                     ->searchable()
                                     ->preload()
-                                    ->required(),
+                                    ->required()
+                                    ->rules(['unique:medical_records,appointment_id']),
 
                                 DateTimePicker::make('visit_date')
                                     ->label('Visit Date')

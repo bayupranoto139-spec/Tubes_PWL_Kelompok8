@@ -3,6 +3,7 @@
 namespace App\Filament\Resources\Appointments\Tables;
 
 use Filament\Actions\BulkActionGroup;
+use Filament\Actions\DeleteAction;
 use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\EditAction;
 use Filament\Tables;
@@ -17,7 +18,7 @@ class AppointmentsTable
             ->columns([
 
                 // PATIENT
-                Tables\Columns\TextColumn::make('patient.user.name')
+                Tables\Columns\TextColumn::make('patientEnrollment.user.name')
                     ->label('Patient')
                     ->searchable()
                     ->sortable(),
@@ -73,6 +74,7 @@ class AppointmentsTable
             ->recordActions([
 
                 EditAction::make(),
+                DeleteAction::make(),
 
             ])
 

@@ -8,4 +8,10 @@ use Filament\Resources\Pages\CreateRecord;
 class CreateMedicalRecord extends CreateRecord
 {
     protected static string $resource = MedicalRecordResource::class;
+
+    protected function getRedirectUrl(): string
+    {
+        return static::$resource::getUrl('index');
+    }
 }
+

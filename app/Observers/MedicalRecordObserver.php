@@ -22,7 +22,7 @@ class MedicalRecordObserver
         // Cek apakah sudah ada bill untuk appointment atau kunjungan ini? 
         // Kita asumsikan setiap medical record menghasilkan bill baru.
         Bill::create([
-            'patient_id' => $medicalRecord->patient_id,
+            'patient_enrollment_id' => $medicalRecord->appointment?->patient_enrollment_id,
             'appointment_id' => $medicalRecord->appointment_id,
             'total_amount' => $total,
             'status' => 'unpaid',
