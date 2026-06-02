@@ -2,8 +2,9 @@
 
 namespace App\Models;
 
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Model; // <--- PASTIKAN ADA KATA 'Eloquent' DI SINI
 
 class Patient extends Model
 {
@@ -15,20 +16,20 @@ class Patient extends Model
         'insurance_provider', 'insurance_policy_number',
     ];
 
-    
 
     protected $casts = [
         'blood_type' => 'string',
     ];
 
+
     protected static function booted()
-    {
-        static::addGlobalScope('hospital', function ($query) {
-            if (auth()->check() && auth()->user()->hospital_id) {
-                $query->where('hospital_id', auth()->user()->hospital_id);
-            }
-        });
-    }
+{
+    static::addGlobalScope('hospital', function ($query) {
+        if (Auth::check() && Auth::user()->hospital_id) {
+            $query->where('hospital_id', Auth::user()->hospital_id);
+        }
+    });
+}
 
     // Relasi ke user (akun login pasien)
     public function user()
