@@ -1,29 +1,17 @@
 <?php
 
-use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\GuestDashboardController;
 use App\Http\Controllers\MidtransController;
-use App\Http\Controllers\Doctor\DashboardController;
-use App\Http\Controllers\Doctor\ScheduleController;
-use App\Http\Controllers\Doctor\AppointmentController;
-use App\Http\Controllers\Doctor\PrescriptionController;
-use App\Http\Controllers\Doctor\ProfileController;
-use App\Http\Controllers\User\UserDashboardController;
-use App\Http\Controllers\User\UserProfileController;
-use App\Http\Controllers\User\DoctorScheduleController;
-use App\Http\Controllers\User\DoctorAppointmentController;
-use App\Http\Controllers\User\MedicalRecordController;
-
+use Illuminate\Support\Facades\Route;
 
 require __DIR__.'/auth.php';
+require __DIR__.'/doctor.php';
+
 use App\Http\Controllers\PatientController;
 use App\Http\Controllers\PaymentController;
-
 
 Route::get('/patients', [PatientController::class, 'index']);
 Route::get('/patients/create', [PatientController::class, 'create']);
 Route::post('/patients/store', [PatientController::class, 'store']);
-
 
 Route::get('/', function () {
     return view('welcome');
@@ -37,8 +25,9 @@ Route::middleware(['auth'])->group(function () {
 });
 
 Route::get('/payment-test/{id}', function ($id) {
-    $bill = \App\Models\Bill::find($id) ?? \App\Models\Bill::factory()->create();
-    return app(\App\Http\Controllers\MidtransController::class)->createPayment($bill);
+    $bill = Bill::find($id) ?? Bill::factory()->create();
+
+    return app(MidtransController::class)->createPayment($bill);
 });
 Route::get('/patients', [PatientController::class, 'index']);
 
@@ -48,6 +37,7 @@ Route::post('/payments/pay/{id}', [PaymentController::class, 'pay']);
 
 // Patient Panel Routes
 use App\Http\Controllers\Patient\PatientPanelController;
+use App\Models\Bill;
 
 Route::middleware(['auth'])->prefix('user/patient')->name('patient.')->group(function () {
     Route::get('/dashboard', [PatientPanelController::class, 'dashboard'])->name('dashboard');
