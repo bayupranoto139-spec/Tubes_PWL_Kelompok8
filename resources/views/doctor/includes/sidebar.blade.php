@@ -108,12 +108,9 @@
 
         {{-- Right side --}}
         <div class="flex items-center gap-4">
+            {{-- Tanggal tetap ada, profile doctor dihilangkan --}}
             <div class="text-right hidden sm:block">
                 <p class="text-xs text-gray-400">{{ now()->locale('id')->isoFormat('dddd, D MMMM Y') }}</p>
-            </div>
-            <div class="w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold text-white"
-                 style="background:linear-gradient(135deg,#14b8a6,#06b6d4)">
-                {{ $initials }}
             </div>
         </div>
     </header>

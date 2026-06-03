@@ -1,0 +1,5 @@
+- [ ] Mengubah tampilan doctor/dashboard agar mengikuti styling admin Filament (tanpa Filament, hanya Blade + Tailwind)
+- [ ] Mengubah nav/sidebar doctor agar tampilannya sama seperti dashboard doctor/admin (styling)
+- [ ] Menghilangkan alert/confirm pada tombol Log Out sidebar doctor
+- [ ] Menghapus elemen profile doctor pojok kanan atas (hari & tanggal) sesuai permintaan
+- [ ] Bersihkan cache view setelah perubahan

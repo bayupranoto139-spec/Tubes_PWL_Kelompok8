@@ -90,7 +90,7 @@
                         </div>
                         <div>
                             <p class="font-semibold text-gray-800">Amoxicillin 500mg</p>
-                            <p class="text-xs text-gray-400 mt-0.5">Aturan Pakai: 2×1 kapsul (Habiskan)</p>
+                            <p class="text-xs text-gray-400 mt-0.5">Aturan Pakai: 2x1 kapsul (Habiskan)</p>
                         </div>
                     </div>
                     <span class="flex-shrink-0 px-3 py-1 rounded-lg text-xs font-bold bg-white border border-gray-200 text-gray-700 shadow-sm">10 Unit</span>
@@ -100,9 +100,6 @@
             {{-- Card footer --}}
             <div class="px-6 py-3 border-t border-gray-100 bg-gray-50 flex items-center justify-between">
                 <span class="text-xs text-gray-400">Dokter: Dr. Budi Santoso • SIP-DOK-001</span>
-                <button class="text-xs font-semibold text-teal-600 hover:text-teal-700 flex items-center gap-1 transition-colors">
-                    <i class="fa-solid fa-print"></i> Cetak Resep
-                </button>
             </div>
         </div>
 

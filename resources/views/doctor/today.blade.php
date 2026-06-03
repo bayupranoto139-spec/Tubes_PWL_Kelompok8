@@ -11,11 +11,6 @@
                 Daftar pasien yang terdaftar dalam antrean periksa per {{ now()->locale('id')->isoFormat('D MMMM Y') }}.
             </p>
         </div>
-        <span class="inline-flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-semibold text-white shadow-sm w-fit"
-              style="background:linear-gradient(90deg,#14b8a6,#06b6d4)">
-            <span class="w-2 h-2 rounded-full bg-white animate-pulse"></span>
-            Live Queue
-        </span>
     </div>
 
     {{-- Stats mini row --}}
@@ -72,12 +67,11 @@
                         <th class="px-6 py-3 text-left">Jam Periksa</th>
                         <th class="px-6 py-3 text-left">Keluhan Medis</th>
                         <th class="px-6 py-3 text-left">Status</th>
-                        <th class="px-6 py-3 text-center">Aksi</th>
                     </tr>
                 </thead>
                 <tbody class="divide-y divide-gray-50 text-gray-700">
                     <tr class="hover:bg-gray-50 transition-colors">
-                        <td class="px-6 py-4 font-bold text-gray-900">#01</td>
+                        <td class="px-6 py-4 font-bold text-gray-900">01</td>
                         <td class="px-6 py-4">
                             <div class="flex items-center gap-3">
                                 <div class="w-8 h-8 rounded-full bg-teal-100 flex items-center justify-center text-teal-700 text-xs font-bold flex-shrink-0">AS</div>
@@ -95,14 +89,9 @@
                                 Selesai
                             </span>
                         </td>
-                        <td class="px-6 py-4 text-center">
-                            <button class="inline-flex items-center gap-1.5 text-xs font-semibold px-3 py-1.5 rounded-lg bg-gray-100 hover:bg-gray-200 text-gray-700 transition-colors">
-                                <i class="fa-solid fa-eye"></i> Detail Rekam Medis
-                            </button>
-                        </td>
                     </tr>
                     <tr class="hover:bg-gray-50 transition-colors">
-                        <td class="px-6 py-4 font-bold text-gray-900">#02</td>
+                        <td class="px-6 py-4 font-bold text-gray-900">02</td>
                         <td class="px-6 py-4">
                             <div class="flex items-center gap-3">
                                 <div class="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center text-blue-700 text-xs font-bold flex-shrink-0">SR</div>
@@ -119,11 +108,6 @@
                                 <span class="w-1.5 h-1.5 rounded-full bg-amber-500 animate-pulse"></span>
                                 Menunggu
                             </span>
-                        </td>
-                        <td class="px-6 py-4 text-center">
-                            <button class="inline-flex items-center gap-1.5 text-xs font-semibold px-3 py-1.5 rounded-lg bg-gray-100 hover:bg-gray-200 text-gray-700 transition-colors">
-                                <i class="fa-solid fa-eye"></i> Detail Rekam Medis
-                            </button>
                         </td>
                     </tr>
                 </tbody>
