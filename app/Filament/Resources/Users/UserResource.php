@@ -42,6 +42,7 @@ class UserResource extends Resource
             [
                 'super_admin',
                 'admin_rs',
+                'staff',
             ]
         );
     }
@@ -53,6 +54,7 @@ class UserResource extends Resource
             [
                 'super_admin',
                 'admin_rs',
+                'staff',
             ]
         );
     }
@@ -64,6 +66,7 @@ class UserResource extends Resource
             [
                 'super_admin',
                 'admin_rs',
+                'staff',
             ]
         );
     }
@@ -75,6 +78,7 @@ class UserResource extends Resource
             [
                 'super_admin',
                 'admin_rs',
+                'staff',
             ]
         );
     }

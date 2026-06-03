@@ -94,7 +94,7 @@ class DashboardStats extends StatsOverviewWidget
                     ->color('warning'),
 
                 Stat::make(
-                    'Revenue',
+                    'Hospital Revenue',
                     'Rp ' . number_format(
                         Bill::whereHas(
                             'patientEnrollment',
