@@ -50,7 +50,7 @@
                         </p>
                     </div>
                 </div>
-                <a href="{{ route('doctor.profile') }}#edit-profile" class="flex-shrink-0 inline-flex items-center gap-2 text-sm font-semibold px-4 py-2 rounded-xl text-white shadow-sm transition-all hover:opacity-90 mb-1"
+                    <a href="{{ route('doctor.profile') }}#edit-profile" class="flex-shrink-0 inline-flex items-center gap-2 text-sm font-semibold px-4 py-2 rounded-xl text-white shadow-sm transition-all hover:opacity-90 mb-1" onclick="event.preventDefault(); const el=document.getElementById('edit-profile'); if(!el) return false; const y=el.getBoundingClientRect().top + window.pageYOffset - 24; window.scrollTo({top:y, behavior:'smooth'}); history.replaceState(null,'','{{ route('doctor.profile') }}#edit-profile'); return false;"
                         style="background:linear-gradient(90deg,#14b8a6,#1498b0)" >
                     <i class="fa-solid fa-pen-to-square"></i> 
                     Edit Profil
@@ -117,7 +117,7 @@
     </div>
 
     {{-- ===================== EDIT PROFILE (Fit Content Blade) ===================== --}}
-    <div id="edit-profile" class="scroll-mt-24 pt-2">
+    <div id="edit-profile" class="scroll-mt-24 pt-2 scroll-smooth">
         <div class="p-6 rounded-2xl bg-white border border-gray-200 shadow-sm">
             <div class="flex items-center justify-between flex-wrap gap-3">
                 <div>
