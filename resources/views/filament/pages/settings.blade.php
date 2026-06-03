@@ -262,6 +262,25 @@
     {{-- NOTIFICATIONS --}}
     <div class="settings-card">
 
+        {{-- NOTIF BANNER --}}
+        <div
+            style="margin-bottom:16px; padding:14px 16px; border-radius:14px; border:1px solid rgba(148,163,184,.25); background:rgba(148,163,184,.10); color:var(--c-gray-600);"
+            class="filament-notification-area"
+        >
+            {{-- Menampilkan notifikasi jika ada session flash --}}
+            @if (session()->has('error'))
+                <div style="color:#b91c1c; font-weight:700;">
+                    {{ session('error') }}
+                </div>
+            @endif
+
+            @if (session()->has('success'))
+                <div style="color:#047857; font-weight:700;">
+                    {{ session('success') }}
+                </div>
+            @endif
+        </div>
+
         <div class="settings-card-header">
 
             <div class="settings-icon" style="background:#f3e8ff;">

@@ -51,6 +51,7 @@ class MedicalRecordResource extends Resource
         return [
             'index' => ListMedicalRecords::route('/'),
             'create' => CreateMedicalRecord::route('/create'),
+            'view' => \App\Filament\Resources\MedicalRecords\Pages\ViewMedicalRecord::route('/{record}'),
             'edit' => EditMedicalRecord::route('/{record}/edit'),
         ];
     }

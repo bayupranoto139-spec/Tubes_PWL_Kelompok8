@@ -160,6 +160,7 @@ class PrescriptionResource extends Resource
         return [
             'index' => ListPrescriptions::route('/'),
             'create' => CreatePrescription::route('/create'),
+            'view' => \App\Filament\Resources\Prescriptions\Pages\ViewPrescription::route('/{record}'),
             'edit' => EditPrescription::route('/{record}/edit'),
         ];
     }
