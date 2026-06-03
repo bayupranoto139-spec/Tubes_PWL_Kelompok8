@@ -13,13 +13,8 @@ Route::get('/patients', [PatientController::class, 'index']);
 Route::get('/patients/create', [PatientController::class, 'create']);
 Route::post('/patients/store', [PatientController::class, 'store']);
 
-Route::get('/', function () {
-    return view('welcome');
-});
-
-
 // Public/Guest dashboard (tanpa login)
-Route::get('/dashboard', [\App\Http\Controllers\GuestDashboardController::class, 'index'])->name('guest.dashboard');
+Route::get('/', [\App\Http\Controllers\GuestDashboardController::class, 'index'])->name('guest.dashboard');
 
 
 Route::middleware(['auth'])->group(function () {
