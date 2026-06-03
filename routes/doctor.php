@@ -19,6 +19,8 @@ Route::middleware(['auth'])->prefix('doctor')->name('doctor.')->group(function (
     Route::get('/profile', [ProfileController::class, 'index'])->name('profile');
     Route::post('/profile/update', [\App\Http\Controllers\Doctor\ProfileUpdateController::class, 'update'])->name('profile.update');
 
+    Route::post('/prescription', [\App\Http\Controllers\Doctor\PrescriptionStoreController::class, 'store'])->name('prescription.store');
+
     // Jika memang ada halaman appointment doctor
     Route::get('/appointments', [AppointmentController::class, 'index'])->name('appointments');
 });

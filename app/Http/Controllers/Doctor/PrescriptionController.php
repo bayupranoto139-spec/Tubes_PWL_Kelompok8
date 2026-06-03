@@ -9,7 +9,27 @@ class PrescriptionController extends Controller
 {
     public function index()
     {
-        $doctorId = 1; // Dr. Budi Santoso
+        $doctorId = auth()->user()?->doctor?->id;
+
+        // Ambil data untuk dropdown form tambah resep
+        // appointment diikat ke doctor yang sedang login, dan dibuatkan join sederhana ke medical_records agar bisa tampilkan visit_date.
+        $appointments = DB::table('appointments')
+            ->join('patient_enrollments', 'appointments.patient_enrollment_id', '=', 'patient_enrollments.id')
+            ->join('users', 'patient_enrollments.user_id', '=', 'users.id')
+            ->leftJoin('medical_records', 'medical_records.appointment_id', '=', 'appointments.id')
+            ->where('appointments.doctor_id', $doctorId)
+            ->select([
+                'appointments.id as appointment_id',
+                'users.name as patient_name',
+                'medical_records.visit_date',
+            ])
+            ->orderBy('medical_records.visit_date', 'desc')
+            ->get();
+
+        $medications = DB::table('medications')
+            ->select('id', 'name')
+            ->orderBy('name')
+            ->get();
 
         // Ambil resep obat dari rekam medis pasien yang ditangani oleh dokter ini
         $prescriptions = DB::table('prescriptions')
@@ -32,6 +52,6 @@ class PrescriptionController extends Controller
             ->orderBy('medical_records.visit_date', 'desc')
             ->get();
 
-        return view('doctor.prescription', compact('prescriptions'));
+        return view('doctor.prescription', compact('prescriptions', 'appointments', 'medications'));
     }
 }
