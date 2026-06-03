@@ -9,8 +9,8 @@ class ProfileController extends Controller
 {
     public function index()
     {
-        // Pada aplikasi nyata, ID diambil dari user yang sedang ter-autentikasi: auth()->id()
-        $userId = 3; // ID User untuk Dr. Budi Santoso
+        // Ambil user yang sedang login
+        $userId = auth()->id();
 
         // Ambil data user yang digabungkan dengan detail spesialisasi kedokterannya
         $doctorProfile = DB::table('users')
@@ -19,6 +19,7 @@ class ProfileController extends Controller
             ->join('hospitals', 'users.hospital_id', '=', 'hospitals.id')
             ->where('users.id', $userId)
             ->select(
+                'users.id',
                 'users.name',
                 'users.email',
                 'users.phone',

@@ -7,11 +7,11 @@
     $doctorRole  = $doctorUser?->doctor?->specialization?->name ?? 'Spesialis Penyakit Dalam';
     $initials    = collect(explode(' ', $doctorName))->map(fn($w) => strtoupper($w[0]))->take(2)->join('');
     $email       = $doctorUser?->email ?? 'budi@healthmesh.com';
-    $phone       = $doctorUser?->doctor?->phone ?? '081111111113';
-    $sip         = $doctorUser?->doctor?->sip_number ?? 'SIP-DOK-001';
-    $experience  = $doctorUser?->doctor?->experience ?? '10 Tahun Kerja';
-    $address     = $doctorUser?->doctor?->address ?? 'Medan, Indonesia';
-    $hospital    = $doctorUser?->doctor?->hospital?->name ?? 'RS Sehat Sentosa';
+    $phone       = $doctorUser?->phone ?? '081111111113';
+    $sip         = $doctorUser?->doctor?->licence_number ?? 'SIP-DOK-001';
+    $experience  = $doctorUser?->doctor?->years_of_experience ?? '10 Tahun Kerja';
+    $address     = $doctorUser?->address ?? 'Medan, Indonesia';
+    $hospital    = $doctorUser?->hospital?->name ?? 'RS Sehat Sentosa';
     $fee         = $doctorUser?->doctor?->consultation_fee ?? 150000;
 @endphp
 
@@ -50,10 +50,11 @@
                         </p>
                     </div>
                 </div>
-                <button class="flex-shrink-0 inline-flex items-center gap-2 text-sm font-semibold px-4 py-2 rounded-xl text-white shadow-sm transition-all hover:opacity-90 mb-1"
-                        style="background:linear-gradient(90deg,#14b8a6,#1498b0)">
-                    <i class="fa-solid fa-pen-to-square"></i> Edit Profil
-                </button>
+                <a href="{{ route('doctor.profile') }}#edit-profile" class="flex-shrink-0 inline-flex items-center gap-2 text-sm font-semibold px-4 py-2 rounded-xl text-white shadow-sm transition-all hover:opacity-90 mb-1"
+                        style="background:linear-gradient(90deg,#14b8a6,#1498b0)" >
+                    <i class="fa-solid fa-pen-to-square"></i> 
+                    Edit Profil
+                </a>
             </div>
         </div>
     </div>
@@ -113,6 +114,66 @@
             </dl>
         </div>
 
+    </div>
+
+    {{-- ===================== EDIT PROFILE (Fit Content Blade) ===================== --}}
+    <div id="edit-profile" class="scroll-mt-24 pt-2">
+        <div class="p-6 rounded-2xl bg-white border border-gray-200 shadow-sm">
+            <div class="flex items-center justify-between flex-wrap gap-3">
+                <div>
+                    <h3 class="text-lg font-bold text-gray-800 flex items-center gap-2">
+                        <i class="fa-solid fa-pen-to-square text-teal-500"></i>
+                        Edit Profil Dokter
+                    </h3>
+                    <p class="text-sm text-gray-400 mt-1">Form ini mengikuti tombol “Edit Profil”.</p>
+                </div>
+            </div>
+
+            {{-- NOTE: Backend update belum ada di controller saat ini.
+                Form disetel sebagai POST ke /doctor/profile/update (silakan buat route/controller jika diperlukan). --}}
+            <form method="POST" action="{{ url('/doctor/profile') }}/update" class="mt-6 grid grid-cols-1 md:grid-cols-2 gap-4">
+                @csrf
+
+                <div class="md:col-span-2">
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Nama Dokter</label>
+                    <input name="name" type="text" value="{{ $doctorName }}" class="w-full px-4 py-2.5 rounded-xl border border-gray-200 bg-white focus:outline-none focus:ring-2 focus:ring-teal-500/30" />
+                </div>
+
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Email</label>
+                    <input name="email" type="email" value="{{ $email }}" class="w-full px-4 py-2.5 rounded-xl border border-gray-200 bg-white focus:outline-none focus:ring-2 focus:ring-teal-500/30" />
+                </div>
+
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Nomor Telepon</label>
+                    <input name="phone" type="text" value="{{ $phone }}" class="w-full px-4 py-2.5 rounded-xl border border-gray-200 bg-white focus:outline-none focus:ring-2 focus:ring-teal-500/30" />
+                </div>
+
+                <div class="md:col-span-2">
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Alamat</label>
+                    <textarea name="address" rows="3" class="w-full px-4 py-2.5 rounded-xl border border-gray-200 bg-white focus:outline-none focus:ring-2 focus:ring-teal-500/30">{{ $address }}</textarea>
+                </div>
+
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Nomor SIP</label>
+                    <input name="sip_number" type="text" value="{{ $sip }}" class="w-full px-4 py-2.5 rounded-xl border border-gray-200 bg-white" disabled />
+                    <p class="text-xs text-gray-400 mt-1">SIP dikunci (read-only).</p>
+                </div>
+
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Spesialisasi</label>
+                    <input name="specialization_name" type="text" value="{{ $doctorRole }}" class="w-full px-4 py-2.5 rounded-xl border border-gray-200 bg-white" disabled />
+                    <p class="text-xs text-gray-400 mt-1">Spesialisasi dikunci (read-only).</p>
+                </div>
+
+                <div class="md:col-span-2 flex items-center justify-end gap-3 mt-2">
+                <a href="{{ route('doctor.profile') }}" class="px-4 py-2.5 rounded-xl border border-gray-200 text-gray-700 hover:bg-gray-50">Batal</a>
+                    <button type="submit" class="px-5 py-2.5 rounded-xl bg-gradient-to-r from-teal-500 to-cyan-600 text-white font-semibold hover:from-teal-600 hover:to-cyan-700 shadow-sm">
+                        Simpan Perubahan
+                    </button>
+                </div>
+            </form>
+        </div>
     </div>
 
     {{-- Status badge banner --}}
