@@ -1,17 +1,17 @@
 @extends('layouts.patient')
 
-@section('title', 'My Appointments - MedVerse')
+@section('title', 'My Appointments - HealthMesh')
 @section('page_title', 'My Appointments')
 
 @section('content')
 <!-- Header Page Actions -->
 <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
     <div>
-        <p class="text-sm text-slate-400 dark:text-gray-400">View and coordinate your clinic checkups and history</p>
+        <p class="text-sm text-gray-400">View and coordinate your clinic checkups and history</p>
     </div>
     
     <!-- Trigger Modal Button -->
-    <button onclick="toggleModal(true)" class="inline-flex items-center gap-2 px-5 py-3 bg-gradient-to-r from-teal-500 to-cyan-500 hover:from-teal-600 hover:to-cyan-600 text-white rounded-2xl text-sm font-semibold shadow-lg shadow-teal-500/10 hover:shadow-teal-500/25 hover:-translate-y-0.5 transition-all cursor-pointer">
+    <button onclick="toggleModal(true)" class="inline-flex items-center gap-2 px-5 py-3 bg-gradient-to-r from-teal-500 to-cyan-500 hover:from-teal-600 hover:to-cyan-600 text-white rounded-2xl text-sm font-semibold shadow-lg shadow-teal-500/10 hover:shadow-teal-500/20 hover:-trangray-y-0.5 transition-all cursor-pointer">
         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2".5 d="M12 4v16m8-8H4"></path>
         </svg>
@@ -21,19 +21,19 @@
 
 <!-- Filter Tabs Menu -->
 <div class="flex items-center gap-2 overflow-x-auto pb-2 -mx-6 px-6 sm:mx-0 sm:px-0">
-    <a href="{{ route('patient.appointments') }}" class="px-4 py-2 text-xs sm:text-sm font-semibold rounded-xl transition-colors {{ empty($status) ? 'bg-teal-500 text-white shadow-md shadow-teal-500/15' : 'bg-white dark:bg-gray-900 text-slate-600 dark:text-gray-300 border border-slate-200/60 dark:border-gray-800/60 hover:bg-slate-50 dark:hover:bg-gray-800' }}">
+    <a href="{{ route('patient.appointments') }}" class="px-4 py-2 text-xs sm:text-sm font-semibold rounded-xl transition-colors {{ empty($status) ? 'bg-teal-500 text-white shadow-md shadow-teal-500/10' : 'bg-white text-gray-600 border border-gray-200 hover:bg-gray-50' }}">
         All Statuses
     </a>
-    <a href="{{ route('patient.appointments', ['status' => 'scheduled']) }}" class="px-4 py-2 text-xs sm:text-sm font-semibold rounded-xl transition-colors {{ $status === 'scheduled' ? 'bg-blue-500 text-white shadow-md shadow-blue-500/15' : 'bg-white dark:bg-gray-900 text-slate-600 dark:text-gray-300 border border-slate-200/60 dark:border-gray-800/60 hover:bg-slate-50 dark:hover:bg-gray-800' }}">
+    <a href="{{ route('patient.appointments', ['status' => 'scheduled']) }}" class="px-4 py-2 text-xs sm:text-sm font-semibold rounded-xl transition-colors {{ $status === 'scheduled' ? 'bg-blue-500 text-white shadow-md shadow-blue-500/15' : 'bg-white text-gray-600 border border-gray-200 hover:bg-gray-50' }}">
         Scheduled ⏳
     </a>
-    <a href="{{ route('patient.appointments', ['status' => 'confirmed']) }}" class="px-4 py-2 text-xs sm:text-sm font-semibold rounded-xl transition-colors {{ $status === 'confirmed' ? 'bg-teal-500 text-white shadow-md shadow-teal-500/15' : 'bg-white dark:bg-gray-900 text-slate-600 dark:text-gray-300 border border-slate-200/60 dark:border-gray-800/60 hover:bg-slate-50 dark:hover:bg-gray-800' }}">
+    <a href="{{ route('patient.appointments', ['status' => 'confirmed']) }}" class="px-4 py-2 text-xs sm:text-sm font-semibold rounded-xl transition-colors {{ $status === 'confirmed' ? 'bg-teal-500 text-white shadow-md shadow-teal-500/10' : 'bg-white text-gray-600 border border-gray-200 hover:bg-gray-50' }}">
         Confirmed ✓
     </a>
-    <a href="{{ route('patient.appointments', ['status' => 'completed']) }}" class="px-4 py-2 text-xs sm:text-sm font-semibold rounded-xl transition-colors {{ $status === 'completed' ? 'bg-green-500 text-white shadow-md shadow-green-500/15' : 'bg-white dark:bg-gray-900 text-slate-600 dark:text-gray-300 border border-slate-200/60 dark:border-gray-800/60 hover:bg-slate-50 dark:hover:bg-gray-800' }}">
+    <a href="{{ route('patient.appointments', ['status' => 'completed']) }}" class="px-4 py-2 text-xs sm:text-sm font-semibold rounded-xl transition-colors {{ $status === 'completed' ? 'bg-green-500 text-white shadow-md shadow-green-500/15' : 'bg-white text-gray-600 border border-gray-200 hover:bg-gray-50' }}">
         Completed 🩺
     </a>
-    <a href="{{ route('patient.appointments', ['status' => 'cancelled']) }}" class="px-4 py-2 text-xs sm:text-sm font-semibold rounded-xl transition-colors {{ $status === 'cancelled' ? 'bg-red-500 text-white shadow-md shadow-red-500/15' : 'bg-white dark:bg-gray-900 text-slate-600 dark:text-gray-300 border border-slate-200/60 dark:border-gray-800/60 hover:bg-slate-50 dark:hover:bg-gray-800' }}">
+    <a href="{{ route('patient.appointments', ['status' => 'cancelled']) }}" class="px-4 py-2 text-xs sm:text-sm font-semibold rounded-xl transition-colors {{ $status === 'cancelled' ? 'bg-red-500 text-white shadow-md shadow-red-500/15' : 'bg-white text-gray-600 border border-gray-200 hover:bg-gray-50' }}">
         Cancelled ✗
     </a>
 </div>
@@ -41,11 +41,11 @@
 <!-- Appointments List View -->
 <div class="space-y-4">
     @forelse ($appointments as $apt)
-        <div class="bg-white dark:bg-gray-900 rounded-3xl border border-slate-200/60 dark:border-gray-800/60 p-6 shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all duration-300 flex flex-col md:flex-row md:items-center md:justify-between gap-6">
+        <div class="bg-white rounded-3xl border border-gray-200 p-6 shadow-sm hover:shadow-md hover:-trangray-y-0.5 transition-all duration-300 flex flex-col md:flex-row md:items-center md:justify-between gap-6">
             
             <div class="flex items-start gap-4">
                 <!-- Stethoscope Stencil Icon -->
-                <div class="p-3.5 bg-teal-50 dark:bg-teal-950/20 text-teal-600 dark:text-teal-400 rounded-2xl flex-shrink-0 mt-1">
+                <div class="p-3.5 bg-teal-50 text-teal-600 rounded-2xl flex-shrink-0 mt-1">
                     <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path>
                     </svg>
@@ -53,20 +53,20 @@
                 
                 <div class="space-y-1">
                     <div class="flex flex-wrap items-center gap-2">
-                        <h3 class="text-base font-bold text-slate-800 dark:text-white">{{ $apt->doctor->name }}</h3>
-                        <span class="px-2.5 py-0.5 bg-slate-100 dark:bg-gray-800 text-slate-600 dark:text-gray-300 text-[10px] font-bold uppercase rounded-md">{{ $apt->doctor->specialization->name }}</span>
+                        <h3 class="text-base font-bold text-gray-800">{{ $apt->doctor->name }}</h3>
+                        <span class="px-2.5 py-0.5 bg-gray-100 text-gray-600 text-[10px] font-bold uppercase rounded-md">{{ $apt->doctor->specialization->name }}</span>
                     </div>
-                    <p class="text-xs text-slate-400 dark:text-gray-400 font-medium">{{ $apt->patientEnrollment->hospital->name }} &bull; MRN: <span class="font-bold text-slate-600 dark:text-gray-300">{{ $apt->patientEnrollment->medical_record_number }}</span></p>
+                    <p class="text-xs text-gray-400 font-medium">{{ $apt->patientEnrollment->hospital->name }} &bull; MRN: <span class="font-bold text-gray-600">{{ $apt->patientEnrollment->medical_record_number }}</span></p>
                     
                     <!-- Scheduled Date -->
-                    <div class="flex flex-wrap items-center gap-4 text-xs font-semibold text-slate-500 dark:text-gray-300 mt-2">
+                    <div class="flex flex-wrap items-center gap-4 text-xs font-semibold text-gray-500 mt-2">
                         <span class="flex items-center gap-1">
                             <svg class="w-4 h-4 text-teal-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
                             {{ $apt->scheduled_at->format('l, d M Y \a\t H:i') }}
                         </span>
                         
                         @if($apt->schedule)
-                            <span class="flex items-center gap-1 text-[11px] text-slate-400">
+                            <span class="flex items-center gap-1 text-[11px] text-gray-400">
                                 <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
                                 Slot: {{ substr($apt->schedule->start_time, 0, 5) }} - {{ substr($apt->schedule->end_time, 0, 5) }}
                             </span>
@@ -74,19 +74,19 @@
                     </div>
                     
                     <!-- Complaint description -->
-                    <p class="text-xs text-slate-500 dark:text-gray-400 mt-3 pt-2.5 border-t border-slate-100 dark:border-gray-800/60 leading-relaxed italic bg-slate-50/50 dark:bg-gray-800/10 p-2.5 rounded-xl">
+                    <p class="text-xs text-gray-500 mt-3 pt-2.5 border-t border-gray-100 leading-relaxed italic bg-gray-50/50 p-2.5 rounded-xl">
                         "{{ $apt->complaint }}"
                     </p>
                 </div>
             </div>
 
             <!-- Status Badge and Cancellations -->
-            <div class="flex items-center justify-between md:flex-col md:items-end gap-3 self-stretch md:self-center pt-4 md:pt-0 border-t md:border-t-0 border-slate-100 dark:border-gray-800/50">
+            <div class="flex items-center justify-between md:flex-col md:items-end gap-3 self-stretch md:self-center pt-4 md:pt-0 border-t md:border-t-0 border-gray-100">
                 <span class="px-3 py-1 text-xs font-bold uppercase tracking-wider rounded-full {{ 
-                    $apt->status === 'confirmed' ? 'bg-teal-50 text-teal-700 dark:bg-teal-950/20 dark:text-teal-400' : (
-                    $apt->status === 'completed' ? 'bg-green-50 text-green-700 dark:bg-green-950/20 dark:text-green-400' : (
-                    $apt->status === 'cancelled' ? 'bg-red-50 text-red-700 dark:bg-red-950/20 dark:text-red-400' : 
-                    'bg-blue-50 text-blue-700 dark:bg-blue-950/20 dark:text-blue-400')
+                    $apt->status === 'confirmed' ? 'bg-teal-50 text-teal-700' : (
+                    $apt->status === 'completed' ? 'bg-green-50 text-green-700' : (
+                    $apt->status === 'cancelled' ? 'bg-red-50 text-red-700' : 
+                    'bg-blue-50 text-blue-700')
                     )
                 }}">
                     {{ $apt->status }}
@@ -95,7 +95,7 @@
                 @if ($apt->status === 'scheduled')
                     <form action="{{ route('patient.appointments.cancel', $apt->id) }}" method="POST" class="m-0" onsubmit="return confirm('Apakah Anda yakin ingin membatalkan jadwal konsultasi ini?')">
                         @csrf
-                        <button type="submit" class="px-4 py-2 text-xs font-semibold text-red-600 hover:bg-red-50 dark:text-red-400 dark:hover:bg-red-950/30 rounded-xl border border-red-200 dark:border-red-900/50 transition-all cursor-pointer">
+                        <button type="submit" class="px-4 py-2 text-xs font-semibold text-red-600 hover:bg-red-50 rounded-xl border border-red-200 transition-all cursor-pointer">
                             Cancel Schedule
                         </button>
                     </form>
@@ -105,17 +105,17 @@
         </div>
     @empty
         <!-- Empty State Illustration -->
-        <div class="bg-white dark:bg-gray-900 rounded-3xl border border-slate-200/60 dark:border-gray-800/60 p-12 text-center space-y-4 shadow-sm">
-            <div class="inline-flex p-5 bg-teal-50 dark:bg-teal-950/20 text-teal-600 dark:text-teal-400 rounded-full">
+        <div class="bg-white rounded-3xl border border-gray-200 p-12 text-center space-y-4 shadow-sm">
+            <div class="inline-flex p-5 bg-teal-50 text-teal-600 rounded-full">
                 <svg class="w-10 h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
                 </svg>
             </div>
             <div class="space-y-1 max-w-sm mx-auto">
-                <h3 class="text-lg font-bold text-slate-800 dark:text-white">No appointments found</h3>
-                <p class="text-sm text-slate-400 dark:text-gray-400 leading-normal">We couldn't find any scheduled slots matching that filter. Set up your checkup details now.</p>
+                <h3 class="text-lg font-bold text-gray-800">No appointments found</h3>
+                <p class="text-sm text-gray-400 leading-normal">We couldn't find any scheduled slots matching that filter. Set up your checkup details now.</p>
             </div>
-            <button onclick="toggleModal(true)" class="inline-flex items-center gap-1.5 px-5 py-3 bg-teal-500 text-white hover:bg-teal-600 rounded-2xl text-xs font-semibold shadow-md shadow-teal-500/10 hover:shadow-teal-500/25 transition-all cursor-pointer">
+            <button onclick="toggleModal(true)" class="inline-flex items-center gap-1.5 px-5 py-3 bg-teal-500 text-white hover:bg-teal-600 rounded-2xl text-xs font-semibold shadow-md shadow-teal-500/10 hover:shadow-teal-500/20 transition-all cursor-pointer">
                 Schedule Checkup
             </button>
         </div>
@@ -130,19 +130,19 @@
 <!-- ================= BOOKING MODAL ================= -->
 <div id="booking-modal" class="fixed inset-0 z-50 overflow-y-auto hidden">
     <!-- Backdrop Blur -->
-    <div class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm transition-opacity"></div>
+    <div class="fixed inset-0 bg-gray-900/60 backdrop-blur-sm transition-opacity"></div>
     
     <!-- Modal Card Shell -->
     <div class="flex min-h-full items-center justify-center p-4 sm:p-6">
-        <div class="relative w-full max-w-lg transform overflow-hidden rounded-3xl bg-white dark:bg-gray-900 border border-slate-200 dark:border-gray-800 p-6 md:p-8 shadow-2xl transition-all space-y-6">
+        <div class="relative w-full max-w-lg transform overflow-hidden rounded-3xl bg-white border border-gray-200 p-6 md:p-8 shadow-2xl transition-all space-y-6">
             
             <!-- Modal Header -->
-            <div class="flex items-center justify-between pb-4 border-b border-slate-100 dark:border-gray-800">
+            <div class="flex items-center justify-between pb-4 border-b border-gray-100">
                 <div class="space-y-1">
-                    <h3 class="text-lg font-extrabold text-slate-800 dark:text-white">New Consultation Schedule</h3>
-                    <p class="text-xs text-slate-400 dark:text-gray-400">Fill in details to book an appointment</p>
+                    <h3 class="text-lg font-extrabold text-gray-800">New Consultation Schedule</h3>
+                    <p class="text-xs text-gray-400">Fill in details to book an appointment</p>
                 </div>
-                <button onclick="toggleModal(false)" class="p-2 text-slate-400 hover:text-slate-600 dark:hover:text-white rounded-xl hover:bg-slate-50 dark:hover:bg-gray-800 transition-colors cursor-pointer">
+                <button onclick="toggleModal(false)" class="p-2 text-gray-400 hover:text-gray-600 rounded-xl hover:bg-gray-50 transition-colors cursor-pointer">
                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M6 18L18 6M6 6l12 12"></path></svg>
                 </button>
             </div>
@@ -153,47 +153,47 @@
                 
                 <!-- Hospital Select -->
                 <div class="space-y-1.5">
-                    <label for="hospital_id" class="text-xs font-bold text-slate-500 dark:text-gray-400 uppercase tracking-wider">Select Hospital</label>
-                    <select name="hospital_id" id="hospital_id" required onchange="filterDoctors()" class="w-full px-4 py-3 rounded-xl border border-slate-200 dark:border-gray-700 bg-transparent text-sm focus:border-teal-500 focus:ring-4 focus:ring-teal-500/10 dark:text-white transition-all outline-none">
-                        <option value="" class="dark:bg-gray-900">Choose a Hospital</option>
+                    <label for="hospital_id" class="text-xs font-bold text-gray-500 uppercase tracking-wider">Select Hospital</label>
+                    <select name="hospital_id" id="hospital_id" required onchange="filterDoctors()" class="w-full px-4 py-3 rounded-xl border border-gray-200 bg-transparent text-sm focus:border-teal-500 focus:ring-4 focus:ring-teal-500/10 transition-all outline-none">
+                        <option value="">Choose a Hospital</option>
                         @foreach ($hospitals as $hosp)
-                            <option value="{{ $hosp->id }}" class="dark:bg-gray-900">{{ $hosp->name }} ({{ $hosp->city }})</option>
+                            <option value="{{ $hosp->id }}">{{ $hosp->name }} ({{ $hosp->city }})</option>
                         @endforeach
                     </select>
                 </div>
 
                 <!-- Doctor Select -->
                 <div class="space-y-1.5">
-                    <label for="doctor_id" class="text-xs font-bold text-slate-500 dark:text-gray-400 uppercase tracking-wider">Select Medical Professional</label>
-                    <select name="doctor_id" id="doctor_id" required disabled class="w-full px-4 py-3 rounded-xl border border-slate-200 dark:border-gray-700 bg-transparent text-sm focus:border-teal-500 focus:ring-4 focus:ring-teal-500/10 dark:text-white transition-all outline-none">
-                        <option value="" class="dark:bg-gray-900">Choose a Professional</option>
+                    <label for="doctor_id" class="text-xs font-bold text-gray-500 uppercase tracking-wider">Select Medical Professional</label>
+                    <select name="doctor_id" id="doctor_id" required disabled class="w-full px-4 py-3 rounded-xl border border-gray-200 bg-transparent text-sm focus:border-teal-500 focus:ring-4 focus:ring-teal-500/10 transition-all outline-none">
+                        <option value="">Choose a Professional</option>
                         @foreach ($doctors as $doc)
-                            <option value="{{ $doc->id }}" data-hospital-id="{{ $doc->user->hospital_id }}" class="dark:bg-gray-900">
+                            <option value="{{ $doc->id }}" data-hospital-id="{{ $doc->user->hospital_id }}">
                                 {{ $doc->name }} ({{ $doc->specialization->name }}) - Rp {{ number_format($doc->consultation_fee, 0, ',', '.') }}
                             </option>
                         @endforeach
                     </select>
-                    <p id="doctor-hint" class="text-[10px] text-slate-400 dark:text-gray-500">Please choose a hospital first</p>
+                    <p id="doctor-hint" class="text-[10px] text-gray-400">Please choose a hospital first</p>
                 </div>
 
                 <!-- Date and Time select -->
                 <div class="space-y-1.5">
-                    <label for="scheduled_at" class="text-xs font-bold text-slate-500 dark:text-gray-400 uppercase tracking-wider">Scheduled Date & Time</label>
-                    <input type="datetime-local" name="scheduled_at" id="scheduled_at" required min="{{ date('Y-m-d\TH:i') }}" class="w-full px-4 py-3 rounded-xl border border-slate-200 dark:border-gray-700 bg-transparent text-sm focus:border-teal-500 focus:ring-4 focus:ring-teal-500/10 dark:text-white transition-all outline-none">
+                    <label for="scheduled_at" class="text-xs font-bold text-gray-500 uppercase tracking-wider">Scheduled Date & Time</label>
+                    <input type="datetime-local" name="scheduled_at" id="scheduled_at" required min="{{ date('Y-m-d\TH:i') }}" class="w-full px-4 py-3 rounded-xl border border-gray-200 bg-transparent text-sm focus:border-teal-500 focus:ring-4 focus:ring-teal-500/10 transition-all outline-none">
                 </div>
 
                 <!-- Complaint -->
                 <div class="space-y-1.5">
-                    <label for="complaint" class="text-xs font-bold text-slate-500 dark:text-gray-400 uppercase tracking-wider">Chief Complaint / Reasons</label>
-                    <textarea name="complaint" id="complaint" rows="3" required placeholder="Describe your symptoms or purposes for consultation..." class="w-full px-4 py-3 rounded-xl border border-slate-200 dark:border-gray-700 bg-transparent text-sm focus:border-teal-500 focus:ring-4 focus:ring-teal-500/10 dark:text-white transition-all outline-none resize-none"></textarea>
+                    <label for="complaint" class="text-xs font-bold text-gray-500 uppercase tracking-wider">Chief Complaint / Reasons</label>
+                    <textarea name="complaint" id="complaint" rows="3" required placeholder="Describe your symptoms or purposes for consultation..." class="w-full px-4 py-3 rounded-xl border border-gray-200 bg-transparent text-sm focus:border-teal-500 focus:ring-4 focus:ring-teal-500/10 transition-all outline-none resize-none"></textarea>
                 </div>
 
                 <!-- Action buttons -->
-                <div class="flex items-center justify-end gap-3 pt-4 border-t border-slate-100 dark:border-gray-800">
-                    <button type="button" onclick="toggleModal(false)" class="px-5 py-3 text-sm font-semibold text-slate-500 dark:text-gray-400 hover:bg-slate-50 dark:hover:bg-gray-800 rounded-2xl border border-slate-200 dark:border-gray-700 transition-all cursor-pointer">
+                <div class="flex items-center justify-end gap-3 pt-4 border-t border-gray-100">
+                    <button type="button" onclick="toggleModal(false)" class="px-5 py-3 text-sm font-semibold text-gray-500 hover:bg-gray-50 rounded-2xl border border-gray-200 transition-all cursor-pointer">
                         Cancel
                     </button>
-                    <button type="submit" class="px-6 py-3 text-sm font-semibold bg-gradient-to-r from-teal-500 to-cyan-500 hover:from-teal-600 hover:to-cyan-600 text-white rounded-2xl shadow-lg shadow-teal-500/10 hover:shadow-teal-500/25 hover:-translate-y-0.5 transition-all cursor-pointer">
+                    <button type="submit" class="px-6 py-3 text-sm font-semibold bg-gradient-to-r from-teal-500 to-cyan-500 hover:from-teal-600 hover:to-cyan-600 text-white rounded-2xl shadow-lg shadow-teal-500/10 hover:shadow-teal-500/20 hover:-trangray-y-0.5 transition-all cursor-pointer">
                         Confirm Booking
                     </button>
                 </div>
