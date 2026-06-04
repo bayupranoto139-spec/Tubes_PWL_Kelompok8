@@ -138,6 +138,7 @@ class HospitalResource extends Resource
             ])
 
             ->recordActions([
+                Actions\ViewAction::make()->color('warning'),
                 Actions\EditAction::make(),
                 Actions\DeleteAction::make(),
             ])
@@ -171,6 +172,7 @@ class HospitalResource extends Resource
         return [
             'index' => ListHospitals::route('/'),
             'create' => CreateHospital::route('/create'),
+            'view' => \App\Filament\Resources\Hospitals\Pages\ViewHospital::route('/{record}'),
             'edit' => EditHospital::route('/{record}/edit'),
         ];
     }

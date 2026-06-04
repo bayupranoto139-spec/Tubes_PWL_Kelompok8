@@ -36,6 +36,7 @@ class SpecializationsTable
             ])
 
             ->actions([
+                \Filament\Actions\ViewAction::make()->color('warning'),
                 EditAction::make(),
                 DeleteAction::make(),
             ])

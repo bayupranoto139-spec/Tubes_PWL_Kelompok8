@@ -159,6 +159,7 @@ class BillResource extends Resource
         return [
             'index' => ListBills::route('/'),
             'create' => CreateBill::route('/create'),
+            'view' => \App\Filament\Resources\Bills\Pages\ViewBill::route('/{record}'),
             'edit' => EditBill::route('/{record}/edit'),
         ];
     }

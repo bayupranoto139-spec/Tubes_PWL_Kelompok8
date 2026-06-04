@@ -1,66 +1,178 @@
 <x-filament-panels::page>
 
-<div style="
-    width:100%;
-    max-width:1200px;
-    margin:auto;
-">
+<style>
+    .settings-container{
+        width:100%;
+        max-width:1200px;
+        margin:auto;
+    }
+
+    .settings-subtitle{
+        color:var(--c-gray-500);
+        font-size:15px;
+        margin-bottom:28px;
+    }
+
+    .settings-card{
+        background:#e2e8f0;
+        padding:25px;
+        border-radius:18px;
+        box-shadow:0 1px 4px rgba(0,0,0,.08);
+        margin-bottom:24px;
+        color: var(--c-gray-600);
+    }
+
+.dark .settings-card{
+        background:rgba(15,23,42,.55);
+        border:1px solid rgba(148,163,184,.25);
+        box-shadow:0 1px 6px rgba(0,0,0,.30);
+    }
+
+    .settings-card{
+        background:rgba(148,163,184,.20);
+        border:1px solid var(--c-gray-200);
+    }
+
+    .settings-card-header{
+        display:flex;
+        align-items:flex-start;
+        gap:14px;
+        margin-bottom:24px;
+    }
+
+    .settings-icon{
+        width:48px;
+        height:48px;
+        border-radius:14px;
+        display:flex;
+        align-items:center;
+        justify-content:center;
+        font-size:20px;
+    }
+
+    .settings-card-title{
+        font-size:22px;
+        font-weight:700;
+        color: var(--c-gray-700);
+    }
+
+    .settings-card-desc{
+        color:var(--c-gray-500);
+        font-size:14px;
+        margin-top:4px;
+    }
+
+    .settings-label{
+        font-weight:600;
+        font-size:14px;
+        color: var(--c-gray-600);
+    }
+
+.settings-input{
+        width:100%;
+        margin-top:10px;
+        padding:14px;
+        border:1px solid var(--c-gray-300);
+        border-radius:14px;
+        font-size:15px;
+        outline:none;
+        background:rgba(148,163,184,.10);
+        color: var(--c-gray-600);
+    }
+
+    .dark .settings-input{
+        background:rgba(2,6,23,.35);
+        border-color:rgba(148,163,184,.22);
+        color:rgba(226,232,240,.95);
+    }
+
+    .settings-hint{
+        margin-top:7px;
+        color:var(--c-gray-500);
+        font-size:13px;
+    }
+
+    .settings-toggle-row{
+        display:flex;
+        justify-content:space-between;
+        align-items:center;
+        padding:22px;
+        background:var(--c-gray-100);
+        border-radius:18px;
+        margin-bottom:16px;
+        cursor:pointer;
+        transition:.2s;
+        color: var(--c-gray-600);
+    }
+
+    .settings-toggle-row:hover{
+        background: var(--c-gray-200);
+    }
+
+    .toggle-title{
+        font-weight:700;
+        font-size:17px;
+        color: var(--c-gray-700);
+    }
+
+    .toggle-desc{
+        font-size:14px;
+        color:var(--c-gray-500);
+        margin-top:6px;
+    }
+
+    .toggle-checkbox{
+        width:24px;
+        height:24px;
+        accent-color:#14b8a6;
+        cursor:pointer;
+    }
+
+    .settings-save-btn{
+        width:100%;
+        padding:16px;
+        background:#14b8a6;
+        border:none;
+        border-radius:16px;
+        color:white;
+        font-weight:700;
+        cursor:pointer;
+        font-size:15px;
+        box-shadow:0 4px 10px rgba(20,184,166,.25);
+        transition:.2s;
+    }
+
+    .settings-save-btn:hover{
+        transform:translateY(-2px);
+    }
+</style>
+
+
+<div class="settings-container">
 
     {{-- SUBTITLE --}}
-    <div style="margin-bottom:28px;">
-
-        <p style="
-            color:#6b7280;
-            font-size:15px;
-        ">
+    <div>
+        <p class="settings-subtitle">
             Configure global system parameters
         </p>
-
     </div>
 
 
     {{-- APPOINTMENT SETTINGS --}}
-    <div style="
-        background:white;
-        padding:32px;
-        border-radius:24px;
-        box-shadow:0 2px 10px rgba(0,0,0,.05);
-        margin-bottom:24px;
-    ">
+    <div class="settings-card">
 
-        <div style="
-            display:flex;
-            align-items:flex-start;
-            gap:14px;
-            margin-bottom:24px;
-        ">
+        <div class="settings-card-header">
 
-            <div style="
-                width:48px;
-                height:48px;
-                border-radius:14px;
-                background:#ccfbf1;
-                display:flex;
-                align-items:center;
-                justify-content:center;
-                font-size:20px;
-            ">
+            <div class="settings-icon" style="background:#ccfbf1;">
                 📅
             </div>
 
             <div>
-                <div style="
-                    font-size:22px;
-                    font-weight:700;
-                ">
+                <div class="settings-card-title">
                     Appointment Settings
                 </div>
 
-                <div style="
-                    color:#6b7280;
-                    font-size:14px;
-                    margin-top:4px;
-                ">
+                <div class="settings-card-desc">
                     Configure appointment rules
                 </div>
             </div>
@@ -70,32 +182,17 @@
 
         <div style="margin-bottom:22px;">
 
-            <label style="
-                font-weight:600;
-                font-size:14px;
-            ">
+            <label class="settings-label">
                 Priority Time Limit (minutes)
             </label>
 
             <input
                 type="number"
                 value="30"
-                style="
-                    width:100%;
-                    margin-top:10px;
-                    padding:14px;
-                    border:1px solid #d1d5db;
-                    border-radius:14px;
-                    font-size:15px;
-                    outline:none;
-                "
+                class="settings-input"
             >
 
-            <div style="
-                margin-top:7px;
-                color:#9ca3af;
-                font-size:13px;
-            ">
+            <div class="settings-hint">
                 Minutes before appointment when patient loses priority if not yet checked in.
             </div>
 
@@ -104,32 +201,17 @@
 
         <div>
 
-            <label style="
-                font-weight:600;
-                font-size:14px;
-            ">
+            <label class="settings-label">
                 Max Advance Booking Days
             </label>
 
             <input
                 type="number"
                 value="30"
-                style="
-                    width:100%;
-                    margin-top:10px;
-                    padding:14px;
-                    border:1px solid #d1d5db;
-                    border-radius:14px;
-                    font-size:15px;
-                    outline:none;
-                "
+                class="settings-input"
             >
 
-            <div style="
-                margin-top:7px;
-                color:#9ca3af;
-                font-size:13px;
-            ">
+            <div class="settings-hint">
                 How many days in advance patients can book appointments.
             </div>
 
@@ -139,47 +221,20 @@
 
 
     {{-- QUEUE SETTINGS --}}
-    <div style="
-        background:white;
-        padding:32px;
-        border-radius:24px;
-        box-shadow:0 2px 10px rgba(0,0,0,.05);
-        margin-bottom:24px;
-    ">
+    <div class="settings-card">
 
-        <div style="
-            display:flex;
-            align-items:flex-start;
-            gap:14px;
-            margin-bottom:24px;
-        ">
+        <div class="settings-card-header">
 
-            <div style="
-                width:48px;
-                height:48px;
-                border-radius:14px;
-                background:#dbeafe;
-                display:flex;
-                align-items:center;
-                justify-content:center;
-                font-size:20px;
-            ">
+            <div class="settings-icon" style="background:#dbeafe;">
                 📋
             </div>
 
             <div>
-                <div style="
-                    font-size:22px;
-                    font-weight:700;
-                ">
+                <div class="settings-card-title">
                     Queue Settings
                 </div>
 
-                <div style="
-                    color:#6b7280;
-                    font-size:14px;
-                    margin-top:4px;
-                ">
+                <div class="settings-card-desc">
                     Configure queue management
                 </div>
             </div>
@@ -187,32 +242,17 @@
         </div>
 
 
-        <label style="
-            font-weight:600;
-            font-size:14px;
-        ">
+        <label class="settings-label">
             Queue Reset Time
         </label>
 
         <input
             type="time"
             value="00:00"
-            style="
-                width:100%;
-                margin-top:10px;
-                padding:14px;
-                border:1px solid #d1d5db;
-                border-radius:14px;
-                font-size:15px;
-                outline:none;
-            "
+            class="settings-input"
         >
 
-        <div style="
-            margin-top:7px;
-            color:#9ca3af;
-            font-size:13px;
-        ">
+        <div class="settings-hint">
             Time of day when the queue counter resets to 1.
         </div>
 
@@ -220,47 +260,39 @@
 
 
     {{-- NOTIFICATIONS --}}
-    <div style="
-        background:white;
-        padding:32px;
-        border-radius:24px;
-        box-shadow:0 2px 10px rgba(0,0,0,.05);
-        margin-bottom:24px;
-    ">
+    <div class="settings-card">
 
-        <div style="
-            display:flex;
-            align-items:flex-start;
-            gap:14px;
-            margin-bottom:24px;
-        ">
+        {{-- NOTIF BANNER --}}
+        <div
+            style="margin-bottom:16px; padding:14px 16px; border-radius:14px; border:1px solid rgba(148,163,184,.25); background:rgba(148,163,184,.10); color:var(--c-gray-600);"
+            class="filament-notification-area"
+        >
+            {{-- Menampilkan notifikasi jika ada session flash --}}
+            @if (session()->has('error'))
+                <div style="color:#b91c1c; font-weight:700;">
+                    {{ session('error') }}
+                </div>
+            @endif
 
-            <div style="
-                width:48px;
-                height:48px;
-                border-radius:14px;
-                background:#f3e8ff;
-                display:flex;
-                align-items:center;
-                justify-content:center;
-                font-size:20px;
-            ">
+            @if (session()->has('success'))
+                <div style="color:#047857; font-weight:700;">
+                    {{ session('success') }}
+                </div>
+            @endif
+        </div>
+
+        <div class="settings-card-header">
+
+            <div class="settings-icon" style="background:#f3e8ff;">
                 🔔
             </div>
 
             <div>
-                <div style="
-                    font-size:22px;
-                    font-weight:700;
-                ">
+                <div class="settings-card-title">
                     Notifications
                 </div>
 
-                <div style="
-                    color:#6b7280;
-                    font-size:14px;
-                    margin-top:4px;
-                ">
+                <div class="settings-card-desc">
                     Configure system notifications
                 </div>
             </div>
@@ -269,34 +301,14 @@
 
 
         {{-- NEW APPOINTMENT --}}
-        <label style="
-            display:flex;
-            justify-content:space-between;
-            align-items:center;
-            padding:22px;
-            background:#f9fafb;
-            border-radius:18px;
-            margin-bottom:16px;
-            cursor:pointer;
-            transition:.2s;
-        "
-        onmouseover="this.style.background='#f3f4f6'"
-        onmouseout="this.style.background='#f9fafb'"
-        >
+        <div class="settings-toggle-row">
 
             <div>
-                <div style="
-                    font-weight:700;
-                    font-size:17px;
-                ">
+                <div class="toggle-title">
                     Notify on new appointment
                 </div>
 
-                <div style="
-                    font-size:14px;
-                    color:#9ca3af;
-                    margin-top:6px;
-                ">
+                <div class="toggle-desc">
                     Send email to doctor when a new appointment is booked
                 </div>
             </div>
@@ -304,46 +316,21 @@
             <input
                 type="checkbox"
                 checked
-                style="
-                    width:24px;
-                    height:24px;
-                    accent-color:#14b8a6;
-                    cursor:pointer;
-                "
+                class="toggle-checkbox"
             >
 
-        </label>
+        </div>
 
 
         {{-- CANCELLATION --}}
-        <label style="
-            display:flex;
-            justify-content:space-between;
-            align-items:center;
-            padding:22px;
-            background:#f9fafb;
-            border-radius:18px;
-            margin-bottom:16px;
-            cursor:pointer;
-            transition:.2s;
-        "
-        onmouseover="this.style.background='#f3f4f6'"
-        onmouseout="this.style.background='#f9fafb'"
-        >
+        <div class="settings-toggle-row">
 
             <div>
-                <div style="
-                    font-weight:700;
-                    font-size:17px;
-                ">
+                <div class="toggle-title">
                     Notify on cancellation
                 </div>
 
-                <div style="
-                    font-size:14px;
-                    color:#9ca3af;
-                    margin-top:6px;
-                ">
+                <div class="toggle-desc">
                     Send email when appointment is cancelled
                 </div>
             </div>
@@ -351,45 +338,21 @@
             <input
                 type="checkbox"
                 checked
-                style="
-                    width:24px;
-                    height:24px;
-                    accent-color:#14b8a6;
-                    cursor:pointer;
-                "
+                class="toggle-checkbox"
             >
 
-        </label>
+        </div>
 
 
         {{-- PAYMENT --}}
-        <label style="
-            display:flex;
-            justify-content:space-between;
-            align-items:center;
-            padding:22px;
-            background:#f9fafb;
-            border-radius:18px;
-            cursor:pointer;
-            transition:.2s;
-        "
-        onmouseover="this.style.background='#f3f4f6'"
-        onmouseout="this.style.background='#f9fafb'"
-        >
+        <div class="settings-toggle-row">
 
             <div>
-                <div style="
-                    font-weight:700;
-                    font-size:17px;
-                ">
+                <div class="toggle-title">
                     Notify on payment
                 </div>
 
-                <div style="
-                    font-size:14px;
-                    color:#9ca3af;
-                    margin-top:6px;
-                ">
+                <div class="toggle-desc">
                     Send receipt after payment
                 </div>
             </div>
@@ -397,15 +360,10 @@
             <input
                 type="checkbox"
                 checked
-                style="
-                    width:24px;
-                    height:24px;
-                    accent-color:#14b8a6;
-                    cursor:pointer;
-                "
+                class="toggle-checkbox"
             >
 
-        </label>
+        </div>
 
     </div>
 
@@ -414,21 +372,7 @@
     <button
         type="button"
         onclick="alert('Settings saved successfully!')"
-        style="
-            width:100%;
-            padding:16px;
-            background:#14b8a6;
-            border:none;
-            border-radius:16px;
-            color:white;
-            font-weight:700;
-            cursor:pointer;
-            font-size:15px;
-            box-shadow:0 4px 10px rgba(20,184,166,.25);
-            transition:.2s;
-        "
-        onmouseover="this.style.transform='translateY(-2px)'"
-        onmouseout="this.style.transform='translateY(0px)'"
+        class="settings-save-btn"
     >
         💾 Save Settings
     </button>

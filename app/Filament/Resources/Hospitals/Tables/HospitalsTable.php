@@ -20,6 +20,7 @@ class HospitalsTable
                 //
             ])
             ->recordActions([
+                \Filament\Actions\ViewAction::make(),
                 EditAction::make(),
                 DeleteAction::make(),
             ])

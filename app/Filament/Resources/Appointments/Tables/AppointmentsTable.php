@@ -34,29 +34,43 @@ class AppointmentsTable
                     ->label('Hospital')
                     ->searchable(),
 
-                // SCHEDULE
-                Tables\Columns\TextColumn::make('scheduled_at')
-                    ->label('Schedule')
-                    ->dateTime('d M Y H:i')
-                    ->sortable(),
+                // DATE — unique name avoids Filament key collision
+                Tables\Columns\TextColumn::make('scheduled_at_date')
+                    ->label('Date')
+                    ->getStateUsing(fn ($record) => $record->scheduled_at)
+                    ->dateTime('d M Y')
+                    ->sortable(query: function ($query, $direction) {
+                        $query->orderBy('scheduled_at', $direction);
+                    }),
 
-                // STATUS
-                Tables\Columns\BadgeColumn::make('status')
-                    ->colors([
-                        'primary' => 'scheduled',
-                        'success' => 'completed',
-                        'danger' => 'cancelled',
-                    ]),
+                // TIME
+                Tables\Columns\TextColumn::make('scheduled_at_time')
+                    ->label('Time')
+                    ->getStateUsing(fn ($record) => $record->scheduled_at)
+                    ->dateTime('H:i'),
+
+                // STATUS — TextColumn + badge() replaces deprecated BadgeColumn
+                Tables\Columns\TextColumn::make('status')
+                    ->badge()
+                    ->color(fn (string $state) => match ($state) {
+                        'scheduled' => 'primary',
+                        'completed' => 'success',
+                        'cancelled' => 'danger',
+                        default     => 'gray',
+                    }),
 
                 // COMPLAINT
                 Tables\Columns\TextColumn::make('complaint')
                     ->label('Complaint')
-                    ->limit(30),
+                    ->limit(30)
+                    ->tooltip(fn ($record) => $record->complaint), // show full text on hover
 
                 // CREATED
                 Tables\Columns\TextColumn::make('created_at')
                     ->label('Created')
-                    ->dateTime('d M Y'),
+                    ->dateTime('d M Y')
+                    ->sortable()
+                    ->toggleable(isToggledHiddenByDefault: true), // keeps table uncluttered
 
             ])
 
@@ -71,21 +85,27 @@ class AppointmentsTable
 
             ])
 
-            ->recordActions([
+            // Eager-load all nested relations to prevent N+1 queries
+            ->modifyQueryUsing(
+                fn ($query) => $query->with([
+                    'patientEnrollment.user',
+                    'doctor.user.hospital',
+                    'schedule',
+                ])
+            )
 
+            ->recordActions([
+                \Filament\Actions\ViewAction::make()->color('warning'),
                 EditAction::make(),
                 DeleteAction::make(),
-
             ])
 
             ->toolbarActions([
-
                 BulkActionGroup::make([
-
                     DeleteBulkAction::make(),
-
                 ]),
+            ])
 
-            ]);
+            ->defaultSort('scheduled_at', 'asc');
     }
 }
