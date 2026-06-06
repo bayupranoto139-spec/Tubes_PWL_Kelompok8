@@ -13,10 +13,14 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware) {
-        // 🔓 Untuk pengguna YANG BELUM login (guest), diarahkan ke halaman login
+        // Exclude Midtrans notification from CSRF verification
+        $middleware->validateCsrfTokens(except: [
+            'payment/notification',
+            'api/midtrans/callback',
+        ]);
+
         $middleware->redirectGuestsTo('/login');
 
-        // 🔐 Untuk pengguna YANG SUDAH login (menuju halaman login/register), diarahkan berdasarkan role
         $middleware->redirectUsersTo(function (Request $request) {
             $user = $request->user();
             if (! $user) {
@@ -30,8 +34,6 @@ return Application::configure(basePath: dirname(__DIR__))
                 default => '/login',
             };
         });
-
-
     })
 
     ->withExceptions(function (Exceptions $exceptions): void {
