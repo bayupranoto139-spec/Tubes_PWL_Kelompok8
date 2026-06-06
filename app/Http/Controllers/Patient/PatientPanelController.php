@@ -14,6 +14,7 @@ use App\Models\Prescription;
 use App\Models\Schedule;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 
@@ -43,9 +44,9 @@ class PatientPanelController extends Controller
         // Active prescriptions count (prescriptions linked to active medical record cases)
         $activePrescriptionsCount = Prescription::whereHas('medicalRecord', function ($query) use ($enrollmentIds) {
             $query->where('case_status', 'active')
-                  ->whereHas('appointment', function ($subQuery) use ($enrollmentIds) {
-                      $subQuery->whereIn('patient_enrollment_id', $enrollmentIds);
-                  });
+                ->whereHas('appointment', function ($subQuery) use ($enrollmentIds) {
+                    $subQuery->whereIn('patient_enrollment_id', $enrollmentIds);
+                });
         })->count();
 
         // Upcoming 5 appointments
@@ -87,13 +88,66 @@ class PatientPanelController extends Controller
             ->orderBy('scheduled_at', 'desc')
             ->paginate(10);
 
-        // Fetch active hospitals and doctors for scheduling a new appointment
-        $hospitals = Hospital::where('is_active', true)->get();
+        // Fetch ONLY hospitals where the patient is already enrolled
+        $hospitals = Hospital::where('is_active', true)
+            ->whereHas('patientEnrollments', function ($q) use ($user) {
+                $q->where('user_id', $user->id);
+            })
+            ->get();
+
+        // Fetch doctors that belong to the patient's enrolled hospitals
+        $doctorHospitalIds = $hospitals->pluck('id')->all();
+
         $doctors = Doctor::with(['user', 'specialization', 'schedules' => function ($query) {
             $query->where('is_active', true);
-        }])->get();
+        }])
+            ->whereHas('user', function ($q) use ($doctorHospitalIds) {
+                $q->whereIn('hospital_id', $doctorHospitalIds);
+            })
+            ->whereHas('schedules', function ($q) {
+                $q->where('is_active', true);
+            })
+            ->get();
 
-        return view('user.patient.appointments', compact('appointments', 'hospitals', 'doctors', 'status'));
+        // Helpers for frontend schedule+slot filtering
+        $scheduleByDoctorAndDate = [];
+        $start = Carbon::tomorrow()->startOfDay();
+        $end = (clone $start)->addDays(14)->endOfDay();
+
+        // Preload schedules for doctors listed above
+        $doctorSchedules = Schedule::query()
+            ->whereIn('doctor_id', $doctors->pluck('id')->all())
+            ->where('is_active', true)
+            ->get();
+
+        foreach ($doctors as $doc) {
+            /** @var Collection $docSchedules */
+            $docSchedules = $doctorSchedules->where('doctor_id', $doc->id);
+
+            for ($d = $start->copy(); $d->lte($end); $d->addDay()) {
+                $dow = $d->dayOfWeekIso;
+                $schedule = $docSchedules->where('day_of_week', $dow)->first();
+                if (! $schedule) {
+                    continue;
+                }
+
+                // Build 30-minute slot labels within [start_time, end_time)
+                $cursor = Carbon::parse($schedule->start_time);
+                $slotEnd = Carbon::parse($schedule->end_time);
+                $slots = [];
+
+                while ($cursor->lt($slotEnd)) {
+                    $slots[] = $cursor->format('H:i');
+                    $cursor->addMinutes(30);
+                }
+
+                if (! empty($slots)) {
+                    $scheduleByDoctorAndDate[$doc->id][$d->format('Y-m-d')] = $slots;
+                }
+            }
+        }
+
+        return view('user.patient.appointments', compact('appointments', 'hospitals', 'doctors', 'status', 'scheduleByDoctorAndDate'));
     }
 
     /**
@@ -102,57 +156,74 @@ class PatientPanelController extends Controller
     public function bookAppointment(Request $request)
     {
         $request->validate([
-            'hospital_id'  => 'required|exists:hospitals,id',
-            'doctor_id'    => 'required|exists:doctors,id',
-            'scheduled_at' => 'required|date|after_or_equal:today',
-            'complaint'    => 'required|string|max:1000',
+            'hospital_id' => 'required|exists:hospitals,id',
+            'doctor_id' => 'required|exists:doctors,id',
+            'appointment_date' => 'required|date|after:today',
+            'appointment_slot' => 'required|date_format:H:i',
+            'complaint' => 'required|string|max:1000',
         ]);
 
         $user = Auth::user();
 
-        // 1. Check or create PatientEnrollment for this hospital
+        // 1) Enforce: hospital must be where the patient is enrolled
         $enrollment = PatientEnrollment::where('user_id', $user->id)
             ->where('hospital_id', $request->hospital_id)
             ->first();
 
         if (! $enrollment) {
-            $hospital = Hospital::findOrFail($request->hospital_id);
-            $year = date('Y');
-            
-            // Format MRN: RSCODE-YEAR-SEQUENCE
-            $seqNumber = PatientEnrollment::where('hospital_id', $hospital->id)->count() + 1;
-            $sequence = sprintf('%04d', $seqNumber);
-            $cleanName = preg_replace('/[^a-zA-Z]/', '', $hospital->name);
-            $codePrefix = strtoupper(substr($cleanName, 0, 4));
-            if (empty($codePrefix)) {
-                $codePrefix = 'MEDV';
-            }
-            $mrn = "{$codePrefix}-{$year}-{$sequence}";
-
-            $enrollment = PatientEnrollment::create([
-                'user_id'               => $user->id,
-                'hospital_id'           => $request->hospital_id,
-                'medical_record_number' => $mrn,
-            ]);
+            return redirect()->back()->with('error', 'Pasien tidak terdaftar di rumah sakit yang dipilih.');
         }
 
-        // 2. Identify doctor's schedule on that day of week (Carbon dayOfWeekIso: 1 for Monday to 7 for Sunday)
-        $scheduledDate = Carbon::parse($request->scheduled_at);
-        $dayOfWeek = $scheduledDate->dayOfWeekIso;
+        // 2) Enforce: doctor must belong to the selected hospital
+
+        $doctor = Doctor::with('user')->findOrFail($request->doctor_id);
+        if ((int) $doctor->user->hospital_id !== (int) $request->hospital_id) {
+            return redirect()->back()->with('error', 'Dokter tidak terdaftar di rumah sakit yang dipilih.');
+        }
+
+        // 3) Enforce schedule window for selected day and slot
+        $appointmentDate = Carbon::parse($request->appointment_date)->startOfDay();
+        $dayOfWeek = $appointmentDate->dayOfWeekIso;
 
         $schedule = Schedule::where('doctor_id', $request->doctor_id)
             ->where('day_of_week', $dayOfWeek)
             ->where('is_active', true)
             ->first();
 
-        // 3. Create the appointment
+        if (! $schedule) {
+            return redirect()->back()->with('error', 'Dokter tidak memiliki jadwal pada tanggal yang dipilih.');
+        }
+
+        $slotTime = Carbon::createFromFormat('H:i', $request->appointment_slot);
+        $startTime = Carbon::parse($schedule->start_time);
+        $endTime = Carbon::parse($schedule->end_time);
+
+        // slot must fit within [start_time, end_time)
+        if ($slotTime->lt($startTime) || ! $slotTime->lt($endTime)) {
+            return redirect()->back()->with('error', 'Slot waktu tidak sesuai dengan jam jadwal dokter.');
+        }
+
+        // scheduled_at final
+        $scheduledAt = Carbon::parse($appointmentDate->format('Y-m-d').' '.$request->appointment_slot);
+
+        // Additional safeguard: must be tomorrow+
+        if ($scheduledAt->lt(Carbon::tomorrow()->startOfDay())) {
+            return redirect()->back()->with('error', 'Jadwal tidak boleh kurang dari besok.');
+        }
+
+        // (Optional) quota check
+        if ($schedule->remainingQuota($appointmentDate->format('Y-m-d')) <= 0) {
+            return redirect()->back()->with('error', 'Kuota jadwal untuk tanggal tersebut sudah penuh.');
+        }
+
+        // 4) Create the appointment
         Appointment::create([
             'patient_enrollment_id' => $enrollment->id,
-            'doctor_id'             => $request->doctor_id,
-            'schedule_id'           => $schedule ? $schedule->id : null,
-            'scheduled_at'          => $scheduledDate,
-            'complaint'             => $request->complaint,
-            'status'                => 'scheduled',
+            'doctor_id' => $request->doctor_id,
+            'schedule_id' => $schedule->id,
+            'scheduled_at' => $scheduledAt,
+            'complaint' => $request->complaint,
+            'status' => 'scheduled',
         ]);
 
         return redirect()->route('patient.appointments')->with('success', 'Appointment successfully scheduled!');
@@ -192,9 +263,9 @@ class PatientPanelController extends Controller
         $records = MedicalRecord::whereHas('appointment', function ($query) use ($enrollmentIds) {
             $query->whereIn('patient_enrollment_id', $enrollmentIds);
         })
-        ->with(['appointment.doctor.user', 'appointment.doctor.specialization', 'appointment.patientEnrollment.hospital', 'prescriptions.medication'])
-        ->orderBy('visit_date', 'desc')
-        ->get();
+            ->with(['appointment.doctor.user', 'appointment.doctor.specialization', 'appointment.patientEnrollment.hospital', 'prescriptions.medication'])
+            ->orderBy('visit_date', 'desc')
+            ->get();
 
         return view('user.patient.medical-records', compact('records'));
     }
@@ -240,13 +311,13 @@ class PatientPanelController extends Controller
         $prescriptions = Prescription::whereHas('medicalRecord.appointment', function ($query) use ($enrollmentIds) {
             $query->whereIn('patient_enrollment_id', $enrollmentIds);
         })
-        ->with(['medicalRecord.appointment.doctor.user', 'medicalRecord.appointment.patientEnrollment.hospital', 'medication'])
-        ->orderBy('created_at', 'desc')
-        ->get();
+            ->with(['medicalRecord.appointment.doctor.user', 'medicalRecord.appointment.patientEnrollment.hospital', 'medication'])
+            ->orderBy('created_at', 'desc')
+            ->get();
 
         // Calculate custom counts
-        $activeCount = $prescriptions->filter(fn($p) => $p->medicalRecord->case_status === 'active')->count();
-        $completedCount = $prescriptions->filter(fn($p) => $p->medicalRecord->case_status === 'healed')->count();
+        $activeCount = $prescriptions->filter(fn ($p) => $p->medicalRecord->case_status === 'active')->count();
+        $completedCount = $prescriptions->filter(fn ($p) => $p->medicalRecord->case_status === 'healed')->count();
         $cancelledCount = 0; // The seeders don't support soft deleted or cancelled prescriptions directly, but we can compute from appointment cancelled if needed.
 
         return view('user.patient.prescriptions', compact('prescriptions', 'activeCount', 'completedCount', 'cancelledCount'));
@@ -258,7 +329,7 @@ class PatientPanelController extends Controller
     public function profile()
     {
         $user = Auth::user();
-        $medicalInfo = $user->patientMedicalInfo ?? new PatientMedicalInfo();
+        $medicalInfo = $user->patientMedicalInfo ?? new PatientMedicalInfo;
 
         return view('user.patient.profile', compact('user', 'medicalInfo'));
     }
@@ -271,29 +342,29 @@ class PatientPanelController extends Controller
         $user = Auth::user();
 
         $request->validate([
-            'name'                     => 'required|string|max:255',
-            'email'                    => 'required|string|email|max:255|unique:users,email,' . $user->id,
-            'phone'                    => 'required|string|max:20',
-            'address'                  => 'required|string|max:500',
-            'gender'                   => 'required|in:L,P',
-            'date_of_birth'            => 'required|date|before:today',
-            'blood_type'               => 'nullable|in:A,B,AB,O',
-            'allergies'                => 'nullable|string|max:1000',
-            'emergency_contact_name'   => 'required|string|max:255',
-            'emergency_contact_phone'  => 'required|string|max:20',
-            'insurance_provider'       => 'nullable|string|max:255',
-            'insurance_policy_number'  => 'nullable|string|max:255',
-            'current_password'         => 'nullable|required_with:new_password',
-            'new_password'             => 'nullable|min:8|confirmed',
+            'name' => 'required|string|max:255',
+            'email' => 'required|string|email|max:255|unique:users,email,'.$user->id,
+            'phone' => 'required|string|max:20',
+            'address' => 'required|string|max:500',
+            'gender' => 'required|in:L,P',
+            'date_of_birth' => 'required|date|before:today',
+            'blood_type' => 'nullable|in:A,B,AB,O',
+            'allergies' => 'nullable|string|max:1000',
+            'emergency_contact_name' => 'required|string|max:255',
+            'emergency_contact_phone' => 'required|string|max:20',
+            'insurance_provider' => 'nullable|string|max:255',
+            'insurance_policy_number' => 'nullable|string|max:255',
+            'current_password' => 'nullable|required_with:new_password',
+            'new_password' => 'nullable|min:8|confirmed',
         ]);
 
         // 1. Update primary User details
         $user->update([
-            'name'          => $request->name,
-            'email'         => $request->email,
-            'phone'         => $request->phone,
-            'address'       => $request->address,
-            'gender'        => $request->gender,
+            'name' => $request->name,
+            'email' => $request->email,
+            'phone' => $request->phone,
+            'address' => $request->address,
+            'gender' => $request->gender,
             'date_of_birth' => $request->date_of_birth,
         ]);
 
@@ -301,11 +372,11 @@ class PatientPanelController extends Controller
         PatientMedicalInfo::updateOrCreate(
             ['user_id' => $user->id],
             [
-                'blood_type'              => $request->blood_type,
-                'allergies'               => $request->allergies,
-                'emergency_contact_name'  => $request->emergency_contact_name,
+                'blood_type' => $request->blood_type,
+                'allergies' => $request->allergies,
+                'emergency_contact_name' => $request->emergency_contact_name,
                 'emergency_contact_phone' => $request->emergency_contact_phone,
-                'insurance_provider'      => $request->insurance_provider,
+                'insurance_provider' => $request->insurance_provider,
                 'insurance_policy_number' => $request->insurance_policy_number,
             ]
         );
