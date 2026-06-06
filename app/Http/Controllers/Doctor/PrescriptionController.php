@@ -10,20 +10,25 @@ class PrescriptionController extends Controller
     public function index()
     {
         $doctorId = auth()->user()?->doctor?->id;
+        if (! $doctorId) {
+            abort(403);
+        }
 
-        // Ambil data untuk dropdown form tambah resep
-        // appointment diikat ke doctor yang sedang login, dan dibuatkan join sederhana ke medical_records agar bisa tampilkan visit_date.
+        $today = now()->toDateString();
+
         $appointments = DB::table('appointments')
             ->join('patient_enrollments', 'appointments.patient_enrollment_id', '=', 'patient_enrollments.id')
             ->join('users', 'patient_enrollments.user_id', '=', 'users.id')
             ->leftJoin('medical_records', 'medical_records.appointment_id', '=', 'appointments.id')
             ->where('appointments.doctor_id', $doctorId)
+            ->whereDate('appointments.scheduled_at', $today)
+            ->where('appointments.status', 'scheduled')
+            ->whereNull('medical_records.id')
             ->select([
                 'appointments.id as appointment_id',
                 'users.name as patient_name',
-                'medical_records.visit_date',
             ])
-            ->orderBy('medical_records.visit_date', 'desc')
+            ->orderBy('appointments.scheduled_at', 'asc')
             ->get();
 
         $medications = DB::table('medications')
@@ -31,8 +36,7 @@ class PrescriptionController extends Controller
             ->orderBy('name')
             ->get();
 
-        // Ambil resep obat dari rekam medis pasien yang ditangani oleh dokter ini
-        $prescriptions = DB::table('prescriptions')
+        $q = DB::table('prescriptions')
             ->join('medications', 'prescriptions.medication_id', '=', 'medications.id')
             ->join('medical_records', 'prescriptions.medical_record_id', '=', 'medical_records.id')
             ->join('appointments', 'medical_records.appointment_id', '=', 'appointments.id')
@@ -48,10 +52,32 @@ class PrescriptionController extends Controller
                 'prescriptions.duration',
                 'prescriptions.quantity',
                 'prescriptions.notes'
-            )
-            ->orderBy('medical_records.visit_date', 'desc')
-            ->get();
+            );
 
-        return view('doctor.prescription', compact('prescriptions', 'appointments', 'medications'));
+        $search = request()->query('search');
+        if ($search) {
+            $q->where(function ($sub) use ($search) {
+                $sub->where('users.name', 'like', "%{$search}%")
+                    ->orWhere('medications.name', 'like', "%{$search}%")
+                    ->orWhere('medical_records.diagnosis', 'like', "%{$search}%");
+            });
+        }
+
+        $filterMedicationId = request()->query('medication_id');
+        if ($filterMedicationId) {
+            $q->where('prescriptions.medication_id', $filterMedicationId);
+        }
+
+        $filterStatus = request()->query('status');
+        if ($filterStatus) {
+
+        }
+
+        $perPage = 5;
+        $prescriptions = $q->orderBy('medical_records.visit_date', 'desc')
+            ->paginate($perPage)
+            ->withQueryString();
+
+        return view('doctor.prescription', compact('prescriptions', 'appointments', 'medications', 'search', 'filterMedicationId'));
     }
 }

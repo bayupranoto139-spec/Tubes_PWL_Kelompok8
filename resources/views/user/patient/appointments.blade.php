@@ -12,7 +12,7 @@
 
         <!-- Trigger Modal Button -->
         <button onclick="toggleModal(true)"
-            class="inline-flex items-center gap-2 px-5 py-3 bg-gradient-to-r from-teal-500 to-cyan-500 hover:from-teal-600 hover:to-cyan-600 text-white rounded-2xl text-sm font-semibold shadow-lg shadow-teal-500/10 hover:shadow-teal-500/20 hover:-trangray-y-0.5 transition-all cursor-pointer">
+            class="inline-flex items-center gap-2 px-5 py-3 bg-[#14b8a6] hover:bg-[#0d9488] text-white rounded-2xl text-sm font-semibold shadow-lg shadow-teal-500/10 transition-all cursor-pointer">
             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2".5 d="M12 4v16m8-8H4"></path>
             </svg>
@@ -116,8 +116,7 @@
                     </span>
 
                     @if ($apt->status === 'scheduled')
-                        <form action="{{ route('patient.appointments.cancel', $apt->id) }}" method="POST" class="m-0"
-                            onsubmit="return confirm('Apakah Anda yakin ingin membatalkan jadwal konsultasi ini?')">
+                        <form action="{{ route('patient.appointments.cancel', $apt->id) }}" method="POST" class="m-0">
                             @csrf
                             <button type="submit"
                                 class="px-4 py-2 text-xs font-semibold text-red-600 hover:bg-red-50 rounded-xl border border-red-200 transition-all cursor-pointer">

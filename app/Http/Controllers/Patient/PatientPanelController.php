@@ -355,7 +355,8 @@ class PatientPanelController extends Controller
             'insurance_provider' => 'nullable|string|max:255',
             'insurance_policy_number' => 'nullable|string|max:255',
             'current_password' => 'nullable|required_with:new_password',
-            'new_password' => 'nullable|min:8|confirmed',
+            'new_password' => 'nullable|min:8',
+            'new_password_confirmation' => 'nullable|same:new_password',
         ]);
 
         // 1. Update primary User details
