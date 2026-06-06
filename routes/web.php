@@ -1,40 +1,38 @@
 <?php
 
+use App\Http\Controllers\GuestDashboardController;
 use App\Http\Controllers\MidtransController;
+use App\Http\Controllers\Patient\PatientPanelController;
+use App\Http\Controllers\PatientController;
+use App\Http\Controllers\PaymentController;
 use Illuminate\Support\Facades\Route;
 
 require __DIR__.'/auth.php';
-use App\Http\Controllers\Patient\PatientPanelController;
-use App\Http\Controllers\PaymentController;
-use App\Models\Bill;
+require __DIR__.'/doctor.php';
 
-// NOTE: routes below are for the patient portal (PatientPanelController).
+// Patients routes
+Route::get('/patients', [PatientController::class, 'index']);
+Route::get('/patients/create', [PatientController::class, 'create']);
+Route::post('/patients/store', [PatientController::class, 'store']);
 
-Route::get('/', function () {
-    return view('welcome');
-});
+// Public/Guest dashboard
+Route::get('/', [GuestDashboardController::class, 'index'])->name('guest.dashboard');
 
+// MIDTRANS: Static pages for payment results
+Route::get('/payment/success', [MidtransController::class, 'success'])->name('payment.success');
+Route::get('/payment/unfinish', [MidtransController::class, 'unfinish'])->name('payment.unfinish');
+Route::get('/payment/error', [MidtransController::class, 'error'])->name('payment.error');
+
+// Payment page — requires auth
 Route::middleware(['auth'])->group(function () {
     Route::get('/payment/{bill}', [MidtransController::class, 'createPayment'])->name('payment.create');
-    Route::get('/payment/success', [MidtransController::class, 'success'])->name('payment.success');
-    Route::get('/payment/unfinish', [MidtransController::class, 'unfinish'])->name('payment.unfinish');
-    Route::get('/payment/error', [MidtransController::class, 'error'])->name('payment.error');
 });
 
-Route::get('/payment-test/{id}', function ($id) {
-    $bill = Bill::find($id) ?? Bill::factory()->create();
-
-    return app(MidtransController::class)->createPayment($bill);
-});
-
+// Payments list & manual pay
 Route::get('/payments', [PaymentController::class, 'index']);
-
 Route::post('/payments/pay/{id}', [PaymentController::class, 'pay']);
 
 // Patient Panel Routes
-use App\Http\Controllers\Patient\PatientPanelController;
-use App\Models\Bill;
-
 Route::middleware(['auth'])->prefix('user/patient')->name('patient.')->group(function () {
     Route::get('/dashboard', [PatientPanelController::class, 'dashboard'])->name('dashboard');
     Route::get('/appointments', [PatientPanelController::class, 'appointments'])->name('appointments');

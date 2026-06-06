@@ -89,24 +89,7 @@ class MiniStats extends StatsOverviewWidget
                     ->descriptionIcon('heroicon-m-calendar-days')
                     ->color('info'),
 
-                Stat::make(
-                    'Hospital Revenue',
-                    'Rp ' . number_format(
-                        Bill::whereHas(
-                            'patientEnrollment',
-                            fn ($q) => $q->where(
-                                'hospital_id',
-                                $user->hospital_id
-                            )
-                        )->sum('total_amount'),
-                        0,
-                        ',',
-                        '.'
-                    )
-                )
-                    ->description('Current revenue')
-                    ->descriptionIcon('heroicon-m-banknotes')
-                    ->color('success'),
+                
 
                 Stat::make(
                     'Pending Bills',
@@ -182,16 +165,6 @@ class MiniStats extends StatsOverviewWidget
                 ->descriptionIcon('heroicon-m-banknotes')
                 ->color('warning'),
 
-            Stat::make(
-                'Appointments',
-                Appointment::whereDate(
-                    'scheduled_at',
-                    today()
-                )->count()
-            )
-                ->description('Today appointments')
-                ->descriptionIcon('heroicon-m-calendar-days')
-                ->color('success'),
 
         ];
     }

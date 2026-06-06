@@ -52,9 +52,8 @@ class LoginController extends Controller
     private function redirectByRole($user)
     {
         return match ($user->role) {
-            'super_admin', 'admin_rs' => redirect('/admin'),
-            'staff' => redirect('/staff'),
-            'dokter' => redirect('/user/doctor/dashboard'),
+            'super_admin', 'admin_rs', 'staff' => redirect('/admin'),
+            'dokter' => redirect('/doctor/dashboard'),
             'patient', 'pasien' => redirect('/user/patient/dashboard'),
 
             default => redirect('/login'),

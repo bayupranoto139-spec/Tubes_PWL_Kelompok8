@@ -20,147 +20,151 @@ class AppointmentForm
         return $schema
             ->components([
 
-                /*
-                |--------------------------------------------------------------------------
-                | PATIENT
-                |--------------------------------------------------------------------------
-                */
-
+                // ── PATIENT ──────────────────────────────────────────────
                 Select::make('patient_enrollment_id')
                     ->label('Patient')
                     ->options(
-
-                        PatientEnrollment::with('user')
-                            ->get()
-                            ->pluck('user.name', 'id')
-
+                        PatientEnrollment::with('user')->get()->pluck('user.name', 'id')
                     )
                     ->searchable()
                     ->preload()
                     ->required(),
 
-
-                /*
-                |--------------------------------------------------------------------------
-                | DOCTOR
-                |--------------------------------------------------------------------------
-                */
-
+                // ── DOCTOR ───────────────────────────────────────────────
                 Select::make('doctor_id')
                     ->label('Doctor')
                     ->options(
-
-                        Doctor::with('user')
-                            ->get()
-                            ->pluck('user.name', 'id')
-
+                        Doctor::with('user')->get()->pluck('user.name', 'id')
                     )
                     ->searchable()
                     ->preload()
-                    ->required(),
+                    ->required()
+                    ->reactive(),                           // ← must be reactive
 
-
-                /*
-                |--------------------------------------------------------------------------
-                | SCHEDULE DATE
-                |--------------------------------------------------------------------------
-                */
-
-                // Tanggal appointment (tidak boleh hari ini- lewat)
-AppointmentDatePicker::make('appointment_date')
+                // ── APPOINTMENT DATE ─────────────────────────────────────
+                AppointmentDatePicker::make('appointment_date')
                     ->label('Appointment Date')
                     ->required()
                     ->minDate(now())
-                    ->native(false),
+                    ->native(false)
+                    ->reactive(),                           // ← must be reactive
 
-                // Slot jam mengikuti schedule dokter yang dipilih
+                // ── APPOINTMENT SLOT ─────────────────────────────────────
                 Select::make('appointment_slot')
                     ->label('Appointment Time')
                     ->required()
+                    ->reactive()
                     ->options(function ($get) {
-                        $doctorId = $get('doctor_id');
-                        $date = $get('appointment_date');
-
-                        if (! $doctorId || ! $date) {
-                            return [];
-                        }
-
-                        $dayOfWeek = Carbon::parse($date)->dayOfWeekIso;
-
-                        $schedule = Schedule::query()
-                            ->where('doctor_id', $doctorId)
-                            ->where('day_of_week', $dayOfWeek)
-                            ->where('is_active', true)
-                            ->first();
-
-                        if (! $schedule) {
-                            return [];
-                        }
-
-                        // Granularity slot: 30 menit
-                        $slots = [];
-                        $start = Carbon::parse($schedule->start_time->format('H:i'));
-                        $end = Carbon::parse($schedule->end_time->format('H:i'));
-
-                        while ($start->lt($end)) {
-                            $slotTime = $start->format('H:i');
-
-                            $slots[$slotTime] = $slotTime;
-
-                            $start->addMinutes(30);
-                        }
-
-                        return $slots;
+                        return self::getSlots($get('doctor_id'), $get('appointment_date'));
+                    })
+                    ->afterStateUpdated(function ($get, $set, $state) {
+                        // Keep hidden fields in sync whenever the slot changes
+                        self::syncHiddenFields($get, $set);
                     }),
 
-                // scheduled_at tetap tersimpan ke kolom model (dibentuk dari date+slot)
+                // ── HIDDEN: schedule_id ───────────────────────────────────
+                // Use afterStateUpdated on upstream fields (doctor + date) to set this.
+                Hidden::make('schedule_id')
+                    ->dehydrated(),
+
+                // ── HIDDEN: scheduled_at ──────────────────────────────────
                 Hidden::make('scheduled_at')
-                    ->dehydrated()
-                    ->default(fn ($get) =>
-                        $get('appointment_date') && $get('appointment_slot')
-                            ? Carbon::parse($get('appointment_date')->format('Y-m-d').' '.$get('appointment_slot'))
-                            : null
-                    )
-                    ->required(),
+                    ->dehydrated(),
 
                 Placeholder::make('appointment_rule')
-                    ->content('Jam otomatis mengikuti schedule dokter yang dipilih.')
+                    ->content('Appointment time follows the selected doctor\'s schedule.')
                     ->columnSpanFull(),
 
-
-                /*
-                |--------------------------------------------------------------------------
-                | STATUS
-                |--------------------------------------------------------------------------
-                */
-
+                // ── STATUS ───────────────────────────────────────────────
                 Select::make('status')
                     ->options([
-
-                        'scheduled' => 'Scheduled',
-
-                        'completed' => 'Completed',
-
-                        'cancelled' => 'Cancelled',
-
+                        'scheduled'  => 'Scheduled',
+                        'completed'  => 'Completed',
+                        'cancelled'  => 'Cancelled',
                     ])
                     ->default('scheduled')
                     ->required(),
 
-
-                /*
-                |--------------------------------------------------------------------------
-                | COMPLAINT
-                |--------------------------------------------------------------------------
-                */
-
+                // ── COMPLAINT ────────────────────────────────────────────
                 Textarea::make('complaint')
                     ->label('Complaint')
                     ->rows(4)
                     ->columnSpanFull(),
-
             ])
-
             ->columns(2);
+    }
+
+    // ─────────────────────────────────────────────────────────────────────────
+    // Helpers
+    // ─────────────────────────────────────────────────────────────────────────
+
+    /** Resolve the correct Schedule model for a doctor + date combo. */
+    private static function resolveSchedule(?string $doctorId, mixed $date): ?Schedule
+    {
+        if (! $doctorId || ! $date) {
+            return null;
+        }
+
+        $dateString = $date instanceof \Carbon\Carbon
+            ? $date->format('Y-m-d')
+            : (string) $date;
+
+        $dayOfWeek = Carbon::parse($dateString)->dayOfWeekIso;
+
+        // Prefer a schedule that matches the exact day; fall back to any active one.
+        return Schedule::query()
+            ->where('doctor_id', $doctorId)
+            ->where('is_active', true)
+            ->orderByRaw("CASE WHEN day_of_week = ? THEN 0 ELSE 1 END", [$dayOfWeek])
+            ->first();
+    }
+
+    /** Build the 30-minute slot options for a doctor + date. */
+    private static function getSlots(?string $doctorId, mixed $date): array
+    {
+        $schedule = self::resolveSchedule($doctorId, $date);
+
+        if (! $schedule) {
+            return [];
+        }
+
+        $toCarbon = fn($t) => $t instanceof \Carbon\Carbon
+            ? Carbon::parse($t->format('H:i'))
+            : Carbon::parse($t);
+
+        $cursor = $toCarbon($schedule->start_time);
+        $end    = $toCarbon($schedule->end_time);
+        $slots  = [];
+
+        while ($cursor->lt($end)) {
+            $label         = $cursor->format('H:i');
+            $slots[$label] = $label;
+            $cursor->addMinutes(30);
+        }
+
+        return $slots;
+    }
+
+    /**
+     * Sync schedule_id and scheduled_at hidden fields.
+     * Call this from afterStateUpdated on doctor_id, appointment_date, and appointment_slot.
+     */
+    private static function syncHiddenFields($get, $set): void
+    {
+        $doctorId = $get('doctor_id');
+        $date     = $get('appointment_date');
+        $slot     = $get('appointment_slot');
+
+        $schedule = self::resolveSchedule($doctorId, $date);
+
+        $set('schedule_id', $schedule?->id);
+
+        if ($date) {
+            $dateString  = $date instanceof \Carbon\Carbon ? $date->format('Y-m-d') : (string) $date;
+            $slotString  = $slot ?: '00:00';
+            $set('scheduled_at', Carbon::parse("{$dateString} {$slotString}")->toDateTimeString());
+        } else {
+            $set('scheduled_at', null);
+        }
     }
 }

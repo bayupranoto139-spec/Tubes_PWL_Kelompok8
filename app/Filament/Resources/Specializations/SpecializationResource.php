@@ -126,6 +126,7 @@ class SpecializationResource extends Resource
         return [
             'index' => ListSpecializations::route('/'),
             'create' => CreateSpecialization::route('/create'),
+            'view' => \App\Filament\Resources\Specializations\Pages\ViewSpecialization::route('/{record}'),
             'edit' => EditSpecialization::route('/{record}/edit'),
         ];
     }

@@ -11,11 +11,17 @@ class Bill extends Model
     use HasFactory, SoftDeletes;
 
     protected $fillable = [
-        'patient_enrollment_id', 'appointment_id',
-        'total_amount', 'status', 'payment_due_date',
-        'payment_method', 'payment_date', 'reference_number',
+        'patient_enrollment_id',
+        'appointment_id',
+        'total_amount',
+        'status',
+        'payment_due_date',
+        'payment_method',
+        'payment_date',
+        'reference_number',
         'snap_token',
         'midtrans_order_id',
+        'midtrans_transaction_id',
     ];
 
     protected $casts = [
@@ -25,7 +31,6 @@ class Bill extends Model
         'payment_date'     => 'datetime',
     ];
 
-    
     public function patientEnrollment()
     {
         return $this->belongsTo(PatientEnrollment::class);
@@ -41,7 +46,6 @@ class Bill extends Model
         return $this->hasMany(BillItem::class);
     }
 
-    
     public function isPaid(): bool
     {
         return $this->status === 'paid';

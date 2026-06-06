@@ -8,4 +8,5 @@ Route::get('/user', function (Request $request) {
     return $request->user();
 })->middleware('auth:sanctum');
 
-Route::post('/midtrans/callback', [MidtransController::class, 'callback'])->name('midtrans.callback');
+Route::post('/midtrans/notification', [MidtransController::class, 'handleNotification'])
+    ->name('midtrans.notification');
