@@ -74,7 +74,7 @@
                 </div>
                 <div class="flex justify-between py-2.5 border-b border-gray-50">
                     <dt class="text-gray-400 font-medium">Pengalaman Klinis</dt>
-                    <dd class="font-semibold text-gray-800">{{ $experience }}</dd>
+                    <dd class="font-semibold text-gray-800">{{ $experience }} tahun</dd>
                 </div>
                 <div class="flex justify-between py-2.5">
                     <dt class="text-gray-400 font-medium">Alamat Domisili</dt>

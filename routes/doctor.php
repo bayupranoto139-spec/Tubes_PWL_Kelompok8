@@ -1,9 +1,12 @@
 <?php
 
+use App\Http\Controllers\Doctor\AppointmentCompleteController;
 use App\Http\Controllers\Doctor\AppointmentController;
 use App\Http\Controllers\Doctor\DashboardController;
 use App\Http\Controllers\Doctor\PrescriptionController;
+use App\Http\Controllers\Doctor\PrescriptionStoreController;
 use App\Http\Controllers\Doctor\ProfileController;
+use App\Http\Controllers\Doctor\ProfileUpdateController;
 use App\Http\Controllers\Doctor\ScheduleController;
 use Illuminate\Support\Facades\Route;
 
@@ -14,9 +17,12 @@ Route::middleware(['auth'])->prefix('doctor')->name('doctor.')->group(function (
     Route::get('/schedule', [ScheduleController::class, 'index'])->name('schedule');
     Route::get('/prescription', [PrescriptionController::class, 'index'])->name('prescription');
     Route::get('/profile', [ProfileController::class, 'index'])->name('profile');
-    Route::post('/profile/update', [\App\Http\Controllers\Doctor\ProfileUpdateController::class, 'update'])->name('profile.update');
+    Route::post('/profile/update', [ProfileUpdateController::class, 'update'])->name('profile.update');
 
-    Route::post('/prescription', [\App\Http\Controllers\Doctor\PrescriptionStoreController::class, 'store'])->name('prescription.store');
+    Route::post('/prescription', [PrescriptionStoreController::class, 'store'])->name('prescription.store');
 
     Route::get('/appointments', [AppointmentController::class, 'index'])->name('appointments');
+
+    // Doctor completes an appointment (sets status -> completed)
+    Route::post('/appointments/{appointment}/complete', [AppointmentCompleteController::class, 'complete'])->name('appointments.complete');
 });
