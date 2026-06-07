@@ -89,12 +89,15 @@ class UserForm
                 ->columnSpanFull()
                 ->schema([
 
+                    // Untuk role dokter/staff, hospital diambil dari users.hospital_id.
+                    // Untuk role pasien, hospital bisa lebih dari 1 (pakai patient_enrollments).
                     Select::make('hospital_id')
                         ->label('Hospital')
                         ->relationship('hospital', 'name')
                         ->searchable()
                         ->preload()
                         ->native(false)
+                        ->disabled(fn ($record) => ($record?->role ?? null) === 'pasien')
 
                         // otomatis mengikuti hospital admin_rs
                         ->default(
