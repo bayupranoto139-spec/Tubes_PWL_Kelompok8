@@ -18,29 +18,30 @@ class ViewUser extends ViewRecord
     {
         $record = $this->getRecord();
 
-        // If the record is a pasien, set hospital_id just for compatibility,
-        // but we will override the view data with hospital list via a form field.
-        // (This app currently uses form rendering on View.)
         $payload = [
             ...$record->attributesToArray(),
         ];
 
-        // Provide a virtual field value for hospital list (rendered in UserForm via TextEntry-like component
-        // is not currently implemented). For now we ensure the model has hospital_id not null for pasien,
-        // by picking first enrollment hospital.
         if (($record?->role ?? null) === 'pasien') {
-
-            $payload['registered_hospitals'] = $record->patientEnrollments()
+            $enrollments = $record->patientEnrollments()
                 ->with('hospital')
-                ->get()
-                ->pluck('hospital.name')
-                ->filter()
-                ->implode(', ');
+                ->get();
 
-            $first = $record->patientEnrollments()
-                ->whereNotNull('hospital_id')
-                ->first();
+            // Provide all enrolled hospitals as a collection for the repeater-style view
+            $payload['enrolled_hospitals'] = $enrollments
+                ->map(fn ($enrollment) => [
+                    'hospital_id'           => $enrollment->hospital_id,
+                    'hospital_name'         => $enrollment->hospital?->name ?? '-',
+                    'hospital_city'         => $enrollment->hospital?->city ?? '-',
+                    'hospital_code'         => $enrollment->hospital?->code ?? '-',
+                    'medical_record_number' => $enrollment->medical_record_number ?? '-',
+                    'is_active'             => $enrollment->hospital?->is_active ?? false,
+                ])
+                ->values()
+                ->toArray();
 
+            // Keep hospital_id pointing to the first enrollment for compatibility
+            $first = $enrollments->whereNotNull('hospital_id')->first();
             $payload['hospital_id'] = $first?->hospital_id;
         }
 

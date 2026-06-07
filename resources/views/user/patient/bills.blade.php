@@ -80,7 +80,7 @@
                             <h4 class="text-lg font-black text-gray-800">Rp {{ number_format($bill->total_amount, 0, ',', '.') }}</h4>
                         </div>
                         
-                        <a href="{{ route('payment.create', $bill->id) }}" class="inline-flex items-center justify-center gap-2 px-5 py-3 bg-gradient-to-r from-teal-500 to-cyan-500 hover:from-teal-600 hover:to-cyan-600 text-white rounded-2xl text-xs font-semibold shadow-md shadow-teal-500/10 hover:shadow-teal-500/20 hover:-trangray-y-0.5 transition-all text-center cursor-pointer">
+                        <a href="{{ route('payment.create', $bill->id) }}" class="inline-flex items-center gap-2 px-5 py-3 bg-[#14b8a6] hover:bg-[#0d9488] text-white rounded-2xl text-sm font-semibold shadow-lg shadow-teal-500/10 transition-all cursor-pointer">
                             <!-- Pay Card Icon -->
                             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"></path></svg>
                             Pay with Midtrans

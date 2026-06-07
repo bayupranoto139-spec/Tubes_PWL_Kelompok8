@@ -2,12 +2,12 @@
 
 namespace App\Filament\Resources\Users\Schemas;
 
-use App\Models\Hospital;
 use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\Toggle;
+use Filament\Infolists\Components\TextEntry;
 use Filament\Schemas\Components\Grid;
 use Filament\Schemas\Components\Section;
 use Filament\Schemas\Schema;
@@ -89,30 +89,36 @@ class UserForm
                 ->columnSpanFull()
                 ->schema([
 
-                    // Untuk role dokter/staff, hospital diambil dari users.hospital_id.
-                    // Untuk role pasien, hospital bisa lebih dari 1 (pakai patient_enrollments).
+                    // Untuk role dokter/staff: single hospital select
                     Select::make('hospital_id')
                         ->label('Hospital')
                         ->relationship('hospital', 'name')
                         ->searchable()
                         ->preload()
                         ->native(false)
-                        ->disabled(fn ($record) => ($record?->role ?? null) === 'pasien')
-
-                        // otomatis mengikuti hospital admin_rs
-                        ->default(
-                            filament()->auth()->user()?->hospital_id
-                        )
-
-                        // admin_rs tidak boleh ganti hospital
-                        ->disabled(
-                            filament()->auth()->user()?->role === 'admin_rs'
-                        )
-
-                        // tetap tersimpan walaupun disabled
+                        ->hidden(fn ($record) => ($record?->role ?? null) === 'pasien')
+                        ->default(filament()->auth()->user()?->hospital_id)
+                        ->disabled(filament()->auth()->user()?->role === 'admin_rs')
                         ->dehydrated()
+                        ->required(fn ($record) => ($record?->role ?? null) !== 'pasien'),
 
-                        ->required(),
+                    // Untuk role pasien: badge per hospital
+                    TextEntry::make('enrolled_hospital_names')
+                        ->label('Registered Hospitals')
+                        ->visible(fn ($record) => ($record?->role ?? null) === 'pasien')
+                        ->state(fn ($record) => $record
+                            ?->patientEnrollments()
+                            ->with('hospital')
+                            ->get()
+                            ->pluck('hospital.name')
+                            ->filter()
+                            ->values()
+                            ->all()
+                        )
+                        ->badge()
+                        ->color('primary')
+                        ->separator(',')
+                        ->columnSpanFull(),
 
                 ]),
 
