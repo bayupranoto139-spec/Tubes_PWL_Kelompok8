@@ -30,16 +30,19 @@ class QueueService
      *  1 = appointment (pasien dengan booking sebelumnya, on-time)
      *  2 = walk-in / terlambat (tanpa booking atau datang terlambat)
      */
-    public static function createForAppointment(Appointment $appointment): Queue
+    public static function createForAppointment(Appointment $appointment, bool $isWalkIn = false): Queue
     {
-        // Idempotent: jika sudah ada, kembalikan yang existing
         if ($existing = $appointment->queue) {
             return $existing;
         }
 
-        $isWalkIn   = is_null($appointment->schedule_id);
-        $queueDate  = Carbon::parse($appointment->scheduled_at)->toDateString();
-        $doctorId   = $appointment->doctor_id;
+        // Jika tidak di-override, fallback ke cek schedule_id
+        if (!$isWalkIn) {
+            $isWalkIn = is_null($appointment->schedule_id);
+        }
+
+        $queueDate = Carbon::parse($appointment->scheduled_at)->toDateString();
+        $doctorId  = $appointment->doctor_id;
 
         return DB::transaction(function () use ($appointment, $isWalkIn, $queueDate, $doctorId) {
             $number = self::nextNumber($doctorId, $queueDate);

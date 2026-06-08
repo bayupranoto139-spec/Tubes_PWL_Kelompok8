@@ -64,12 +64,12 @@ class QueuesTable
                 Tables\Columns\TextColumn::make('status')
                     ->badge()
                     ->color(fn (string $state) => match ($state) {
-                        'waiting'     => 'gray',
-                        'called'      => 'info',
+                        'waiting' => 'gray',
+                        'called' => 'info',
                         'in_progress' => 'warning',
-                        'completed'   => 'success',
-                        'skipped'     => 'danger',
-                        default       => 'gray',
+                        'completed' => 'success',
+                        'skipped' => 'danger',
+                        default => 'gray',
                     }),
 
                 // TANGGAL ANTRIAN
@@ -85,17 +85,17 @@ class QueuesTable
 
                 Tables\Filters\SelectFilter::make('status')
                     ->options([
-                        'waiting'     => 'Waiting',
-                        'called'      => 'Called',
+                        'waiting' => 'Waiting',
+                        'called' => 'Called',
                         'in_progress' => 'In Progress',
-                        'completed'   => 'Completed',
-                        'skipped'     => 'Skipped',
+                        'completed' => 'Completed',
+                        'skipped' => 'Skipped',
                     ]),
 
                 Tables\Filters\SelectFilter::make('type')
                     ->options([
                         'appointment' => 'Appointment',
-                        'walk_in'     => 'Walk-in',
+                        'walk_in' => 'Walk-in',
                     ]),
 
                 Tables\Filters\Filter::make('today')
@@ -116,9 +116,9 @@ class QueuesTable
                     ->visible(fn (Queue $record) => $record->status === 'waiting')
                     ->requiresConfirmation()
                     ->modalHeading('Panggil Pasien')
-                    ->modalDescription(fn (Queue $record) => 'Panggil ' .
-                        ($record->appointment?->patientEnrollment?->user?->name ?? 'pasien') .
-                        ' (No. ' . $record->queue_number . ')?')
+                    ->modalDescription(fn (Queue $record) => 'Panggil '.
+                        ($record->appointment?->patientEnrollment?->user?->name ?? 'pasien').
+                        ' (No. '.$record->queue_number.')?')
                     ->action(fn (Queue $record) => $record->call()),
 
                 // MULAI pemeriksaan (called → in_progress)
@@ -153,8 +153,15 @@ class QueuesTable
 
             ])
 
-            ->defaultSort('priority', 'asc')
-            ->defaultSort('queue_number', 'asc')
+            ->modifyQueryUsing(
+                fn ($query) => $query
+                    ->with([
+                        'appointment.patientEnrollment.user',
+                        'appointment.doctor.user',
+                    ])
+                    ->orderBy('priority')
+                    ->orderBy('queue_number')
+            )
 
             ->modifyQueryUsing(
                 fn ($query) => $query->with([

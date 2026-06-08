@@ -44,7 +44,8 @@ class WalkInController extends Controller
                 'status'                => 'scheduled',
             ]);
 
-            QueueService::createForAppointment($appointment);
+            // Priority 2 = walk-in (eksplisit, tidak bergantung schedule_id)
+            QueueService::createForAppointment($appointment, true);
         });
 
         return redirect()
