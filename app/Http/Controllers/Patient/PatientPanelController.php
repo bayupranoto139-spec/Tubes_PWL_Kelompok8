@@ -69,6 +69,79 @@ class PatientPanelController extends Controller
         ));
     }
 
+    public function hospitals()
+    {
+        $user = auth()->user();
+
+        $joinedHospitals = Hospital::whereHas(
+            'patientEnrollments',
+            fn ($q) => $q->where('user_id', $user->id)
+        )->get();
+
+        $availableHospitals = Hospital::where('is_active', true)
+            ->whereNotIn('id', $joinedHospitals->pluck('id'))
+            ->get();
+
+        return view(
+            'user.patient.hospitals',
+            compact(
+                'joinedHospitals',
+                'availableHospitals'
+            )
+        );
+    }
+
+    public function enrollHospital(Request $request)
+    {
+        $request->validate([
+            'hospital_id' => 'required|exists:hospitals,id',
+        ]);
+
+        $user = auth()->user();
+
+        $exists = PatientEnrollment::where(
+            'user_id',
+            $user->id
+        )
+            ->where(
+                'hospital_id',
+                $request->hospital_id
+            )
+            ->exists();
+
+        if ($exists) {
+            return back()->with(
+                'error',
+                'Anda sudah terdaftar.'
+            );
+        }
+
+        PatientEnrollment::create([
+            'user_id' => $user->id,
+            'hospital_id' => $request->hospital_id,
+            'medical_record_number' => $this->generateMrn($request->hospital_id),
+        ]);
+
+        return back()->with(
+            'success',
+            'Berhasil mendaftar.'
+        );
+    }
+
+    private function generateMrn($hospitalId)
+    {
+        $hospital = Hospital::findOrFail($hospitalId);
+
+        $count = PatientEnrollment::where(
+            'hospital_id',
+            $hospitalId
+        )->count() + 1;
+
+        return strtoupper($hospital->code)
+            .'-'
+            .str_pad($count, 5, '0', STR_PAD_LEFT);
+    }
+
     /**
      * Display patient's appointments and handles scheduling modal resources.
      */

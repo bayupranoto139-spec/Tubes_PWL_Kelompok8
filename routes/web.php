@@ -49,4 +49,6 @@ Route::middleware(['auth'])->prefix('user/patient')->name('patient.')->group(fun
     Route::get('/prescriptions', [PatientPanelController::class, 'prescriptions'])->name('prescriptions');
     Route::get('/profile', [PatientPanelController::class, 'profile'])->name('profile');
     Route::post('/profile', [PatientPanelController::class, 'updateProfile'])->name('profile.update');
+    Route::get('/hospitals', [PatientPanelController::class, 'hospitals'])->name('hospitals');
+    Route::post('/hospitals/enroll', [PatientPanelController::class, 'enrollHospital'])->name('hospitals.enroll');
 });
