@@ -3,6 +3,7 @@
 use App\Http\Controllers\Doctor\AppointmentCompleteController;
 use App\Http\Controllers\Doctor\AppointmentController;
 use App\Http\Controllers\Doctor\DashboardController;
+use App\Http\Controllers\Doctor\MedicalRecordController;
 use App\Http\Controllers\Doctor\PrescriptionController;
 use App\Http\Controllers\Doctor\PrescriptionStoreController;
 use App\Http\Controllers\Doctor\ProfileController;
@@ -23,6 +24,10 @@ Route::middleware(['auth'])->prefix('doctor')->name('doctor.')->group(function (
 
     Route::get('/appointments', [AppointmentController::class, 'index'])->name('appointments');
 
-    // Doctor completes an appointment (sets status -> completed)
+    // Complete appointment → auto generate bill
     Route::post('/appointments/{appointment}/complete', [AppointmentCompleteController::class, 'complete'])->name('appointments.complete');
+
+    // Medical Record
+    Route::get('/medical-records/{appointment}/create', [MedicalRecordController::class, 'create'])->name('medical-records.create');
+    Route::post('/medical-records/{appointment}', [MedicalRecordController::class, 'store'])->name('medical-records.store');
 });

@@ -15,70 +15,51 @@ class VisitsChart extends ChartWidget
 
     protected function getData(): array
     {
-        $user = filament()->auth()->user();
-
+        $user  = filament()->auth()->user();
+        $year  = now()->year;
         $query = Appointment::query();
 
         /*
         |--------------------------------------------------------------------------
-        | ADMIN RS
+        | ADMIN RS — filter via patient_enrollment ke hospital ini
         |--------------------------------------------------------------------------
         */
 
         if ($user->role === 'admin_rs') {
-
             $query->whereHas(
-                'doctor.user',
-                fn ($q) => $q->where(
-                    'hospital_id',
-                    $user->hospital_id
-                )
+                'patientEnrollment',
+                fn ($q) => $q->where('hospital_id', $user->hospital_id)
             );
         }
 
         /*
         |--------------------------------------------------------------------------
-        | MONTHLY DATA
+        | MONTHLY DATA — hanya appointment yang selesai (completed)
         |--------------------------------------------------------------------------
         */
 
         $monthlyVisits = [];
 
         for ($month = 1; $month <= 12; $month++) {
-
             $monthlyVisits[] = (clone $query)
                 ->whereMonth('scheduled_at', $month)
-                ->whereYear('scheduled_at', now()->year)
+                ->whereYear('scheduled_at', $year)
+                ->where('status', 'completed')
                 ->count();
         }
 
         return [
-
             'datasets' => [
                 [
-                    'label' => 'Visits',
-
-                    'data' => $monthlyVisits,
-
-                    'fill' => false,
-
+                    'label'   => 'Completed Visits ' . $year,
+                    'data'    => $monthlyVisits,
+                    'fill'    => false,
                     'tension' => 0.4,
                 ],
             ],
-
             'labels' => [
-                'Jan',
-                'Feb',
-                'Mar',
-                'Apr',
-                'May',
-                'Jun',
-                'Jul',
-                'Aug',
-                'Sep',
-                'Oct',
-                'Nov',
-                'Dec',
+                'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
+                'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec',
             ],
         ];
     }
@@ -92,10 +73,7 @@ class VisitsChart extends ChartWidget
     {
         return in_array(
             filament()->auth()->user()?->role,
-            [
-                'super_admin',
-                'admin_rs',
-            ]
+            ['super_admin', 'admin_rs']
         );
     }
 }

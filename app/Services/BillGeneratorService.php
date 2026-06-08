@@ -17,9 +17,14 @@ class BillGeneratorService
     {
         return DB::transaction(function () use ($appointment) {
 
-            // Idempotent: jika bill sudah ada, kembalikan yang existing
-            $appointment->loadMissing(['bill', 'doctor.user', 'patientEnrollment', 'medicalRecord.prescriptions.medication']);
+            $appointment->loadMissing([
+                'bill',
+                'doctor.user',
+                'patientEnrollment',
+                'medicalRecord.prescriptions.medication',
+            ]);
 
+            // Idempotent: jika bill sudah ada, kembalikan yang existing
             if ($existing = $appointment->bill) {
                 return $existing;
             }
@@ -28,23 +33,18 @@ class BillGeneratorService
             $enrollment    = $appointment->patientEnrollment;
             $medicalRecord = $appointment->medicalRecord;
 
-            // Buat bill header
-            $bill = Bill::create([
-                'patient_enrollment_id' => $enrollment->id,
-                'appointment_id'        => $appointment->id,
-                'total_amount'          => 0, // akan di-recalculate otomatis via BillItem::saved()
-                'status'                => 'unpaid',
-                'payment_due_date'      => now()->addDays(7),
-            ]);
+            // Kumpulkan dulu semua item beserta nilainya
+            $lineItems = [];
 
             // Item 1: Biaya konsultasi dokter
-            BillItem::create([
-                'bill_id'     => $bill->id,
+            $consultationFee = (float) ($doctor->consultation_fee ?? 0);
+            $lineItems[] = [
                 'item_type'   => 'consultation',
                 'description' => 'Biaya Konsultasi - Dr. ' . ($doctor->user->name ?? 'Dokter'),
                 'quantity'    => 1,
-                'unit_price'  => $doctor->consultation_fee ?? 0,
-            ]);
+                'unit_price'  => $consultationFee,
+                'subtotal'    => $consultationFee,
+            ];
 
             // Item 2+: Biaya obat dari prescription (opsional)
             if ($medicalRecord) {
@@ -54,19 +54,39 @@ class BillGeneratorService
                         continue;
                     }
 
-                    BillItem::create([
-                        'bill_id'     => $bill->id,
+                    $qty      = (int) $prescription->quantity;
+                    $price    = (float) ($medication->price ?? 0);
+                    $subtotal = $qty * $price;
+
+                    $lineItems[] = [
                         'item_type'   => 'medication',
                         'description' => $medication->name
                             . ' (' . $prescription->dosage . ')'
                             . ($prescription->duration ? ', ' . $prescription->duration : ''),
-                        'quantity'    => $prescription->quantity,
-                        'unit_price'  => $medication->price ?? 0,
-                    ]);
+                        'quantity'    => $qty,
+                        'unit_price'  => $price,
+                        'subtotal'    => $subtotal,
+                    ];
                 }
             }
 
-            // Refresh agar total_amount terbaru (sudah di-trigger BillItem::saved())
+            $totalAmount = collect($lineItems)->sum('subtotal');
+
+            $bill = Bill::create([
+                'patient_enrollment_id' => $enrollment->id,
+                'appointment_id'        => $appointment->id,
+                'total_amount'          => $totalAmount,
+                'status'                => 'unpaid',
+                'payment_due_date'      => now()->addDays(7),
+            ]);
+
+            foreach ($lineItems as $item) {
+                BillItem::create(array_merge(['bill_id' => $bill->id], $item));
+            }
+
+            // Satu kali recalculate untuk memastikan sinkron dengan DB
+            $bill->recalculateTotal();
+
             return $bill->refresh();
         });
     }

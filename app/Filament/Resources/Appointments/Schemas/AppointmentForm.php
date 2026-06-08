@@ -80,10 +80,8 @@ class AppointmentForm
                     ->searchable()
                     ->preload()
                     ->required()
-                    ->reactive()                           // ← must be reactive
+                    ->reactive()
                     ->afterStateUpdated(function ($get, $set) {
-                        // If doctor changes, ensure slot remains valid for that doctor.
-                        // Also clear hidden fields until a valid slot is chosen.
                         $set('appointment_slot', null);
                         $set('schedule_id', null);
                         $set('scheduled_at', null);
@@ -93,7 +91,12 @@ class AppointmentForm
                 AppointmentDatePicker::make('appointment_date')
                     ->label('Appointment Date')
                     ->required()
-                    ->minDate(now())
+                    ->minDate(function () {
+                        $role = filament()->auth()->user()?->role;
+                        return in_array($role, ['admin_rs', 'staff'])
+                            ? now()->toDateString()
+                            : now()->addDay()->toDateString();
+                    })
                     ->native(false)
                     ->reactive()                           // ← must be reactive
                     ->disabled(function ($get) {

@@ -36,7 +36,7 @@
     {{-- Stats mini row --}}
     <div class="grid grid-cols-2 sm:grid-cols-4 gap-4">
         @php
-            $waitingCount   = $todayAppointments->whereIn('status', ['scheduled', 'confirmed'])->count();
+            $waitingCount   = $todayAppointments->where('status', 'scheduled')->count();
             $doneCount      = $todayAppointments->where('status', 'completed')->count();
             $totalCount     = $todayAppointments->count();
         @endphp
@@ -193,31 +193,31 @@
                                         Menunggu
                                     </span>
 
-                                    <div class="mt-2">
+                                    <div class="mt-2 flex flex-col gap-1.5">
                                         @if ($canComplete)
-                                            {{-- Sudah ada rekam medis → boleh complete --}}
+                                            {{-- Sudah ada rekam medis → tampilkan tombol tambah resep + selesaikan --}}
+                                            <a href="{{ route('doctor.prescription') }}"
+                                                class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-white border border-blue-300 text-blue-600 font-semibold text-xs hover:bg-blue-50 shadow-sm transition-all">
+                                                <i class="fa-solid fa-capsules text-[10px]"></i>
+                                                {{ $hasPrescription ? 'Tambah Resep' : 'Beri Resep' }}
+                                            </a>
                                             <form method="POST"
                                                 action="{{ route('doctor.appointments.complete', $apt->id) }}"
                                                 class="inline">
                                                 @csrf
                                                 <button type="submit"
-                                                    class="px-3 py-1.5 rounded-xl bg-gradient-to-r from-teal-500 to-cyan-600 text-white font-semibold text-xs hover:from-teal-600 hover:to-cyan-700 shadow-sm flex items-center gap-1.5">
+                                                    class="w-full px-3 py-1.5 rounded-xl bg-gradient-to-r from-teal-500 to-cyan-600 text-white font-semibold text-xs hover:from-teal-600 hover:to-cyan-700 shadow-sm flex items-center gap-1.5">
                                                     <i class="fa-solid fa-circle-check text-[10px]"></i>
                                                     Selesaikan & Buat Tagihan
                                                 </button>
                                             </form>
                                         @else
-                                            {{-- Belum ada rekam medis → disable --}}
-                                            <div class="group relative inline-block">
-                                                <button type="button" disabled
-                                                    class="px-3 py-1.5 rounded-xl bg-gray-200 text-gray-400 font-semibold text-xs cursor-not-allowed flex items-center gap-1.5">
-                                                    <i class="fa-solid fa-lock text-[10px]"></i>
-                                                    Selesaikan
-                                                </button>
-                                                <div class="absolute bottom-full left-0 mb-1 hidden group-hover:block z-10 w-48 rounded-lg bg-gray-800 text-white text-xs px-3 py-2 shadow-lg">
-                                                    Isi rekam medis terlebih dahulu sebelum menyelesaikan appointment.
-                                                </div>
-                                            </div>
+                                            {{-- Belum ada rekam medis → arahkan ke form create --}}
+                                            <a href="{{ route('doctor.medical-records.create', $apt->id) }}"
+                                                class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-gradient-to-r from-violet-500 to-purple-600 text-white font-semibold text-xs hover:from-violet-600 hover:to-purple-700 shadow-sm transition-all">
+                                                <i class="fa-solid fa-file-medical text-[10px]"></i>
+                                                Isi Rekam Medis
+                                            </a>
                                         @endif
                                     </div>
                                 @endif

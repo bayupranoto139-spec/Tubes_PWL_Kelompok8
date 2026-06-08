@@ -27,19 +27,32 @@ class MidtransController extends Controller
             return redirect()->route('patient.bills')->with('info', 'Tagihan ini sudah dibayar.');
         }
 
+        // Pastikan total_amount sinkron dengan bill items sebelum dikirim ke Midtrans
+        $bill->recalculateTotal();
+        $bill->refresh();
+
+        $grossAmount = (int) round((float) $bill->total_amount);
+
+        // Guard: total harus > 0
+        if ($grossAmount <= 0) {
+            Log::error("Midtrans createPayment: Bill ID={$bill->id} has total_amount={$bill->total_amount}. Aborting.");
+            return redirect()->route('patient.bills')
+                ->with('error', 'Tagihan tidak valid: total biaya adalah Rp 0. Hubungi admin.');
+        }
+
         $orderId = 'BILL-' . $bill->id . '-' . time();
 
         $params = [
             'transaction_details' => [
                 'order_id'     => $orderId,
-                'gross_amount' => (int) $bill->total_amount,
+                'gross_amount' => $grossAmount,
             ],
             'customer_details' => [
                 'first_name' => $bill->patientEnrollment->user->name ?? 'Pasien',
                 'email'      => $bill->patientEnrollment->user->email ?? 'pasien@example.com',
                 'phone'      => $bill->patientEnrollment->user->phone ?? '08000000000',
             ],
-            'item_details' => $this->getItemDetails($bill),
+            'item_details' => $this->getItemDetails($bill, $grossAmount),
         ];
 
         try {
@@ -50,7 +63,7 @@ class MidtransController extends Controller
                 'reference_number' => $orderId,
             ]);
 
-            Log::info("Midtrans: Snap token created for bill {$bill->id}, order_id={$orderId}");
+            Log::info("Midtrans: Snap token created for bill {$bill->id}, order_id={$orderId}, gross_amount={$grossAmount}");
 
             return view('payment.pay', compact('snapToken', 'bill'));
 
@@ -61,17 +74,38 @@ class MidtransController extends Controller
         }
     }
 
-    private function getItemDetails(Bill $bill): array
+    /**
+     * Build item_details untuk Midtrans.
+     */
+    private function getItemDetails(Bill $bill, int $grossAmount): array
     {
-        $items = [];
+        $items      = [];
+        $itemsTotal = 0;
+
         foreach ($bill->billItems as $item) {
+            $price    = (int) round((float) $item->unit_price);
+            $quantity = (int) $item->quantity;
+
             $items[] = [
                 'id'       => (string) $item->id,
-                'price'    => (int) $item->unit_price,
-                'quantity' => (int) $item->quantity,
-                'name'     => substr($item->description, 0, 50),
+                'price'    => $price,
+                'quantity' => $quantity,
+                'name'     => mb_substr($item->description, 0, 50),
+            ];
+
+            $itemsTotal += $price * $quantity;
+        }
+
+        $diff = $grossAmount - $itemsTotal;
+        if ($diff !== 0) {
+            $items[] = [
+                'id'       => 'ROUNDING',
+                'price'    => $diff,
+                'quantity' => 1,
+                'name'     => 'Penyesuaian pembulatan',
             ];
         }
+
         return $items;
     }
 
@@ -80,7 +114,6 @@ class MidtransController extends Controller
         $this->bootMidtrans();
 
         try {
-            // Midtrans Notification object otomatis validasi signature key
             $notification = new Notification();
 
             $orderId           = $notification->order_id;
@@ -90,70 +123,48 @@ class MidtransController extends Controller
             $transactionId     = $notification->transaction_id;
 
             Log::info("Midtrans Notification Received", [
-                'order_id'   => $orderId,
-                'status'     => $transactionStatus,
-                'fraud'      => $fraudStatus,
-                'payment'    => $paymentType,
+                'order_id' => $orderId,
+                'status'   => $transactionStatus,
+                'fraud'    => $fraudStatus,
+                'payment'  => $paymentType,
             ]);
 
-            // Cari bill: format order_id adalah "BILL-{id}-{timestamp}"
             $bill = null;
-
-            // Cara 1: parse bill ID dari order_id
             if (preg_match('/^BILL-(\d+)-\d+$/', $orderId, $matches)) {
                 $bill = Bill::find($matches[1]);
             }
-
-            // Cara 2: fallback cari by reference_number
             if (! $bill) {
                 $bill = Bill::where('reference_number', $orderId)->first();
             }
-
             if (! $bill) {
                 Log::error("Midtrans: Bill tidak ditemukan untuk order_id={$orderId}");
                 return response()->json(['message' => 'Bill not found'], 404);
             }
 
-            Log::info("Midtrans: Found bill ID={$bill->id}, current status={$bill->status}");
-
-            // Update status berdasarkan transaction_status dari Midtrans
             if ($transactionStatus === 'capture') {
                 if ($fraudStatus === 'accept') {
                     $this->markBillPaid($bill, $paymentType, $transactionId);
-                } else {
-                    // fraudStatus === 'challenge' → tunggu review manual
-                    Log::warning("Midtrans: Bill {$bill->id} flagged as fraud challenge");
                 }
-
             } elseif ($transactionStatus === 'settlement') {
-                // settlement = final confirmed (bank transfer, etc.)
                 $this->markBillPaid($bill, $paymentType, $transactionId);
-
             } elseif (in_array($transactionStatus, ['cancel', 'deny', 'expire'])) {
                 $bill->update([
                     'status'                  => 'unpaid',
                     'midtrans_transaction_id' => $transactionId,
                 ]);
-                Log::info("Midtrans: Bill {$bill->id} payment {$transactionStatus}");
-
-            } elseif ($transactionStatus === 'pending') {
-                // Masih menunggu bayar (misal: VA belum ditransfer)
-                Log::info("Midtrans: Bill {$bill->id} payment pending");
             }
 
             return response()->json(['message' => 'OK']);
 
         } catch (\Throwable $e) {
-            Log::error('Midtrans handleNotification exception: ' . $e->getMessage(), [
-                'trace' => $e->getTraceAsString(),
-            ]);
-            return response()->json(['message' => 'Server error: ' . $e->getMessage()], 500);
+            Log::error('Midtrans handleNotification exception: ' . $e->getMessage());
+            return response()->json(['message' => 'Server error'], 500);
         }
     }
 
     private function markBillPaid(Bill $bill, ?string $paymentType, ?string $transactionId): void
     {
-        $updated = $bill->update([
+        $bill->update([
             'status'                  => 'paid',
             'payment_date'            => now(),
             'payment_method'          => $paymentType ?? 'bank_transfer',
@@ -163,22 +174,10 @@ class MidtransController extends Controller
         Log::info("Midtrans: Bill {$bill->id} marked PAID", [
             'payment_type'   => $paymentType,
             'transaction_id' => $transactionId,
-            'db_updated'     => $updated,
         ]);
     }
 
-    public function success()
-    {
-        return view('payment.success');
-    }
-
-    public function unfinish()
-    {
-        return view('payment.unfinish');
-    }
-
-    public function error()
-    {
-        return view('payment.error');
-    }
+    public function success()  { return view('payment.success'); }
+    public function unfinish() { return view('payment.unfinish'); }
+    public function error()    { return view('payment.error'); }
 }

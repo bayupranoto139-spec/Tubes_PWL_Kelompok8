@@ -55,8 +55,7 @@ class PrescriptionStoreController extends Controller
             ]);
         });
 
-        return redirect()->route('doctor.prescription')
-            ->with('success', 'Resep berhasil ditambahkan.');
+        return redirect()->route('doctor.today')
+            ->with('success', 'Resep berhasil ditambahkan. Pasien siap diselesaikan.');
     }
 }
-

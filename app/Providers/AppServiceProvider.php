@@ -4,6 +4,7 @@ namespace App\Providers;
 
 use App\Models\MedicalRecord;
 use App\Observers\MedicalRecordObserver;
+use Illuminate\Support\Facades\URL;
 use Illuminate\Support\ServiceProvider;
 use Midtrans\Config;
 
@@ -23,5 +24,9 @@ class AppServiceProvider extends ServiceProvider
     public function boot(): void
     {
         MedicalRecord::observe(MedicalRecordObserver::class);
+
+        if (str_contains(request()->getHost(), 'ngrok-free.dev')) {
+        URL::forceScheme('https');
+    }
     }
 }

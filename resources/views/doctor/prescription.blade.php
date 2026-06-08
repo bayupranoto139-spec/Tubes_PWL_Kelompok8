@@ -9,6 +9,11 @@
             <h1 class="text-2xl font-extrabold text-gray-800">Daftar Resep Obat</h1>
             <p class="text-sm text-gray-400 mt-1">Riwayat instruksi dosis obat untuk pasien.</p>
         </div>
+        <a href="{{ route('doctor.today') }}"
+            class="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl border border-gray-200 bg-white text-gray-700 text-sm font-semibold hover:bg-gray-50 shadow-sm transition-colors">
+            <i class="fa-solid fa-arrow-left text-xs"></i>
+            Kembali ke Jadwal Hari Ini
+        </a>
     </div>
 
     {{-- Stats mini --}}
@@ -47,8 +52,7 @@
     {{-- Form Tambah Resep --}}
     <div class="bg-white rounded-2xl shadow-sm border border-gray-200 p-6">
         <h3 class="text-lg font-bold text-gray-800 mb-2">Tambah Resep</h3>
-        <p class="text-sm text-gray-400 mb-5">Pilih pasien dari appointment hari ini (status: scheduled) yang belum
-            diperiksa oleh dokter tersebut.</p>
+        <p class="text-sm text-gray-400 mb-5">Pilih pasien dari appointment hari ini yang sudah memiliki rekam medis dan belum diselesaikan.</p>
 
         <form method="POST" action="{{ route('doctor.prescription.store') }}"
             class="grid grid-cols-1 md:grid-cols-2 gap-4">
