@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Doctor;
 
 use App\Http\Controllers\Controller;
 use App\Models\Appointment;
+use App\Models\Queue;
 use Illuminate\Support\Facades\DB;
 
 class DashboardController extends Controller
@@ -38,11 +39,15 @@ class DashboardController extends Controller
             ->limit(5)
             ->get();
 
+        // Pasien berikutnya yang menunggu di antrian (priority queue)
+        $nextQueue = Queue::getNextQueue($doctorId);
+
         return view('doctor.dashboard', compact(
             'todayQueue',
             'completedVisits',
             'consultationFee',
-            'recentAppointments'
+            'recentAppointments',
+            'nextQueue'
         ));
     }
 
@@ -67,10 +72,14 @@ class DashboardController extends Controller
                 'doctor.specialization',
                 'medicalRecord.prescriptions',  // untuk cek apakah sudah ada rekam medis & prescription
                 'bill',                          // untuk cek apakah sudah ada tagihan
+                'queue',                         // untuk tampilkan nomor antrian & status
             ])
             ->orderBy('scheduled_at', 'asc')
             ->get();
 
-        return view('doctor.today', compact('doctorId', 'todayAppointments'));
+        // Pasien berikutnya yang menunggu (untuk ditampilkan di banner atas)
+        $nextQueue = Queue::getNextQueue($doctorId);
+
+        return view('doctor.today', compact('doctorId', 'todayAppointments', 'nextQueue'));
     }
 }

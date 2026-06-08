@@ -33,6 +33,35 @@
         </div>
     @endif
 
+    {{-- Next Queue Banner --}}
+    @if ($nextQueue)
+        @php
+            $nqPatient = $nextQueue->appointment?->patientEnrollment?->user?->name ?? 'Pasien';
+            $nqType    = $nextQueue->type === 'walk_in' ? 'Walk-in' : 'Appointment';
+            $nqBadge   = $nextQueue->type === 'walk_in'
+                ? 'bg-amber-100 text-amber-700'
+                : 'bg-blue-100 text-blue-700';
+        @endphp
+        <div class="flex items-center gap-4 rounded-2xl bg-gradient-to-r from-teal-50 to-cyan-50 border border-teal-200 px-5 py-4">
+            <div class="w-12 h-12 rounded-xl bg-teal-500 flex items-center justify-center shrink-0">
+                <i class="fa-solid fa-bell text-white text-lg"></i>
+            </div>
+            <div class="flex-1">
+                <p class="text-xs text-teal-600 font-semibold uppercase tracking-wide mb-0.5">Pasien Berikutnya di Antrian</p>
+                <p class="text-base font-bold text-gray-800">
+                    No. {{ $nextQueue->queue_number }} — {{ $nqPatient }}
+                </p>
+                <div class="flex items-center gap-2 mt-1">
+                    <span class="text-xs px-2 py-0.5 rounded-full font-medium {{ $nqBadge }}">{{ $nqType }}</span>
+                    <span class="text-xs text-gray-500">
+                        Jam {{ \Carbon\Carbon::parse($nextQueue->appointment?->scheduled_at)->format('H:i') }}
+                        · Status: <span class="font-medium capitalize">{{ $nextQueue->status }}</span>
+                    </span>
+                </div>
+            </div>
+        </div>
+    @endif
+
     {{-- Stats mini row --}}
     <div class="grid grid-cols-2 sm:grid-cols-4 gap-4">
         @php
@@ -94,7 +123,7 @@
             <table class="w-full text-sm">
                 <thead>
                     <tr class="bg-gray-50 border-b border-gray-100 text-xs font-semibold text-gray-400 uppercase tracking-wider">
-                        <th class="px-6 py-3 text-left">No.</th>
+                        <th class="px-6 py-3 text-left">No. Antrian</th>
                         <th class="px-6 py-3 text-left">Nama Pasien</th>
                         <th class="px-6 py-3 text-left">Jam Periksa</th>
                         <th class="px-6 py-3 text-left">Keluhan</th>
@@ -113,14 +142,37 @@
                             $hasPrescription = $hasMedRecord && $apt->medicalRecord->prescriptions->isNotEmpty();
                             $isCompleted   = $apt->status === 'completed';
                             $hasBill       = (bool) $apt->bill;
-                            // Boleh complete jika sudah ada rekam medis (prescription opsional)
                             $canComplete   = ! $isCompleted && $hasMedRecord;
+                            $queue         = $apt->queue;
                         @endphp
                         <tr class="hover:bg-gray-50 transition-colors">
 
-                            {{-- No --}}
-                            <td class="px-6 py-4 font-bold text-gray-900">
-                                {{ str_pad((string) ($i + 1), 2, '0', STR_PAD_LEFT) }}
+                            {{-- No. Antrian --}}
+                            <td class="px-6 py-4">
+                                @if ($queue)
+                                    <div class="flex flex-col items-start gap-1">
+                                        <span class="font-bold text-gray-900 text-base">
+                                            {{ str_pad((string) $queue->queue_number, 2, '0', STR_PAD_LEFT) }}
+                                        </span>
+                                        <span class="text-[10px] px-1.5 py-0.5 rounded-full font-semibold
+                                            {{ $queue->type === 'walk_in' ? 'bg-amber-100 text-amber-700' : 'bg-blue-100 text-blue-700' }}">
+                                            {{ $queue->type === 'walk_in' ? 'Walk-in' : 'Appt' }}
+                                        </span>
+                                        <span class="text-[10px] px-1.5 py-0.5 rounded-full font-semibold
+                                            {{ match($queue->status) {
+                                                'waiting'     => 'bg-gray-100 text-gray-600',
+                                                'called'      => 'bg-sky-100 text-sky-700',
+                                                'in_progress' => 'bg-yellow-100 text-yellow-700',
+                                                'completed'   => 'bg-green-100 text-green-700',
+                                                'skipped'     => 'bg-red-100 text-red-700',
+                                                default       => 'bg-gray-100 text-gray-600',
+                                            } }}">
+                                            {{ ucfirst(str_replace('_', ' ', $queue->status)) }}
+                                        </span>
+                                    </div>
+                                @else
+                                    <span class="text-xs text-gray-400 italic">—</span>
+                                @endif
                             </td>
 
                             {{-- Pasien --}}

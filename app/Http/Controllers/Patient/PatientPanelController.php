@@ -12,6 +12,7 @@ use App\Models\PatientEnrollment;
 use App\Models\PatientMedicalInfo;
 use App\Models\Prescription;
 use App\Models\Schedule;
+use App\Services\QueueService;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Collection;
@@ -217,7 +218,7 @@ class PatientPanelController extends Controller
         }
 
         // 4) Create the appointment
-        Appointment::create([
+        $appointment = Appointment::create([
             'patient_enrollment_id' => $enrollment->id,
             'doctor_id' => $request->doctor_id,
             'schedule_id' => $schedule->id,
@@ -225,6 +226,9 @@ class PatientPanelController extends Controller
             'complaint' => $request->complaint,
             'status' => 'scheduled',
         ]);
+
+        // 5) Auto-create queue entry (priority 1 = appointment, bukan walk-in)
+        QueueService::createForAppointment($appointment);
 
         return redirect()->route('patient.appointments')->with('success', 'Appointment successfully scheduled!');
     }

@@ -5,6 +5,7 @@ use App\Http\Controllers\MidtransController;
 use App\Http\Controllers\Patient\PatientPanelController;
 use App\Http\Controllers\PatientController;
 use App\Http\Controllers\PaymentController;
+use App\Http\Controllers\Admin\WalkInController;
 use Illuminate\Support\Facades\Route;
 
 require __DIR__.'/auth.php';
@@ -31,6 +32,11 @@ Route::middleware(['auth'])->group(function () {
 // Payments list & manual pay
 Route::get('/payments', [PaymentController::class, 'index']);
 Route::post('/payments/pay/{id}', [PaymentController::class, 'pay']);
+
+// Admin Walk-in queue registration (admin_rs & staff only)
+Route::middleware(['auth'])->prefix('admin')->group(function () {
+    Route::post('/walk-in', [WalkInController::class, 'store'])->name('admin.walk-in.store');
+});
 
 // Patient Panel Routes
 Route::middleware(['auth'])->prefix('user/patient')->name('patient.')->group(function () {
