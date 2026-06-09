@@ -33,8 +33,17 @@ class LoginController extends Controller
         // Cek apakah user aktif
         if (! $user->is_active) {
             Auth::logout();
+            return back()->withErrors(['email' => 'Akun Anda tidak aktif. Hubungi administrator.']);
+        }
 
-            return back()->withErrors(['email' => 'Akun Anda tidak aktif.']);
+        // Pasien wajib sudah verifikasi email minimal sekali
+        // Setelah verified, login selanjutnya bebas masuk
+        if ($user->role === 'pasien' && ! $user->hasVerifiedEmail()) {
+            Auth::logout();
+            return back()
+                ->withErrors(['email' => 'Email Anda belum diverifikasi. Silakan cek inbox dan klik link verifikasi yang telah dikirim.'])
+                ->with('unverified_email', $user->email)
+                ->onlyInput('email');
         }
 
         return $this->redirectByRole($user);

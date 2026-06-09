@@ -25,9 +25,16 @@ class EnsurePatientEmailVerified
             return redirect()->route('login');
         }
 
-        // Verifikasi email hanya di-enforce langsung setelah registrasi
-        // (via redirect di PatientRegisterController), bukan saat login.
-        // Middleware ini hanya memastikan user sudah login (auth).
+        // Blokir pasien yang belum pernah verifikasi email.
+        // Setelah verified, email_verified_at tidak pernah null lagi
+        // sehingga login selanjutnya bebas masuk tanpa cek ulang.
+        if ($user->role === 'pasien' && ! $user->hasVerifiedEmail()) {
+            Auth::logout();
+
+            return redirect()->route('login')
+                ->withErrors(['email' => 'Email Anda belum diverifikasi. Silakan cek inbox Anda.'])
+                ->with('unverified_email', $user->email);
+        }
 
         return $next($request);
     }

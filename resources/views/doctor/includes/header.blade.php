@@ -24,4 +24,4 @@
     </style>
 </head>
 <body class="bg-gray-100 font-sans antialiased">
-<div class="flex min-h-screen">
+<div class="flex min-h-screen w-full overflow-x-hidden">

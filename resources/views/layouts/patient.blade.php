@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="id">
+<html lang="id" class="overflow-x-hidden">
 
 <head>
     <meta charset="UTF-8">
@@ -67,8 +67,8 @@
     @yield('head')
 </head>
 
-<body class="bg-gray-100 font-sans antialiased overflow-x-hidden">
-    <div class="flex min-h-screen w-screen overflow-x-hidden">
+<body class="bg-gray-100 font-sans antialiased overflow-x-hidden max-w-[100vw]">
+    <div class="flex min-h-screen w-full overflow-x-hidden">
 
         {{-- ====================== SIDEBAR ====================== --}}
         @php
@@ -78,7 +78,7 @@
         @endphp
 
         <aside id="patient-sidebar"
-            class="w-[17.5rem] bg-[#111827] text-white flex flex-col fixed h-full z-20 shadow-2xl transition-transform duration-300 -trangray-x-full md:trangray-x-0">
+            class="w-[17.5rem] bg-[#111827] text-white flex flex-col fixed h-full z-20 shadow-2xl transition-transform duration-300 -translate-x-full md:translate-x-0 overflow-hidden">
 
             {{-- Brand --}}
             <div class="px-6 py-5 flex items-center gap-3 border-b border-white/10">
@@ -172,7 +172,7 @@
         <div id="sidebar-overlay" class="fixed inset-0 z-10 bg-black/50 hidden md:hidden"></div>
 
         {{-- ====================== TOPBAR + MAIN WRAPPER ====================== --}}
-        <div class="flex-1 md:ml-[17.5rem] flex flex-col min-h-screen">
+        <div class="flex-1 min-w-0 md:ml-[17.5rem] flex flex-col min-h-screen overflow-x-hidden">
 
             {{-- Topbar --}}
             <header
@@ -215,7 +215,7 @@
             </header>
 
             {{-- Page content --}}
-            <main class="flex-1 p-6 bg-gray-50">
+            <main class="flex-1 p-3 sm:p-5 md:p-6 bg-gray-50">
 
                 {{-- Flash Alerts --}}
                 @if (session('success'))
@@ -251,12 +251,12 @@
         const burgerBtn = document.getElementById('burger-btn');
 
         function openSidebar() {
-            sidebar.classList.remove('-trangray-x-full');
+            sidebar.classList.remove('-translate-x-full');
             overlay.classList.remove('hidden');
         }
 
         function closeSidebar() {
-            sidebar.classList.add('-trangray-x-full');
+            sidebar.classList.add('-translate-x-full');
             overlay.classList.add('hidden');
         }
         if (burgerBtn) burgerBtn.addEventListener('click', openSidebar);
