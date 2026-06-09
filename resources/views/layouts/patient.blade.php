@@ -236,10 +236,6 @@
                 @yield('content')
             </main>
 
-            {{-- Footer --}}
-            <footer class="bg-white border-t border-gray-200 py-4 px-6 text-center text-xs text-gray-400">
-                <p>&copy; {{ date('Y') }} HealthMesh Health Management System. All rights reserved.</p>
-            </footer>
         </div>
 
     </div>

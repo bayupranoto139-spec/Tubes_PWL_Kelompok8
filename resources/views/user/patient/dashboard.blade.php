@@ -10,7 +10,7 @@
         style="background:linear-gradient(135deg,#14b8a6,#06b6d4)">
         <div class="relative z-10">
             <h2 class="text-xl sm:text-3xl md:text-4xl font-extrabold tracking-tight leading-tight">
-                Hello, {{ Auth::user()->name }}! 👋
+                Hello, {{ Auth::user()->name }}!
             </h2>
             <p class="text-white/80 text-xs sm:text-sm mt-1 sm:mt-2 max-w-lg leading-relaxed">
                 Welcome to your HealthMesh health portal. View clinical logs, schedule checkups, and manage bills.

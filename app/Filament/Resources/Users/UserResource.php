@@ -196,22 +196,27 @@ class UserResource extends Resource
             // For admin_rs, keep only users related to the same hospital.
             // Requirement: patient hospital is stored in patient_enrollments.hospital_id,
             // while doctor/staff hospital is stored in users.hospital_id.
-            return $query
-                ->where(function ($q) use ($user) {
-                    $q
-                        // doctors & staff use users.hospital_id
-                        ->whereIn('role', ['dokter', 'staff'])
+            //
+            // IMPORTANT: wrap both conditions inside a SINGLE where() closure so the OR
+            // stays scoped and does not escape constraints added earlier in this method
+            // (e.g. the pasien-enrollment guard). Without this wrapper, the bare orWhere()
+            // would produce:  ... AND (...) OR (role = 'pasien' AND ...)
+            // which breaks Filament's per-record lookup (view/edit) because the OR broadens
+            // the query beyond the current hospital scope.
+            return $query->where(function ($q) use ($user) {
+                // doctors & staff use users.hospital_id
+                $q->where(function ($sub) use ($user) {
+                    $sub->whereIn('role', ['dokter', 'staff'])
                         ->where('hospital_id', $user->hospital_id);
                 })
-                ->orWhere(function ($q) use ($user) {
-                    // patients use patient_enrollments.hospital_id
-                    $q->where('role', 'pasien')
-                        ->whereIn('id', function ($sub) use ($user) {
-                            $sub->select('user_id')
-                                ->from('patient_enrollments')
-                                ->where('hospital_id', $user->hospital_id);
+                // patients use patient_enrollments.hospital_id
+                ->orWhere(function ($sub) use ($user) {
+                    $sub->where('role', 'pasien')
+                        ->whereHas('patientEnrollments', function ($enrollment) use ($user) {
+                            $enrollment->where('hospital_id', $user->hospital_id);
                         });
                 });
+            });
         }
 
         return $query;

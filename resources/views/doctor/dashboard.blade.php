@@ -12,7 +12,7 @@
     {{-- WELCOME BANNER --}}
     <div class="rounded-2xl p-8 text-white shadow-lg" style="background:linear-gradient(90deg,#14b8a6,#06b6d4)">
         <h1 class="text-3xl font-extrabold leading-tight">
-            Selamat datang, {{ $doctorName }} 👋
+            Selamat datang, {{ $doctorName }}
         </h1>
         <p class="mt-2 text-base opacity-95">
             Login sebagai <strong>DOKTER — {{ strtoupper($doctorSpec) }}</strong>
