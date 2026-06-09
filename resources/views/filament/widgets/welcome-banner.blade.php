@@ -21,7 +21,7 @@
                 line-height:1.2;
             "
         >
-            Welcome back, {{ $user->name }} 👋
+            Welcome back, {{ $user->name }}
         </h1>
 
         <p
