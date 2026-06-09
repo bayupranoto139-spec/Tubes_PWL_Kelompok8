@@ -34,6 +34,25 @@ Route::get('/verify-email', function () {
 Route::get('/verify-email/{id}/{hash}', [EmailVerificationController::class, 'verify'])
     ->name('verification.verify');
 
+// Kirim ulang verifikasi — bisa diakses tanpa login (untuk pasien yang baru daftar)
+Route::post('/email/verification-notification/guest', function (\Illuminate\Http\Request $request) {
+    $request->validate(['email' => ['required', 'email']]);
+
+    $user = \App\Models\User::where('email', $request->email)
+        ->where('role', 'pasien')
+        ->whereNull('email_verified_at')
+        ->first();
+
+    if ($user) {
+        $user->sendEmailVerificationNotification();
+    }
+
+    // Selalu tampilkan pesan sukses (tidak bocorkan apakah email ada atau tidak)
+    return back()->with('success', 'Link verifikasi telah dikirim ulang. Silakan cek inbox Anda.')
+                 ->with('unverified_email', $request->email);
+})->middleware('throttle:3,1')->name('verification.resend.guest');
+
+// Kirim ulang verifikasi — untuk user yang sedang login
 Route::post('/email/verification-notification', function (
     Request $request
 ) {

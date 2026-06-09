@@ -89,6 +89,29 @@
                 @if ($errors->any())
                     <div class="mb-6 p-4 rounded-xl bg-red-50 border border-red-200 text-red-600 text-sm">
                         {{ $errors->first() }}
+
+                        {{-- Tombol kirim ulang khusus untuk pasien belum verif --}}
+                        @if (session('unverified_email'))
+                            <form method="POST" action="{{ route('verification.resend.guest') }}" class="mt-3">
+                                @csrf
+                                <input type="hidden" name="email" value="{{ session('unverified_email') }}">
+                                <button type="submit"
+                                    class="inline-flex items-center gap-1.5 px-3 py-1.5 bg-white border border-red-300 text-red-600 hover:bg-red-50 rounded-lg text-xs font-semibold transition-all">
+                                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                            d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
+                                    </svg>
+                                    Kirim Ulang Email Verifikasi
+                                </button>
+                            </form>
+                        @endif
+                    </div>
+                @endif
+
+                {{-- Success (misal setelah resend) --}}
+                @if (session('success'))
+                    <div class="mb-6 p-4 rounded-xl bg-green-50 border border-green-200 text-green-700 text-sm">
+                        {{ session('success') }}
                     </div>
                 @endif
 
@@ -185,8 +208,8 @@
                 </form>
 
                 <p class="mt-6 text-center text-gray-600 text-sm">
-                    Don'n have an account?
-                    <a href="{{ route('register') }}" class="font-medium text-[#14b8a6] hover:text-[#0d9488]">Register now</a>
+                    Belum punya akun?
+                    <a href="{{ route('register') }}" class="font-medium text-[#14b8a6] hover:text-[#0d9488]">Daftar sebagai pasien</a>
                 </p>
 
             </div>

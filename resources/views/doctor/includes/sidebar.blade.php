@@ -6,7 +6,7 @@
 @endphp
 
 {{-- ====================== SIDEBAR ====================== --}}
-<aside class="w-[17.5rem] bg-[#111827] text-white flex flex-col fixed h-full z-20 shadow-2xl">
+<aside id="doctor-sidebar" class="w-[17.5rem] bg-[#111827] text-white flex flex-col fixed h-full z-20 shadow-2xl transition-transform duration-300 -translate-x-full md:translate-x-0">
 
     {{-- Brand --}}
     <div class="px-6 py-5 flex items-center gap-3 border-b border-white/10">
@@ -83,13 +83,20 @@
     </div>
 </aside>
 
+{{-- Backdrop overlay for mobile --}}
+<div id="doctor-sidebar-overlay" class="fixed inset-0 z-10 bg-black/50 hidden md:hidden"></div>
+
 {{-- ====================== TOPBAR + MAIN WRAPPER ====================== --}}
-<div class="flex-1 ml-[17.5rem] flex flex-col min-h-screen">
+<div class="flex-1 min-w-0 md:ml-[17.5rem] flex flex-col min-h-screen overflow-x-hidden">
 
     {{-- Topbar --}}
     <header class="bg-white border-b border-gray-200 h-14 flex items-center justify-between px-6 sticky top-0 z-10 shadow-sm">
         {{-- Breadcrumb --}}
-        <nav class="flex items-center gap-1.5 text-sm text-gray-500">
+        <nav class="flex items-center gap-3 text-sm text-gray-500">
+            <button id="doctor-burger-btn"
+                class="md:hidden p-2 rounded-lg text-gray-500 hover:bg-gray-100 transition-colors">
+                <i class="fa-solid fa-bars text-base"></i>
+            </button>
             <i class="fa-solid fa-house text-xs text-gray-400"></i>
             <i class="fa-solid fa-chevron-right text-[10px] text-gray-300"></i>
             <span class="font-semibold text-gray-700 capitalize">
@@ -116,4 +123,25 @@
     </header>
 
     {{-- Page content --}}
-    <main class="flex-1 p-6 bg-gray-50">
+    <main class="flex-1 p-4 md:p-6 bg-gray-50">
+
+    {{-- Sidebar toggle script --}}
+    <script>
+        (function () {
+            const sidebar = document.getElementById('doctor-sidebar');
+            const overlay = document.getElementById('doctor-sidebar-overlay');
+            const burger  = document.getElementById('doctor-burger-btn');
+
+            function openSidebar() {
+                sidebar.classList.remove('-translate-x-full');
+                overlay.classList.remove('hidden');
+            }
+            function closeSidebar() {
+                sidebar.classList.add('-translate-x-full');
+                overlay.classList.add('hidden');
+            }
+
+            if (burger)  burger.addEventListener('click', openSidebar);
+            if (overlay) overlay.addEventListener('click', closeSidebar);
+        })();
+    </script>
