@@ -29,19 +29,20 @@ class AppointmentForm
                         $query = PatientEnrollment::with('user');
 
                         // staff/admin_rs must only select patients within their hospital
-                        // (hospital_id lives on patient_enrollments)
                         if ($authUser && $authUser->hospital_id) {
                             $query->where('hospital_id', $authUser->hospital_id);
                         }
 
-                        return $query->get()->pluck('user.name', 'id');
+                        return $query
+                            ->get()
+                            ->filter(fn ($e) => ! is_null($e->user)) // skip orphaned enrollments
+                            ->mapWithKeys(fn ($e) => [$e->id => $e->user->name])
+                            ->toArray();
                     })
-
                     ->searchable()
                     ->preload()
                     ->required()
                     ->getSearchResultsUsing(function (string $search) {
-
                         $user = filament()->auth()->user();
 
                         $q = PatientEnrollment::query()
@@ -54,12 +55,17 @@ class AppointmentForm
                                 });
                             });
 
+                        // Fix: filter by enrollment's hospital_id, not user's hospital_id
                         if ($user && $user->hospital_id) {
-                            $q->whereHas('user', fn ($u) => $u->where('hospital_id', $user->hospital_id));
+                            $q->where('hospital_id', $user->hospital_id);
                         }
 
-                        return $q->limit(20)->get()->pluck('user.name', 'id')->toArray();
-
+                        return $q
+                            ->limit(20)
+                            ->get()
+                            ->filter(fn ($e) => ! is_null($e->user))
+                            ->mapWithKeys(fn ($e) => [$e->id => $e->user->name])
+                            ->toArray();
                     }),
 
                 // ── DOCTOR ───────────────────────────────────────────────
@@ -75,7 +81,11 @@ class AppointmentForm
                             $query->whereHas('user', fn ($q) => $q->where('hospital_id', $user->hospital_id));
                         }
 
-                        return $query->get()->pluck('user.name', 'id');
+                        return $query
+                            ->get()
+                            ->filter(fn ($d) => ! is_null($d->user)) // skip orphaned doctors
+                            ->mapWithKeys(fn ($d) => [$d->id => $d->user->name])
+                            ->toArray();
                     })
                     ->searchable()
                     ->preload()
@@ -99,7 +109,7 @@ class AppointmentForm
                             : now()->addDay()->toDateString();
                     })
                     ->native(false)
-                    ->reactive()                           // ← must be reactive
+                    ->reactive()
                     ->disabled(function ($get) {
                         return ! filled($get('doctor_id'));
                     })
@@ -110,8 +120,6 @@ class AppointmentForm
                             return [];
                         }
 
-                        // Disable a date if the doctor has no active schedule on that weekday.
-                        // Use a rolling window to keep UI responsive.
                         $start = now()->startOfDay();
                         $end = now()->addDays(60)->startOfDay();
 
@@ -119,7 +127,7 @@ class AppointmentForm
                         $cursor = $start->copy();
 
                         while ($cursor->lte($end)) {
-                            $iso = $cursor->dayOfWeekIso; // 1..7 (Mon..Sun)
+                            $iso = $cursor->dayOfWeekIso;
 
                             $hasSchedule = Schedule::query()
                                 ->where('doctor_id', $doctorId)
@@ -137,8 +145,6 @@ class AppointmentForm
                         return $disabled;
                     })
                     ->afterStateUpdated(function ($get, $set) {
-                        // If the chosen date doesn't match doctor's active schedule,
-                        // clear slot so user can't submit invalid appointment.
                         $doctorId = $get('doctor_id');
                         $date = $get('appointment_date');
 
@@ -160,17 +166,14 @@ class AppointmentForm
                         return ! filled($get('appointment_date'));
                     })
                     ->options(function ($get) {
-
                         $doctorId = $get('doctor_id');
                         $date = $get('appointment_date');
 
                         return self::getSlots($doctorId, $date);
                     })
                     ->afterStateUpdated(function ($get, $set, $state) {
-                        // Keep hidden fields in sync whenever the slot changes
                         self::syncHiddenFields($get, $set);
 
-                        // Extra guard: if date/doctor has no schedule, keep hidden fields null
                         $schedule = self::resolveSchedule($get('doctor_id'), $get('appointment_date'));
                         if (! $schedule) {
                             $set('schedule_id', null);
@@ -179,11 +182,9 @@ class AppointmentForm
                     }),
 
                 // ── HIDDEN: schedule_id ───────────────────────────────────
-                // Use afterStateUpdated on upstream fields (doctor + date) to set this.
                 Hidden::make('schedule_id')
                     ->dehydrated()
                     ->afterStateHydrated(function ($state, $set, $get) {
-                        // ensure when editing/rehydrating, hidden fields remain consistent
                         $doctorId = $get('doctor_id');
                         $date = $get('appointment_date');
                         $slot = $get('appointment_slot');
@@ -240,7 +241,6 @@ class AppointmentForm
 
         $dayOfWeek = Carbon::parse($dateString)->dayOfWeekIso;
 
-        // Prefer a schedule that matches the exact day; fall back to any active one.
         return Schedule::query()
             ->where('doctor_id', $doctorId)
             ->where('is_active', true)
@@ -269,24 +269,18 @@ class AppointmentForm
         $today = now()->toDateString();
 
         while ($cursor->lt($end)) {
-
             $label = $cursor->format('H:i');
 
             if ($selectedDate === $today) {
-
-                $slotDateTime = Carbon::parse(
-                    $selectedDate.' '.$label
-                );
+                $slotDateTime = Carbon::parse($selectedDate.' '.$label);
 
                 if ($slotDateTime->lte(now())) {
                     $cursor->addMinutes(30);
-
                     continue;
                 }
             }
 
             $slots[$label] = $label;
-
             $cursor->addMinutes(30);
         }
 
@@ -295,7 +289,6 @@ class AppointmentForm
 
     /**
      * Sync schedule_id and scheduled_at hidden fields.
-     * Call this from afterStateUpdated on doctor_id, appointment_date, and appointment_slot.
      */
     private static function syncHiddenFields($get, $set): void
     {

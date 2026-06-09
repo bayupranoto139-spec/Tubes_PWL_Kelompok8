@@ -30,7 +30,7 @@ class AdminPanelProvider extends PanelProvider
             ->authGuard('web')
             ->loginRouteSlug('login')
 
-            ->brandName('🩺 Health Mesh')
+            ->brandName('Health Mesh')
 
             // Jangan pakai login Filament untuk admin semua role; redirect logout diarahkan ke /login melalui middleware auth custom.
 

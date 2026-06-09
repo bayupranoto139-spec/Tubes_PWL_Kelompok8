@@ -18,4 +18,28 @@ class EditBill extends EditRecord
     {
         return static::$resource::getUrl('index');
     }
+
+    protected function mutateFormDataBeforeSave(array $data): array
+    {
+        if (
+            $data['status'] === 'paid'
+            && empty($data['payment_date'])
+        ) {
+            $data['payment_date'] = now();
+        }
+
+        return $data;
+    }
+
+    protected function afterSave(): void
+    {
+        if ($this->record->status === 'paid') {
+
+            $this->record
+                ->appointment
+                ?->update([
+                    'status' => 'completed',
+                ]);
+        }
+    }
 }

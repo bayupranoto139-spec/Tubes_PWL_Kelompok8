@@ -5,6 +5,7 @@ namespace App\Filament\Resources\MedicalRecords;
 use App\Filament\Resources\MedicalRecords\Pages\CreateMedicalRecord;
 use App\Filament\Resources\MedicalRecords\Pages\EditMedicalRecord;
 use App\Filament\Resources\MedicalRecords\Pages\ListMedicalRecords;
+use App\Filament\Resources\MedicalRecords\Pages\ViewMedicalRecord;
 use App\Filament\Resources\MedicalRecords\Schemas\MedicalRecordForm;
 use App\Filament\Resources\MedicalRecords\Tables\MedicalRecordsTable;
 use App\Models\MedicalRecord;
@@ -21,7 +22,7 @@ class MedicalRecordResource extends Resource
     protected static ?string $model = MedicalRecord::class;
 
     protected static string|BackedEnum|null $navigationIcon =
-    Heroicon::OutlinedHeart;
+        Heroicon::OutlinedHeart;
 
     protected static ?string $navigationLabel = 'Medical Records';
 
@@ -51,7 +52,7 @@ class MedicalRecordResource extends Resource
         return [
             'index' => ListMedicalRecords::route('/'),
             'create' => CreateMedicalRecord::route('/create'),
-            'view' => \App\Filament\Resources\MedicalRecords\Pages\ViewMedicalRecord::route('/{record}'),
+            'view' => ViewMedicalRecord::route('/{record}'),
             'edit' => EditMedicalRecord::route('/{record}/edit'),
         ];
     }
@@ -62,5 +63,52 @@ class MedicalRecordResource extends Resource
             ->withoutGlobalScopes([
                 SoftDeletingScope::class,
             ]);
+    }
+
+    public static function canCreate(): bool
+    {
+        return in_array(
+            filament()->auth()->user()?->role,
+            ['admin_rs', 'staff']
+        );
+    }
+
+    public static function canEdit($record): bool
+    {
+        return in_array(
+            filament()->auth()->user()?->role,
+            ['admin_rs', 'staff']
+        );
+    }
+
+    public static function canDelete($record): bool
+    {
+        return in_array(
+            filament()->auth()->user()?->role,
+            ['admin_rs', 'staff']
+        );
+    }
+
+    public static function getEloquentQuery(): Builder
+    {
+        $query = parent::getEloquentQuery();
+
+        $user = filament()->auth()->user();
+
+        if (! $user) {
+            return $query;
+        }
+
+        if ($user->role === 'super_admin') {
+            return $query;
+        }
+
+        return $query->whereHas(
+            'appointment.patientEnrollment',
+            fn ($q) => $q->where(
+                'hospital_id',
+                $user->hospital_id
+            )
+        );
     }
 }

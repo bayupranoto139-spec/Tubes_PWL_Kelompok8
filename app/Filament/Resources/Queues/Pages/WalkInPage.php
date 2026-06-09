@@ -26,9 +26,11 @@ class WalkInPage extends Page
 
         $patients = PatientEnrollment::with('user')
             ->where('hospital_id', $hospitalId)
+            ->whereHas('user')
             ->get()
             ->mapWithKeys(fn ($e) => [
-                $e->id => $e->user->name.' ('.$e->medical_record_number.')',
+                $e->id => ($e->user?->name ?? 'Pasien Tidak Diketahui')
+                    .' ('.$e->medical_record_number.')',
             ]);
 
         $now = now()->format('H:i:s');
