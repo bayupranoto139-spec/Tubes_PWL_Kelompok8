@@ -2,27 +2,27 @@
 @include('doctor.includes.sidebar')
 
 @php
-    $doctorUser = auth()->user();
-    $doctorName = $doctorUser?->name ?? 'Dr. Budi Santoso';
-    $doctorRoleLabel = $doctorUser?->doctor?->specialization?->name ?? 'Spesialis Penyakit Dalam';
+    $doctorUser      = auth()->user();
+    $doctorName      = $doctorUser?->name ?? 'Dokter';
+    $doctorSpec      = $doctorUser?->doctor?->specialization?->name ?? 'Dokter';
 @endphp
 
 <div class="max-w-7xl mx-auto space-y-6">
 
-    {{-- ===== WELCOME BANNER (sama seperti admin) ===== --}}
+    {{-- WELCOME BANNER --}}
     <div class="rounded-2xl p-8 text-white shadow-lg" style="background:linear-gradient(90deg,#14b8a6,#06b6d4)">
         <h1 class="text-3xl font-extrabold leading-tight">
-            Welcome back, {{ $doctorName }} 👋
+            Selamat datang, {{ $doctorName }} 👋
         </h1>
         <p class="mt-2 text-base opacity-95">
-            Logged in as <strong>DOCTOR — {{ strtoupper($doctorRoleLabel) }}</strong>
+            Login sebagai <strong>DOKTER — {{ strtoupper($doctorSpec) }}</strong>
         </p>
         <p class="mt-1 opacity-80 text-sm">
-            Here's what's happening with your HealthMesh practice today.
+            Berikut ringkasan praktik Anda hari ini.
         </p>
     </div>
 
-    {{-- ===== STAT CARDS ROW 1 — mirip DashboardStats admin ===== --}}
+    {{-- STAT CARDS ROW 1 --}}
     <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
 
         {{-- Antrean Hari Ini --}}
@@ -33,7 +33,19 @@
             <div>
                 <p class="text-xs font-semibold text-gray-400 uppercase tracking-wide">Antrean Hari Ini</p>
                 <p class="mt-1 text-3xl font-extrabold text-gray-800 leading-none">{{ $todayQueue }}</p>
-                <p class="mt-1 text-xs text-blue-500 font-medium">Today's schedule</p>
+                <p class="mt-1 text-xs text-blue-500 font-medium">Jadwal hari ini</p>
+            </div>
+        </div>
+
+        {{-- Menunggu --}}
+        <div class="bg-white rounded-2xl p-5 shadow-sm border border-gray-200 flex items-start gap-4">
+            <div class="w-12 h-12 rounded-xl flex items-center justify-center flex-shrink-0" style="background:#fff7ed">
+                <i class="fa-solid fa-clock text-orange-500 text-lg"></i>
+            </div>
+            <div>
+                <p class="text-xs font-semibold text-gray-400 uppercase tracking-wide">Menunggu</p>
+                <p class="mt-1 text-3xl font-extrabold text-gray-800 leading-none">{{ $waitingCount }}</p>
+                <p class="mt-1 text-xs text-orange-500 font-medium">Belum diperiksa</p>
             </div>
         </div>
 
@@ -45,65 +57,51 @@
             <div>
                 <p class="text-xs font-semibold text-gray-400 uppercase tracking-wide">Selesai Diperiksa</p>
                 <p class="mt-1 text-3xl font-extrabold text-gray-800 leading-none">{{ $completedVisits }}</p>
-                <p class="mt-1 text-xs text-emerald-500 font-medium">Completed visits</p>
+                <p class="mt-1 text-xs text-emerald-500 font-medium">Hari ini</p>
             </div>
         </div>
 
-        {{-- Tarif Konsultasi --}}
-        <div class="bg-white rounded-2xl p-5 shadow-sm border border-gray-200 flex items-start gap-4">
-            <div class="w-12 h-12 rounded-xl flex items-center justify-center flex-shrink-0" style="background:#fffbeb">
-                <i class="fa-solid fa-sack-dollar text-amber-500 text-lg"></i>
-            </div>
-            <div>
-                <p class="text-xs font-semibold text-gray-400 uppercase tracking-wide">Tarif Konsultasi</p>
-                <p class="mt-1 text-2xl font-extrabold text-gray-800 leading-none">
-                    Rp {{ number_format($consultationFee, 0, ',', '.') }}
-                </p>
-                <p class="mt-1 text-xs text-amber-500 font-medium">Per consultation</p>
-            </div>
-        </div>
-
-        {{-- Total Kunjungan --}}
+        {{-- Total Kunjungan All-Time --}}
         <div class="bg-white rounded-2xl p-5 shadow-sm border border-gray-200 flex items-start gap-4">
             <div class="w-12 h-12 rounded-xl flex items-center justify-center flex-shrink-0" style="background:#fdf4ff">
                 <i class="fa-solid fa-users text-purple-500 text-lg"></i>
             </div>
             <div>
                 <p class="text-xs font-semibold text-gray-400 uppercase tracking-wide">Total Kunjungan</p>
-                <p class="mt-1 text-3xl font-extrabold text-gray-800 leading-none">{{ $todayQueue + $completedVisits }}
-                </p>
-                <p class="mt-1 text-xs text-purple-500 font-medium">All-time visits</p>
+                <p class="mt-1 text-3xl font-extrabold text-gray-800 leading-none">{{ $totalAllTime }}</p>
+                <p class="mt-1 text-xs text-purple-500 font-medium">Sepanjang waktu</p>
             </div>
         </div>
     </div>
 
-    {{-- ===== CHARTS ROW (mirip RevenueChart + VisitsChart admin) ===== --}}
+    {{-- CHARTS ROW --}}
     <div class="grid grid-cols-1 xl:grid-cols-2 gap-6">
 
-        {{-- Visits per Bulan (line chart) --}}
+        {{-- Kunjungan per Bulan --}}
         <div class="bg-white rounded-2xl p-6 shadow-sm border border-gray-200">
             <h3 class="text-base font-bold text-gray-800 mb-1">Kunjungan per Bulan</h3>
-            <p class="text-xs text-gray-400 mb-5">Jumlah janji temu yang dijadwalkan tahun ini.</p>
+            <p class="text-xs text-gray-400 mb-5">Jumlah janji temu yang dijadwalkan tahun {{ now()->year }}.</p>
             <canvas id="visitsChart" class="w-full" style="max-height:230px"></canvas>
         </div>
 
-        {{-- Ringkasan Kinerja (bar chart) --}}
+        {{-- Ringkasan Hari Ini --}}
         <div class="bg-white rounded-2xl p-6 shadow-sm border border-gray-200">
-            <h3 class="text-base font-bold text-gray-800 mb-1">Ringkasan Kinerja</h3>
-            <p class="text-xs text-gray-400 mb-5">Perbandingan antrean, selesai, dan total kunjungan.</p>
+            <h3 class="text-base font-bold text-gray-800 mb-1">Ringkasan Hari Ini</h3>
+            <p class="text-xs text-gray-400 mb-5">Perbandingan antrean, menunggu, dan selesai.</p>
             <canvas id="perfChart" class="w-full" style="max-height:230px"></canvas>
         </div>
     </div>
 
-    {{-- ===== MINI STATS ROW 2 (mirip MiniStats admin) ===== --}}
+    {{-- MINI STATS ROW 2 --}}
     <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
+
         <div class="bg-white rounded-2xl p-5 shadow-sm border border-gray-200 flex items-center gap-4">
             <div class="w-10 h-10 rounded-xl bg-cyan-50 flex items-center justify-center flex-shrink-0">
                 <i class="fa-solid fa-clock text-cyan-500 text-base"></i>
             </div>
             <div>
-                <p class="text-xs text-gray-400">Aktif di Antrian</p>
-                <p class="text-2xl font-bold text-gray-800">{{ $todayQueue }}</p>
+                <p class="text-xs text-gray-400">Menunggu Hari Ini</p>
+                <p class="text-2xl font-bold text-gray-800">{{ $waitingCount }}</p>
             </div>
         </div>
 
@@ -123,7 +121,7 @@
             </div>
             <div>
                 <p class="text-xs text-gray-400">Resep Dikeluarkan</p>
-                <p class="text-2xl font-bold text-gray-800">{{ $completedVisits }}</p>
+                <p class="text-2xl font-bold text-gray-800">{{ $prescriptionsToday }}</p>
             </div>
         </div>
 
@@ -133,18 +131,28 @@
             </div>
             <div>
                 <p class="text-xs text-gray-400">Pendapatan Hari Ini</p>
-                <p class="text-lg font-bold text-gray-800">Rp
-                    {{ number_format($consultationFee * $completedVisits, 0, ',', '.') }}</p>
+                <p class="text-lg font-bold text-gray-800">Rp {{ number_format($revenueToday, 0, ',', '.') }}</p>
             </div>
         </div>
     </div>
 
-    {{-- ===== RECENT APPOINTMENTS TABLE ===== --}}
+    {{-- TARIF KONSULTASI --}}
+    <div class="bg-white rounded-2xl p-5 shadow-sm border border-gray-200 flex items-center gap-4 max-w-sm">
+        <div class="w-10 h-10 rounded-xl bg-amber-50 flex items-center justify-center flex-shrink-0">
+            <i class="fa-solid fa-sack-dollar text-amber-500 text-base"></i>
+        </div>
+        <div>
+            <p class="text-xs text-gray-400">Tarif Konsultasi</p>
+            <p class="text-xl font-bold text-gray-800">Rp {{ number_format($consultationFee, 0, ',', '.') }}</p>
+        </div>
+    </div>
+
+    {{-- RECENT APPOINTMENTS TABLE --}}
     <div class="bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden">
         <div class="px-6 py-4 flex items-center justify-between border-b border-gray-100">
             <div>
-                <h3 class="text-base font-bold text-gray-800">Recent Appointments</h3>
-                <p class="text-xs text-gray-400 mt-0.5">Daftar pasien yang baru dijadwalkan</p>
+                <h3 class="text-base font-bold text-gray-800">Appointment Hari Ini</h3>
+                <p class="text-xs text-gray-400 mt-0.5">5 appointment terbaru hari ini</p>
             </div>
             <a href="{{ route('doctor.today') }}"
                 class="text-xs font-semibold px-4 py-2 rounded-xl text-white shadow-sm transition-all hover:opacity-90"
@@ -157,46 +165,47 @@
             <table class="min-w-full text-sm">
                 <thead>
                     <tr class="bg-gray-50 border-b border-gray-100">
-                        <th class="text-left py-3 px-5 text-xs font-semibold text-gray-400 uppercase tracking-wider">
-                            Pasien</th>
-                        <th class="text-left py-3 px-5 text-xs font-semibold text-gray-400 uppercase tracking-wider">
-                            Rumah Sakit</th>
-                        <th class="text-left py-3 px-5 text-xs font-semibold text-gray-400 uppercase tracking-wider">
-                            Tanggal</th>
-                        <th class="text-left py-3 px-5 text-xs font-semibold text-gray-400 uppercase tracking-wider">
-                            Status</th>
+                        <th class="text-left py-3 px-5 text-xs font-semibold text-gray-400 uppercase tracking-wider">Pasien</th>
+                        <th class="text-left py-3 px-5 text-xs font-semibold text-gray-400 uppercase tracking-wider">Rumah Sakit</th>
+                        <th class="text-left py-3 px-5 text-xs font-semibold text-gray-400 uppercase tracking-wider">Jam</th>
+                        <th class="text-left py-3 px-5 text-xs font-semibold text-gray-400 uppercase tracking-wider">Status</th>
                     </tr>
                 </thead>
                 <tbody class="divide-y divide-gray-50">
-                    @forelse(($recentAppointments ?? collect()) as $apt)
+                    @forelse($recentAppointments as $apt)
+                        @php
+                            $pName   = $apt->patientEnrollment?->user?->name;
+                            $rm      = $apt->patientEnrollment?->medical_record_number;
+                            $initial = $pName ? strtoupper(substr($pName, 0, 1)) : '?';
+                            $status  = $apt->status;
+                            $statusColor = match($status) {
+                                'completed' => 'bg-emerald-50 text-emerald-700',
+                                'cancelled' => 'bg-red-50 text-red-600',
+                                default     => 'bg-amber-50 text-amber-700',
+                            };
+                            $dotColor = match($status) {
+                                'completed' => 'bg-emerald-500',
+                                'cancelled' => 'bg-red-500',
+                                default     => 'bg-amber-500',
+                            };
+                        @endphp
                         <tr class="hover:bg-gray-50 transition-colors">
                             <td class="py-4 px-5">
                                 <div class="flex items-center gap-3">
-                                    @php
-                                        $pName = $apt->patientEnrollment?->user?->name;
-                                        $rm = $apt->patientEnrollment?->medical_record_number;
-                                        $initial = $pName ? strtoupper(substr($pName, 0, 1)) : '--';
-                                    @endphp
-                                    <div
-                                        class="w-7 h-7 rounded-full bg-teal-100 flex items-center justify-center text-teal-700 text-xs font-bold">
-                                        {{ $initial }}</div>
+                                    <div class="w-7 h-7 rounded-full bg-teal-100 flex items-center justify-center text-teal-700 text-xs font-bold">
+                                        {{ $initial }}
+                                    </div>
                                     <div>
                                         <p class="font-semibold text-gray-800">{{ $pName ?? '-' }}</p>
                                         <p class="text-xs text-gray-400">No. RM: {{ $rm ?? '-' }}</p>
                                     </div>
                                 </div>
                             </td>
-                            <td class="py-4 px-5 text-gray-600">{{ $apt->patientEnrollment?->hospital?->name ?? '-' }}
-                            </td>
-                            <td class="py-4 px-5 text-gray-600">
-                                {{ \Carbon\Carbon::parse($apt->scheduled_at)->format('d M Y') }}</td>
+                            <td class="py-4 px-5 text-gray-600">{{ $apt->patientEnrollment?->hospital?->name ?? '-' }}</td>
+                            <td class="py-4 px-5 text-gray-600">{{ \Carbon\Carbon::parse($apt->scheduled_at)->format('H:i') }}</td>
                             <td class="py-4 px-5">
-                                @php
-                                    $status = $apt->status;
-                                @endphp
-                                <span
-                                    class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold {{ $status === 'completed' ? 'bg-emerald-50 text-emerald-700' : 'bg-amber-50 text-amber-700' }}">
-                                    <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 mr-1.5"></span>
+                                <span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold {{ $statusColor }}">
+                                    <span class="w-1.5 h-1.5 rounded-full {{ $dotColor }} mr-1.5"></span>
                                     {{ $status }}
                                 </span>
                             </td>
@@ -218,20 +227,16 @@
 
 {{-- Charts JS --}}
 <script>
-    document.addEventListener('DOMContentLoaded', function() {
+    document.addEventListener('DOMContentLoaded', function () {
 
-        // Line chart — Visits per Month
+        // Line chart — Kunjungan per Bulan (data real dari DB)
         new Chart(document.getElementById('visitsChart'), {
             type: 'line',
             data: {
-                labels: ['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun', 'Jul', 'Ags', 'Sep', 'Okt', 'Nov',
-                    'Des'
-                ],
+                labels: ['Jan','Feb','Mar','Apr','Mei','Jun','Jul','Ags','Sep','Okt','Nov','Des'],
                 datasets: [{
                     label: 'Kunjungan',
-                    data: [2, 5, 3, 8, 6, {{ $todayQueue + $completedVisits }}, 0, 0, 0, 0, 0,
-                        0
-                    ],
+                    data: @json($monthlyVisits),
                     fill: true,
                     backgroundColor: 'rgba(20,184,166,.12)',
                     borderColor: '#14b8a6',
@@ -243,90 +248,33 @@
             },
             options: {
                 responsive: true,
-                plugins: {
-                    legend: {
-                        display: false
-                    }
-                },
+                plugins: { legend: { display: false } },
                 scales: {
-                    y: {
-                        beginAtZero: true,
-                        grid: {
-                            color: '#f1f5f9'
-                        },
-                        ticks: {
-                            color: '#94a3b8',
-                            font: {
-                                size: 11
-                            }
-                        }
-                    },
-                    x: {
-                        grid: {
-                            display: false
-                        },
-                        ticks: {
-                            color: '#94a3b8',
-                            font: {
-                                size: 11
-                            }
-                        }
-                    }
+                    y: { beginAtZero: true, ticks: { color: '#94a3b8', font: { size: 11 } }, grid: { color: '#f1f5f9' } },
+                    x: { ticks: { color: '#94a3b8', font: { size: 11 } }, grid: { display: false } }
                 }
             }
         });
 
-        // Bar chart — Performance summary
+        // Bar chart — Ringkasan Hari Ini
         new Chart(document.getElementById('perfChart'), {
             type: 'bar',
             data: {
-                labels: ['Antrean Hari Ini', 'Selesai Diperiksa', 'Total Kunjungan'],
+                labels: ['Antrean', 'Menunggu', 'Selesai'],
                 datasets: [{
                     label: 'Jumlah',
-                    data: [{{ $todayQueue }}, {{ $completedVisits }},
-                        {{ $todayQueue + $completedVisits }}
-                    ],
-                    backgroundColor: ['#14b8a6', '#06b6d4', '#8b5cf6'],
-                    borderRadius: {
-                        topLeft: 10,
-                        topRight: 10,
-                        bottomLeft: 0,
-                        bottomRight: 0
-                    },
+                    data: [{{ $todayQueue }}, {{ $waitingCount }}, {{ $completedVisits }}],
+                    backgroundColor: ['#14b8a6', '#f97316', '#06b6d4'],
+                    borderRadius: { topLeft: 10, topRight: 10, bottomLeft: 0, bottomRight: 0 },
                     borderSkipped: false,
                 }]
             },
             options: {
                 responsive: true,
-                plugins: {
-                    legend: {
-                        display: false
-                    }
-                },
+                plugins: { legend: { display: false } },
                 scales: {
-                    y: {
-                        beginAtZero: true,
-                        grid: {
-                            color: '#f1f5f9'
-                        },
-                        ticks: {
-                            color: '#94a3b8',
-                            font: {
-                                size: 11
-                            }
-                        }
-                    },
-                    x: {
-                        grid: {
-                            display: false
-                        },
-                        ticks: {
-                            color: '#94a3b8',
-                            font: {
-                                size: 11
-                            }
-                        }
-                    }
+                    y: { beginAtZero: true, ticks: { color: '#94a3b8', font: { size: 11 } }, grid: { color: '#f1f5f9' } },
+                    x: { ticks: { color: '#94a3b8', font: { size: 11 } }, grid: { display: false } }
                 }
             }
         });
@@ -337,5 +285,4 @@
 </div>
 </div>
 </body>
-
 </html>

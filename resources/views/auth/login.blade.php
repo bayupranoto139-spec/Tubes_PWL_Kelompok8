@@ -139,13 +139,20 @@
                     </div>
 
                     {{-- Remember --}}
-                    <div class="flex items-center">
-                        <input type="checkbox" name="remember" id="remember"
-                            class="w-4 h-4 text-[#14b8a6] focus:ring-[#14b8a6] border-gray-300 rounded">
+                    <div class="flex items-center justify-between">
+                        <div class="flex items-center">
+                            <input type="checkbox" name="remember" id="remember"
+                                class="w-4 h-4 text-[#14b8a6] focus:ring-[#14b8a6] border-gray-300 rounded">
 
-                        <label for="remember" class="ml-2 text-sm text-gray-600">
-                            Remember me
-                        </label>
+                            <label for="remember" class="ml-2 text-sm text-gray-600">
+                                Remember me
+                            </label>
+                        </div>
+
+                        <a href="{{ route('password.request') }}"
+                            class="text-sm font-medium text-[#14b8a6] hover:text-[#0d9488] transition-colors">
+                            Lupa password?
+                        </a>
                     </div>
 
                     {{-- Button --}}
@@ -178,7 +185,8 @@
                 </form>
 
                 <p class="mt-6 text-center text-gray-600 text-sm">
-                    Contact administrator if you forgot your password
+                    Don'n have an account?
+                    <a href="{{ route('register') }}" class="font-medium text-[#14b8a6] hover:text-[#0d9488]">Register now</a>
                 </p>
 
             </div>

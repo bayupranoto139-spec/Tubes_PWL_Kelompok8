@@ -2,11 +2,13 @@
 
 namespace App\Filament\Resources\Users\Schemas;
 
+use App\Models\Hospital;
 use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\Toggle;
+use Filament\Forms\Get;
 use Filament\Infolists\Components\TextEntry;
 use Filament\Schemas\Components\Grid;
 use Filament\Schemas\Components\Section;
@@ -73,7 +75,8 @@ class UserForm
                                 )
                                 ->required()
                                 ->searchable()
-                                ->native(false),
+                                ->native(false)
+                                ->live(),
 
                         ]),
                 ]),
@@ -89,23 +92,44 @@ class UserForm
                 ->columnSpanFull()
                 ->schema([
 
-                    // Untuk role dokter/staff: single hospital select
+                    // Untuk role dokter/staff/admin_rs: single hospital select
                     Select::make('hospital_id')
                         ->label('Hospital')
                         ->relationship('hospital', 'name')
                         ->searchable()
                         ->preload()
                         ->native(false)
-                        ->hidden(fn ($record) => ($record?->role ?? null) === 'pasien')
+                        ->hidden(fn (Get $get, $record) => ($get('role') ?? $record?->role) === 'pasien')
                         ->default(filament()->auth()->user()?->hospital_id)
                         ->disabled(filament()->auth()->user()?->role === 'admin_rs')
                         ->dehydrated()
-                        ->required(fn ($record) => ($record?->role ?? null) !== 'pasien'),
+                        ->required(fn (Get $get, $record) => ($get('role') ?? $record?->role) !== 'pasien'),
 
-                    // Untuk role pasien: badge per hospital
+                    // Untuk CREATE pasien: pilih rumah sakit (untuk patient_enrollment)
+                    Select::make('patient_hospital_id')
+                        ->label('Hospital (Pendaftaran Pasien)')
+                        ->helperText('Pasien akan didaftarkan ke rumah sakit ini. Email verifikasi akan dikirim setelah disimpan.')
+                        ->options(function () {
+                            $authUser = filament()->auth()->user();
+                            if ($authUser?->role === 'admin_rs') {
+                                // Admin RS hanya bisa daftarkan ke RS-nya sendiri
+                                return Hospital::where('id', $authUser->hospital_id)
+                                    ->where('is_active', true)
+                                    ->pluck('name', 'id');
+                            }
+                            return Hospital::where('is_active', true)->pluck('name', 'id');
+                        })
+                        ->searchable()
+                        ->preload()
+                        ->native(false)
+                        ->visible(fn (Get $get, $record) => ($get('role') ?? $record?->role) === 'pasien' && ! $record?->exists)
+                        ->required(fn (Get $get, $record) => ($get('role') ?? $record?->role) === 'pasien' && ! $record?->exists)
+                        ->dehydrated(false), // Tidak disimpan ke kolom users, ditangani di afterCreate()
+
+                    // Untuk VIEW/EDIT pasien: tampilkan badge RS yang sudah terdaftar
                     TextEntry::make('enrolled_hospital_names')
                         ->label('Registered Hospitals')
-                        ->visible(fn ($record) => ($record?->role ?? null) === 'pasien')
+                        ->visible(fn (Get $get, $record) => $record?->exists && ($get('role') ?? $record?->role) === 'pasien')
                         ->state(fn ($record) => $record
                             ?->patientEnrollments()
                             ->with('hospital')

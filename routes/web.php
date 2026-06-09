@@ -39,7 +39,7 @@ Route::middleware(['auth'])->prefix('admin')->group(function () {
 });
 
 // Patient Panel Routes
-Route::middleware(['auth'])->prefix('user/patient')->name('patient.')->group(function () {
+Route::middleware(['auth', \App\Http\Middleware\EnsurePatientEmailVerified::class])->prefix('user/patient')->name('patient.')->group(function () {
     Route::get('/dashboard', [PatientPanelController::class, 'dashboard'])->name('dashboard');
     Route::get('/appointments', [PatientPanelController::class, 'appointments'])->name('appointments');
     Route::post('/appointments', [PatientPanelController::class, 'bookAppointment'])->name('appointments.store');
