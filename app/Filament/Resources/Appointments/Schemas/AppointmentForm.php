@@ -93,6 +93,7 @@ class AppointmentForm
                     ->required()
                     ->minDate(function () {
                         $role = filament()->auth()->user()?->role;
+
                         return in_array($role, ['admin_rs', 'staff'])
                             ? now()->toDateString()
                             : now()->addDay()->toDateString();
@@ -264,9 +265,28 @@ class AppointmentForm
         $end = $toCarbon($schedule->end_time);
         $slots = [];
 
+        $selectedDate = Carbon::parse($date)->toDateString();
+        $today = now()->toDateString();
+
         while ($cursor->lt($end)) {
+
             $label = $cursor->format('H:i');
+
+            if ($selectedDate === $today) {
+
+                $slotDateTime = Carbon::parse(
+                    $selectedDate.' '.$label
+                );
+
+                if ($slotDateTime->lte(now())) {
+                    $cursor->addMinutes(30);
+
+                    continue;
+                }
+            }
+
             $slots[$label] = $label;
+
             $cursor->addMinutes(30);
         }
 
