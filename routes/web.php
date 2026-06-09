@@ -5,6 +5,7 @@ use App\Http\Controllers\MidtransController;
 use App\Http\Controllers\Patient\PatientPanelController;
 use App\Http\Controllers\PatientController;
 use App\Http\Controllers\PaymentController;
+use App\Http\Controllers\Admin\WalkInController;
 use Illuminate\Support\Facades\Route;
 
 require __DIR__.'/auth.php';
@@ -32,8 +33,13 @@ Route::middleware(['auth'])->group(function () {
 Route::get('/payments', [PaymentController::class, 'index']);
 Route::post('/payments/pay/{id}', [PaymentController::class, 'pay']);
 
+// Admin Walk-in queue registration (admin_rs & staff only)
+Route::middleware(['auth'])->prefix('admin')->group(function () {
+    Route::post('/walk-in', [WalkInController::class, 'store'])->name('admin.walk-in.store');
+});
+
 // Patient Panel Routes
-Route::middleware(['auth'])->prefix('user/patient')->name('patient.')->group(function () {
+Route::middleware(['auth', \App\Http\Middleware\EnsurePatientEmailVerified::class])->prefix('user/patient')->name('patient.')->group(function () {
     Route::get('/dashboard', [PatientPanelController::class, 'dashboard'])->name('dashboard');
     Route::get('/appointments', [PatientPanelController::class, 'appointments'])->name('appointments');
     Route::post('/appointments', [PatientPanelController::class, 'bookAppointment'])->name('appointments.store');
@@ -43,4 +49,6 @@ Route::middleware(['auth'])->prefix('user/patient')->name('patient.')->group(fun
     Route::get('/prescriptions', [PatientPanelController::class, 'prescriptions'])->name('prescriptions');
     Route::get('/profile', [PatientPanelController::class, 'profile'])->name('profile');
     Route::post('/profile', [PatientPanelController::class, 'updateProfile'])->name('profile.update');
+    Route::get('/hospitals', [PatientPanelController::class, 'hospitals'])->name('hospitals');
+    Route::post('/hospitals/enroll', [PatientPanelController::class, 'enrollHospital'])->name('hospitals.enroll');
 });

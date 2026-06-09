@@ -114,6 +114,11 @@
                 @php
                     $navItems = [
                         ['route' => 'patient.dashboard', 'icon' => 'fa-chart-pie', 'label' => 'Dashboard'],
+                        [
+                            'route' => 'patient.hospitals',
+                            'icon' => 'fa-hospital',
+                            'label' => 'My Hospitals',
+                        ],
                         ['route' => 'patient.appointments', 'icon' => 'fa-calendar-check', 'label' => 'Appointments'],
                         [
                             'route' => 'patient.medical-records',

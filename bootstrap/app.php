@@ -13,6 +13,9 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware) {
+        // menggunakan scheme/host yang benar (https, bukan http)
+        $middleware->trustProxies(at: '*');
+
         // Exclude Midtrans notification from CSRF verification
         $middleware->validateCsrfTokens(except: [
             'payment/notification',

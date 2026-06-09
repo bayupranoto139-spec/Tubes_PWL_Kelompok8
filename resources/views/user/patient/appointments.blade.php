@@ -251,7 +251,7 @@
                             Cancel
                         </button>
                         <button type="submit"
-                            class="px-6 py-3 text-sm font-semibold bg-gradient-to-r from-teal-500 to-cyan-500 hover:from-teal-600 hover:to-cyan-600 text-white rounded-2xl shadow-lg shadow-teal-500/10 hover:shadow-teal-500/20 hover:-trangray-y-0.5 transition-all cursor-pointer">
+                            class="inline-flex items-center gap-2 px-5 py-3 bg-[#14b8a6] hover:bg-[#0d9488] text-white rounded-2xl text-sm font-semibold shadow-lg shadow-teal-500/10 transition-all cursor-pointer">
                             Confirm Booking
                         </button>
                     </div>

@@ -95,11 +95,12 @@ class ReportsDashboard extends Page
 
         /*
         |--------------------------------------------------------------------------
-        | TOTAL REVENUE
+        | TOTAL REVENUE — hanya dari bill yang sudah paid
         |--------------------------------------------------------------------------
         */
 
         $this->totalRevenue = (float) Bill::query()
+            ->where('status', 'paid')
             ->sum('total_amount');
 
         /*
@@ -149,12 +150,13 @@ class ReportsDashboard extends Page
 
         /*
         |--------------------------------------------------------------------------
-        | HOSPITAL REVENUE
+        | HOSPITAL REVENUE — hanya dari bill yang sudah paid
         |--------------------------------------------------------------------------
         */
 
         $this->hospitalRevenue = Bill::query()
             ->with('patientEnrollment.hospital')
+            ->where('status', 'paid')
             ->get()
             ->groupBy(function ($bill) {
 

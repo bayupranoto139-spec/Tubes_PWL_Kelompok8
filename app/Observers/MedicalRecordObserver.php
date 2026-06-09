@@ -2,61 +2,39 @@
 
 namespace App\Observers;
 
-use App\Models\Bill;
 use App\Models\MedicalRecord;
-use Carbon\Carbon;
 
 class MedicalRecordObserver
 {
     /**
-     * Handle the MedicalRecord "created" event.
+     * Bill TIDAK dibuat di sini.
+     *
+     * Bill di-generate oleh BillGeneratorService saat dokter
+     * menyelesaikan appointment (status → completed) melalui
+     * AppointmentCompleteController atau Filament ViewAppointment action.
+     * Ini memastikan prescription sudah lengkap sebelum bill dibuat,
+     * dan total_amount selalu akurat.
      */
     public function created(MedicalRecord $medicalRecord): void
     {
-        // Ambil biaya konsultasi dari dokter
-        $consultationFee = $medicalRecord->doctor->consultation_fee ?? 0;
-
-        // Hitung total biaya obat jika ada relasi (sederhana, abaikan dulu)
-        $total = $consultationFee;
-
-        // Cek apakah sudah ada bill untuk appointment atau kunjungan ini? 
-        // Kita asumsikan setiap medical record menghasilkan bill baru.
-        Bill::create([
-            'patient_enrollment_id' => $medicalRecord->appointment?->patient_enrollment_id,
-            'appointment_id' => $medicalRecord->appointment_id,
-            'total_amount' => $total,
-            'status' => 'unpaid',
-            'payment_due_date' => Carbon::now()->addDays(7),
-        ]);
+        // intentionally empty
     }
 
-    /**
-     * Handle the MedicalRecord "updated" event.
-     */
     public function updated(MedicalRecord $medicalRecord): void
     {
         //
     }
 
-    /**
-     * Handle the MedicalRecord "deleted" event.
-     */
     public function deleted(MedicalRecord $medicalRecord): void
     {
         //
     }
 
-    /**
-     * Handle the MedicalRecord "restored" event.
-     */
     public function restored(MedicalRecord $medicalRecord): void
     {
         //
     }
 
-    /**
-     * Handle the MedicalRecord "force deleted" event.
-     */
     public function forceDeleted(MedicalRecord $medicalRecord): void
     {
         //

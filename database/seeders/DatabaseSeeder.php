@@ -2,10 +2,10 @@
 
 namespace Database\Seeders;
 
+use Carbon\Carbon;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
-use Carbon\Carbon;
 
 class DatabaseSeeder extends Seeder
 {
@@ -14,7 +14,6 @@ class DatabaseSeeder extends Seeder
     public function run(): void
     {
         DB::statement('SET FOREIGN_KEY_CHECKS=0');
-
         $this->truncateAll();
 
         $this->seedHospitals();
@@ -36,476 +35,775 @@ class DatabaseSeeder extends Seeder
         DB::statement('SET FOREIGN_KEY_CHECKS=1');
 
         $this->command->info('✅ Seeding selesai.');
+        $this->command->table(
+            ['Role', 'Email', 'Password'],
+            [
+                ['Super Admin',  'superadmin@healthmesh.id', 'password'],
+                ['Admin RS 1',   'admin@rsss.id',            'password'],
+                ['Admin RS 2',   'admin@rshb.id',            'password'],
+                ['Admin RS 3',   'admin@rsmk.id',            'password'],
+                ['Dokter (RS1)', 'budi.santoso@rsss.id',     'password'],
+                ['Pasien',       'agus.setiawan@gmail.com',  'password'],
+            ]
+        );
     }
 
-   
+    // -------------------------------------------------------------------------
+    // TRUNCATE
+    // -------------------------------------------------------------------------
+
     private function truncateAll(): void
     {
-        $tables = [
+        foreach ([
             'bill_items', 'bills', 'prescriptions', 'medical_records',
             'queues', 'appointments', 'schedules', 'staff', 'doctors',
             'patient_enrollments', 'patient_medical_infos', 'users',
             'medications', 'specializations', 'hospitals',
-        ];
-
-        foreach ($tables as $table) {
+        ] as $table) {
             DB::statement("TRUNCATE TABLE `{$table}`");
         }
     }
 
-   
+    // -------------------------------------------------------------------------
+    // HOSPITALS  (3 RS)
+    // -------------------------------------------------------------------------
+
     private function seedHospitals(): void
     {
         DB::table('hospitals')->insert([
-            [
-                'id'         => 1,
-                'name'       => 'RS Umum Sehat Sejahtera',
-                'code'       => 'RSSS-001',
-                'city'       => 'Medan',
-                'address'    => 'Jl. Diponegoro No. 12, Medan Baru, Kota Medan',
-                'logo'       => null,
-                'is_active'  => 1,
-                'created_at' => now(),
-                'updated_at' => now(),
-            ],
-            [
-                'id'         => 2,
-                'name'       => 'RS Harapan Bunda',
-                'code'       => 'RSHB-002',
-                'city'       => 'Medan',
-                'address'    => 'Jl. Gatot Subroto No. 45, Medan Petisah, Kota Medan',
-                'logo'       => null,
-                'is_active'  => 1,
-                'created_at' => now(),
-                'updated_at' => now(),
-            ],
+            ['id' => 1, 'name' => 'RS Umum Sehat Sejahtera', 'code' => 'RSSS-001', 'city' => 'Medan',    'address' => 'Jl. Diponegoro No. 12, Medan Baru',         'logo' => null, 'is_active' => 1, 'created_at' => now(), 'updated_at' => now()],
+            ['id' => 2, 'name' => 'RS Harapan Bunda',        'code' => 'RSHB-002', 'city' => 'Medan',    'address' => 'Jl. Gatot Subroto No. 45, Medan Petisah',   'logo' => null, 'is_active' => 1, 'created_at' => now(), 'updated_at' => now()],
+            ['id' => 3, 'name' => 'RS Mitra Keluarga',       'code' => 'RSMK-003', 'city' => 'Binjai',   'address' => 'Jl. Soekarno Hatta No. 88, Kota Binjai',    'logo' => null, 'is_active' => 1, 'created_at' => now(), 'updated_at' => now()],
         ]);
     }
 
-   
+    // -------------------------------------------------------------------------
+    // SPECIALIZATIONS  (8 spesialisasi)
+    // -------------------------------------------------------------------------
+
     private function seedSpecializations(): void
     {
-        $specs = [
-            ['id' => 1, 'name' => 'Dokter Umum',              'description' => 'Pelayanan kesehatan umum dan pemeriksaan dasar'],
-            ['id' => 2, 'name' => 'Spesialis Jantung',        'description' => 'Diagnosis dan pengobatan penyakit jantung dan pembuluh darah'],
-            ['id' => 3, 'name' => 'Spesialis Anak',           'description' => 'Pelayanan kesehatan bayi, anak, dan remaja'],
-            ['id' => 4, 'name' => 'Spesialis Penyakit Dalam', 'description' => 'Penanganan penyakit organ dalam'],
-            ['id' => 5, 'name' => 'Spesialis Kulit',          'description' => 'Diagnosis dan pengobatan penyakit kulit dan kelamin'],
-            ['id' => 6, 'name' => 'Spesialis Mata',           'description' => 'Diagnosis dan pengobatan penyakit mata'],
+        $rows = [
+            [1, 'Dokter Umum',              'Pelayanan kesehatan umum dan pemeriksaan dasar'],
+            [2, 'Spesialis Jantung',        'Diagnosis dan pengobatan penyakit jantung dan pembuluh darah'],
+            [3, 'Spesialis Anak',           'Pelayanan kesehatan bayi, anak, dan remaja'],
+            [4, 'Spesialis Penyakit Dalam', 'Penanganan penyakit organ dalam'],
+            [5, 'Spesialis Kulit',          'Diagnosis dan pengobatan penyakit kulit dan kelamin'],
+            [6, 'Spesialis Mata',           'Diagnosis dan pengobatan penyakit mata'],
+            [7, 'Spesialis Orthopedi',      'Penanganan penyakit tulang, sendi, dan otot'],
+            [8, 'Spesialis Saraf',          'Diagnosis dan pengobatan penyakit sistem saraf'],
         ];
-
-        foreach ($specs as $s) {
-            DB::table('specializations')->insert(array_merge($s, [
-                'created_at' => now(),
-                'updated_at' => now(),
-            ]));
+        foreach ($rows as [$id, $name, $desc]) {
+            DB::table('specializations')->insert(['id' => $id, 'name' => $name, 'description' => $desc, 'created_at' => now(), 'updated_at' => now()]);
         }
     }
 
-   
+    // -------------------------------------------------------------------------
+    // MEDICATIONS  (15 obat + 1 fallback)
+    // -------------------------------------------------------------------------
+
     private function seedMedications(): void
     {
         $meds = [
-            ['id' => 1,  'name' => 'Paracetamol 500mg',   'generic_name' => 'Paracetamol',     'category' => 'Analgesik',      'unit' => 'tablet', 'price' => 500],
-            ['id' => 2,  'name' => 'Amoxicillin 500mg',   'generic_name' => 'Amoxicillin',     'category' => 'Antibiotik',     'unit' => 'kapsul', 'price' => 2500],
-            ['id' => 3,  'name' => 'Omeprazole 20mg',     'generic_name' => 'Omeprazole',      'category' => 'Antasida',       'unit' => 'kapsul', 'price' => 3000],
-            ['id' => 4,  'name' => 'Amlodipine 5mg',      'generic_name' => 'Amlodipine',      'category' => 'Antihipertensi', 'unit' => 'tablet', 'price' => 1500],
-            ['id' => 5,  'name' => 'Metformin 500mg',     'generic_name' => 'Metformin',       'category' => 'Antidiabetik',   'unit' => 'tablet', 'price' => 1000],
-            ['id' => 6,  'name' => 'Cetirizine 10mg',     'generic_name' => 'Cetirizine',      'category' => 'Antihistamin',   'unit' => 'tablet', 'price' => 2000],
-            ['id' => 7,  'name' => 'Vitamin C 500mg',     'generic_name' => 'Ascorbic Acid',   'category' => 'Vitamin',        'unit' => 'tablet', 'price' => 500],
-            ['id' => 8,  'name' => 'Antasida Doen',       'generic_name' => 'Al/Mg Hydroxide', 'category' => 'Antasida',       'unit' => 'tablet', 'price' => 800],
-            ['id' => 9,  'name' => 'Salbutamol 4mg',      'generic_name' => 'Salbutamol',      'category' => 'Bronkodilator',  'unit' => 'tablet', 'price' => 1200],
-            ['id' => 10, 'name' => 'Dexamethasone 0.5mg', 'generic_name' => 'Dexamethasone',   'category' => 'Kortikosteroid', 'unit' => 'tablet', 'price' => 600],
-            ['id' => 11, 'name' => 'Lain-lain',           'generic_name' => null,              'category' => null,             'unit' => 'unit',   'price' => 0],
+            [1,  'Paracetamol 500mg',      'Paracetamol',       'Analgesik',       'tablet', 500],
+            [2,  'Amoxicillin 500mg',      'Amoxicillin',       'Antibiotik',      'kapsul', 2500],
+            [3,  'Omeprazole 20mg',        'Omeprazole',        'Antasida',        'kapsul', 3000],
+            [4,  'Amlodipine 5mg',         'Amlodipine',        'Antihipertensi',  'tablet', 1500],
+            [5,  'Metformin 500mg',        'Metformin',         'Antidiabetik',    'tablet', 1000],
+            [6,  'Cetirizine 10mg',        'Cetirizine',        'Antihistamin',    'tablet', 2000],
+            [7,  'Vitamin C 500mg',        'Ascorbic Acid',     'Vitamin',         'tablet', 500],
+            [8,  'Antasida Doen',          'Al/Mg Hydroxide',   'Antasida',        'tablet', 800],
+            [9,  'Salbutamol 4mg',         'Salbutamol',        'Bronkodilator',   'tablet', 1200],
+            [10, 'Dexamethasone 0.5mg',    'Dexamethasone',     'Kortikosteroid',  'tablet', 600],
+            [11, 'Lain-lain',              null,                 null,             'unit',   0],
+            [12, 'Losartan 50mg',          'Losartan',          'Antihipertensi',  'tablet', 2000],
+            [13, 'Simvastatin 20mg',       'Simvastatin',       'Antilipid',       'tablet', 1800],
+            [14, 'Ciprofloxacin 500mg',    'Ciprofloxacin',     'Antibiotik',      'tablet', 3500],
+            [15, 'Ibuprofen 400mg',        'Ibuprofen',         'NSAID',           'tablet', 1000],
+            [16, 'Methylprednisolone 4mg', 'Methylprednisolone','Kortikosteroid',  'tablet', 1500],
         ];
-
-        foreach ($meds as $m) {
-            DB::table('medications')->insert(array_merge($m, [
-                'is_active'  => 1,
-                'created_at' => now(),
-                'updated_at' => now(),
-            ]));
+        foreach ($meds as [$id, $name, $generic, $category, $unit, $price]) {
+            DB::table('medications')->insert(['id' => $id, 'name' => $name, 'generic_name' => $generic, 'category' => $category, 'unit' => $unit, 'price' => $price, 'is_active' => 1, 'created_at' => now(), 'updated_at' => now()]);
         }
     }
 
-   
+    // -------------------------------------------------------------------------
+    // USERS
+    // Catatan: hospital_id di users hanya untuk dokter/staff/admin_rs.
+    //          Pasien → hospital_id = null (relasi ke RS via patient_enrollments).
+    // -------------------------------------------------------------------------
+
     private function seedUsers(): void
     {
         $users = [
-            ['id' => 1,  'hospital_id' => null, 'name' => 'Super Administrator', 'email' => 'superadmin@healthmesh.id',  'role' => 'super_admin', 'gender' => 'L', 'date_of_birth' => '1985-01-01', 'phone' => '081234567890'],
-            ['id' => 2,  'hospital_id' => 1,    'name' => 'Rina Sari',           'email' => 'admin@rsss.id',             'role' => 'admin_rs',    'gender' => 'P', 'date_of_birth' => '1990-03-15', 'phone' => '082345678901'],
-            ['id' => 3,  'hospital_id' => 2,    'name' => 'Dedi Kurniawan',      'email' => 'admin@rshb.id',             'role' => 'admin_rs',    'gender' => 'L', 'date_of_birth' => '1988-07-22', 'phone' => '083456789012'],
-            ['id' => 4,  'hospital_id' => 1,    'name' => 'dr. Budi Santoso',    'email' => 'budi.santoso@rsss.id',      'role' => 'dokter',      'gender' => 'L', 'date_of_birth' => '1978-05-10', 'phone' => '084567890123'],
-            ['id' => 5,  'hospital_id' => 1,    'name' => 'dr. Sari Indah',      'email' => 'sari.indah@rsss.id',        'role' => 'dokter',      'gender' => 'P', 'date_of_birth' => '1982-11-20', 'phone' => '085678901234'],
-            ['id' => 6,  'hospital_id' => 2,    'name' => 'dr. Ahmad Fauzi',     'email' => 'ahmad.fauzi@rshb.id',       'role' => 'dokter',      'gender' => 'L', 'date_of_birth' => '1975-08-30', 'phone' => '086789012345'],
-            ['id' => 7,  'hospital_id' => 1,    'name' => 'Maya Putri',          'email' => 'maya@rsss.id',              'role' => 'staff',       'gender' => 'P', 'date_of_birth' => '1995-04-12', 'phone' => '087890123456'],
-            ['id' => 8,  'hospital_id' => 1,    'name' => 'Hendra Wijaya',       'email' => 'hendra@rsss.id',            'role' => 'staff',       'gender' => 'L', 'date_of_birth' => '1993-09-05', 'phone' => '088901234567'],
-            ['id' => 9,  'hospital_id' => 2,    'name' => 'Lena Susanti',        'email' => 'lena@rshb.id',              'role' => 'staff',       'gender' => 'P', 'date_of_birth' => '1996-02-18', 'phone' => '089012345678'],
-            ['id' => 10, 'hospital_id' => null, 'name' => 'Agus Setiawan',       'email' => 'agus.setiawan@gmail.com',   'role' => 'pasien',      'gender' => 'L', 'date_of_birth' => '1988-06-25', 'phone' => '081122334455'],
-            ['id' => 11, 'hospital_id' => null, 'name' => 'Dewi Rahayu',         'email' => 'dewi.rahayu@gmail.com',     'role' => 'pasien',      'gender' => 'P', 'date_of_birth' => '1992-12-03', 'phone' => '082233445566'],
-            ['id' => 12, 'hospital_id' => null, 'name' => 'Farhan Ramadhan',     'email' => 'farhan.ramadhan@gmail.com', 'role' => 'pasien',      'gender' => 'L', 'date_of_birth' => '2000-07-14', 'phone' => '083344556677'],
-            ['id' => 13, 'hospital_id' => null, 'name' => 'Siti Nuraini',        'email' => 'siti.nuraini@gmail.com',    'role' => 'pasien',      'gender' => 'P', 'date_of_birth' => '1975-03-28', 'phone' => '084455667788'],
+            // Super admin
+            [1,  null, 'Super Administrator',    'superadmin@healthmesh.id',   'super_admin', 'L', '1985-01-01', '081234567890'],
+
+            // Admin RS
+            [2,  1,    'Rina Sari',              'admin@rsss.id',              'admin_rs',    'P', '1990-03-15', '082345678901'],
+            [3,  2,    'Dedi Kurniawan',         'admin@rshb.id',              'admin_rs',    'L', '1988-07-22', '083456789012'],
+            [4,  3,    'Fitri Handayani',        'admin@rsmk.id',              'admin_rs',    'P', '1991-11-05', '084567890130'],
+
+            // Dokter RS 1
+            [5,  1,    'dr. Budi Santoso',       'budi.santoso@rsss.id',       'dokter',      'L', '1978-05-10', '084567890123'],
+            [6,  1,    'dr. Sari Indah',         'sari.indah@rsss.id',         'dokter',      'P', '1982-11-20', '085678901234'],
+            [7,  1,    'dr. Teguh Prabowo',      'teguh.prabowo@rsss.id',      'dokter',      'L', '1976-04-08', '086789012340'],
+
+            // Dokter RS 2
+            [8,  2,    'dr. Ahmad Fauzi',        'ahmad.fauzi@rshb.id',        'dokter',      'L', '1975-08-30', '086789012345'],
+            [9,  2,    'dr. Nila Kusuma',        'nila.kusuma@rshb.id',        'dokter',      'P', '1983-02-14', '087890123450'],
+
+            // Dokter RS 3
+            [10, 3,    'dr. Eko Prasetyo',       'eko.prasetyo@rsmk.id',       'dokter',      'L', '1980-09-17', '088901234560'],
+
+            // Staff
+            [11, 1,    'Maya Putri',             'maya@rsss.id',               'staff',       'P', '1995-04-12', '087890123456'],
+            [12, 1,    'Hendra Wijaya',          'hendra@rsss.id',             'staff',       'L', '1993-09-05', '088901234567'],
+            [13, 2,    'Lena Susanti',           'lena@rshb.id',               'staff',       'P', '1996-02-18', '089012345678'],
+            [14, 3,    'Roni Saputra',           'roni@rsmk.id',               'staff',       'L', '1994-06-30', '089123456780'],
+
+            // Pasien (hospital_id = null — relasi via patient_enrollments)
+            [15, null, 'Agus Setiawan',          'agus.setiawan@gmail.com',    'pasien',      'L', '1988-06-25', '081122334455'],
+            [16, null, 'Dewi Rahayu',            'dewi.rahayu@gmail.com',      'pasien',      'P', '1992-12-03', '082233445566'],
+            [17, null, 'Farhan Ramadhan',        'farhan.ramadhan@gmail.com',  'pasien',      'L', '2000-07-14', '083344556677'],
+            [18, null, 'Siti Nuraini',           'siti.nuraini@gmail.com',     'pasien',      'P', '1975-03-28', '084455667788'],
+            [19, null, 'Rudi Hartono',           'rudi.hartono@gmail.com',     'pasien',      'L', '1968-11-11', '085566778899'],
+            [20, null, 'Indah Permatasari',      'indah.permata@gmail.com',    'pasien',      'P', '1995-08-20', '086677889900'],
+            [21, null, 'Bagas Prasetyo',         'bagas.prasetyo@gmail.com',   'pasien',      'L', '2003-01-05', '087788990011'],
+            [22, null, 'Yuni Astuti',            'yuni.astuti@gmail.com',      'pasien',      'P', '1980-05-15', '088899001122'],
+            [23, null, 'Andi Firmansyah',        'andi.firmansyah@gmail.com',  'pasien',      'L', '1972-09-23', '089900112233'],
+            [24, null, 'Nina Kusumawati',        'nina.kusuma@gmail.com',      'pasien',      'P', '1998-04-02', '081011223344'],
         ];
 
-        foreach ($users as $u) {
-            DB::table('users')->insert(array_merge($u, [
-                'password'   => Hash::make('password'),
-                'address'    => 'Jl. Contoh No. ' . $u['id'] . ', Medan',
-                'is_active'  => 1,
-                'created_at' => now(),
-                'updated_at' => now(),
-            ]));
+        foreach ($users as [$id, $hospitalId, $name, $email, $role, $gender, $dob, $phone]) {
+            DB::table('users')->insert([
+                'id'            => $id,
+                'hospital_id'   => $hospitalId,
+                'name'          => $name,
+                'email'         => $email,
+                'password'      => Hash::make('password'),
+                'role'          => $role,
+                'gender'        => $gender,
+                'date_of_birth' => $dob,
+                'phone'         => $phone,
+                'address'       => 'Jl. Contoh No. ' . $id . ', Kota Medan',
+                'is_active'     => 1,
+                'created_at'    => now(),
+                'updated_at'    => now(),
+            ]);
         }
     }
 
-   
+    // -------------------------------------------------------------------------
+    // PATIENT MEDICAL INFOS
+    // -------------------------------------------------------------------------
+
     private function seedPatientMedicalInfos(): void
     {
+        // user_id 15-24 adalah pasien
         $infos = [
-            ['user_id' => 10, 'blood_type' => 'A',  'allergies' => 'Penisilin',      'emergency_contact_name' => 'Siti Setiawan',  'emergency_contact_phone' => '081298765432', 'insurance_provider' => 'BPJS Kesehatan',   'insurance_policy_number' => 'BPJS-00123456'],
-            ['user_id' => 11, 'blood_type' => 'O',  'allergies' => null,             'emergency_contact_name' => 'Budi Rahayu',    'emergency_contact_phone' => '082198765432', 'insurance_provider' => 'BPJS Kesehatan',   'insurance_policy_number' => 'BPJS-00234567'],
-            ['user_id' => 12, 'blood_type' => 'B',  'allergies' => 'Sulfa, Aspirin', 'emergency_contact_name' => 'Rina Ramadhan',  'emergency_contact_phone' => '083198765432', 'insurance_provider' => null,               'insurance_policy_number' => null],
-            ['user_id' => 13, 'blood_type' => 'AB', 'allergies' => null,             'emergency_contact_name' => 'Hasan Nuraini',  'emergency_contact_phone' => '084198765432', 'insurance_provider' => 'Asuransi Mandiri', 'insurance_policy_number' => 'AM-9988776655'],
+            [15, 'A',  'Penisilin',            'Siti Setiawan',      '081298765432', 'BPJS Kesehatan',    'BPJS-00123456'],
+            [16, 'O',  null,                   'Budi Rahayu',        '082198765432', 'BPJS Kesehatan',    'BPJS-00234567'],
+            [17, 'B',  'Sulfa, Aspirin',        'Rina Ramadhan',      '083198765432', null,                null],
+            [18, 'AB', null,                   'Hasan Nuraini',      '084198765432', 'Asuransi Mandiri',  'AM-9988776655'],
+            [19, 'O',  'Debu, Udang',           'Tini Hartono',       '085198765432', 'BPJS Kesehatan',    'BPJS-00345678'],
+            [20, 'A',  null,                   'Heri Permata',       '086198765432', null,                null],
+            [21, 'B',  null,                   'Eko Prasetyo',       '087198765432', 'BPJS Kesehatan',    'BPJS-00456789'],
+            [22, 'O',  'Amoxicillin',           'Dodo Astuti',        '088198765432', 'Allianz',           'ALZ-12345678'],
+            [23, 'AB', 'Aspirin',               'Lia Firmansyah',     '089198765432', 'Asuransi Mandiri',  'AM-1122334455'],
+            [24, 'A',  null,                   'Agus Kusuma',        '081298765430', 'BPJS Kesehatan',    'BPJS-00567890'],
         ];
 
-        foreach ($infos as $info) {
-            DB::table('patient_medical_infos')->insert(array_merge($info, [
-                'created_at' => now(),
-                'updated_at' => now(),
-            ]));
+        foreach ($infos as [$userId, $blood, $allergies, $ecName, $ecPhone, $insProvider, $insPolicy]) {
+            DB::table('patient_medical_infos')->insert([
+                'user_id'                   => $userId,
+                'blood_type'                => $blood,
+                'allergies'                 => $allergies,
+                'emergency_contact_name'    => $ecName,
+                'emergency_contact_phone'   => $ecPhone,
+                'insurance_provider'        => $insProvider,
+                'insurance_policy_number'   => $insPolicy,
+                'created_at'                => now(),
+                'updated_at'                => now(),
+            ]);
         }
     }
 
-   
+    // -------------------------------------------------------------------------
+    // PATIENT ENROLLMENTS
+    // Beberapa pasien terdaftar di >1 RS untuk testing multi-hospital scenario.
+    // -------------------------------------------------------------------------
+
     private function seedPatientEnrollments(): void
     {
         $enrollments = [
-            ['id' => 1, 'user_id' => 10, 'hospital_id' => 1, 'medical_record_number' => 'RSSS-2024-0001'],
-            ['id' => 2, 'user_id' => 11, 'hospital_id' => 1, 'medical_record_number' => 'RSSS-2024-0002'],
-            ['id' => 3, 'user_id' => 12, 'hospital_id' => 1, 'medical_record_number' => 'RSSS-2024-0003'],
-            ['id' => 4, 'user_id' => 13, 'hospital_id' => 1, 'medical_record_number' => 'RSSS-2024-0004'],
-            ['id' => 5, 'user_id' => 10, 'hospital_id' => 2, 'medical_record_number' => 'RSHB-2024-0001'], // pasien 10 di RS 2
-            ['id' => 6, 'user_id' => 11, 'hospital_id' => 2, 'medical_record_number' => 'RSHB-2024-0002'],
+            // RS 1 (RSSS)
+            [1,  15, 1, 'RSSS-2024-0001'],
+            [2,  16, 1, 'RSSS-2024-0002'],
+            [3,  17, 1, 'RSSS-2024-0003'],
+            [4,  18, 1, 'RSSS-2024-0004'],
+            [5,  19, 1, 'RSSS-2024-0005'],
+            [6,  20, 1, 'RSSS-2024-0006'],
+            [7,  21, 1, 'RSSS-2024-0007'],
+
+            // RS 2 (RSHB)
+            [8,  15, 2, 'RSHB-2024-0001'], // Agus terdaftar di RS 1 & RS 2
+            [9,  16, 2, 'RSHB-2024-0002'], // Dewi terdaftar di RS 1 & RS 2
+            [10, 18, 2, 'RSHB-2024-0003'], // Siti terdaftar di RS 1 & RS 2
+            [11, 22, 2, 'RSHB-2024-0004'],
+            [12, 23, 2, 'RSHB-2024-0005'],
+
+            // RS 3 (RSMK)
+            [13, 15, 3, 'RSMK-2024-0001'], // Agus terdaftar di RS 1, 2 & 3
+            [14, 19, 3, 'RSMK-2024-0002'], // Rudi terdaftar di RS 1 & RS 3
+            [15, 24, 3, 'RSMK-2024-0003'],
+            [16, 17, 3, 'RSMK-2024-0004'], // Farhan terdaftar di RS 1 & RS 3
         ];
 
-        foreach ($enrollments as $e) {
-            DB::table('patient_enrollments')->insert(array_merge($e, [
-                'created_at' => now(),
-                'updated_at' => now(),
-            ]));
+        foreach ($enrollments as [$id, $userId, $hospitalId, $mrn]) {
+            DB::table('patient_enrollments')->insert([
+                'id'                    => $id,
+                'user_id'               => $userId,
+                'hospital_id'           => $hospitalId,
+                'medical_record_number' => $mrn,
+                'created_at'            => now(),
+                'updated_at'            => now(),
+            ]);
         }
     }
 
-   
+    // -------------------------------------------------------------------------
+    // DOCTORS
+    // -------------------------------------------------------------------------
+
     private function seedDoctors(): void
     {
+        // [id, user_id, specialization_id, licence, fee, experience]
         $doctors = [
-            ['id' => 1, 'user_id' => 4, 'specialization_id' => 1, 'licence_number' => 'SIP-001/2020/IDI', 'consultation_fee' => 150000, 'years_of_experience' => 10],
-            ['id' => 2, 'user_id' => 5, 'specialization_id' => 2, 'licence_number' => 'SIP-002/2018/IDI', 'consultation_fee' => 350000, 'years_of_experience' => 12],
-            ['id' => 3, 'user_id' => 6, 'specialization_id' => 3, 'licence_number' => 'SIP-003/2015/IDI', 'consultation_fee' => 300000, 'years_of_experience' => 15],
+            [1, 5,  1, 'SIP-001/2020/IDI', 150000, 10], // dr. Budi  — Dokter Umum,  RS1
+            [2, 6,  2, 'SIP-002/2018/IDI', 350000, 12], // dr. Sari  — Jantung,      RS1
+            [3, 7,  4, 'SIP-003/2019/IDI', 275000, 11], // dr. Teguh — Penyakit Dlm, RS1
+            [4, 8,  3, 'SIP-004/2015/IDI', 300000, 15], // dr. Ahmad — Anak,         RS2
+            [5, 9,  5, 'SIP-005/2017/IDI', 325000, 13], // dr. Nila  — Kulit,        RS2
+            [6, 10, 7, 'SIP-006/2016/IDI', 400000, 14], // dr. Eko   — Orthopedi,    RS3
         ];
 
-        foreach ($doctors as $d) {
-            DB::table('doctors')->insert(array_merge($d, [
-                'created_at' => now(),
-                'updated_at' => now(),
-            ]));
+        foreach ($doctors as [$id, $userId, $specId, $lic, $fee, $exp]) {
+            DB::table('doctors')->insert([
+                'id' => $id, 'user_id' => $userId, 'specialization_id' => $specId,
+                'licence_number' => $lic, 'consultation_fee' => $fee, 'years_of_experience' => $exp,
+                'created_at' => now(), 'updated_at' => now(),
+            ]);
         }
     }
 
-   
+    // -------------------------------------------------------------------------
+    // STAFF
+    // -------------------------------------------------------------------------
+
     private function seedStaff(): void
     {
         $staffs = [
-            ['user_id' => 2, 'position' => 'Kepala Administrasi', 'department' => 'Administrasi'],
-            ['user_id' => 3, 'position' => 'Kepala Administrasi', 'department' => 'Administrasi'],
-            ['user_id' => 7, 'position' => 'Resepsionis',         'department' => 'Front Office'],
-            ['user_id' => 8, 'position' => 'Kasir',               'department' => 'Keuangan'],
-            ['user_id' => 9, 'position' => 'Resepsionis',         'department' => 'Front Office'],
+            [2,  'Kepala Administrasi', 'Administrasi'],
+            [3,  'Kepala Administrasi', 'Administrasi'],
+            [4,  'Kepala Administrasi', 'Administrasi'],
+            [11, 'Resepsionis',         'Front Office'],
+            [12, 'Kasir',               'Keuangan'],
+            [13, 'Resepsionis',         'Front Office'],
+            [14, 'Resepsionis',         'Front Office'],
         ];
-
-        foreach ($staffs as $s) {
-            DB::table('staff')->insert(array_merge($s, [
-                'created_at' => now(),
-                'updated_at' => now(),
-            ]));
+        foreach ($staffs as [$userId, $position, $dept]) {
+            DB::table('staff')->insert(['user_id' => $userId, 'position' => $position, 'department' => $dept, 'created_at' => now(), 'updated_at' => now()]);
         }
     }
 
-   
+    // -------------------------------------------------------------------------
+    // SCHEDULES
+    // -------------------------------------------------------------------------
+
     private function seedSchedules(): void
     {
+        // [id, doctor_id, day_of_week(1=Senin), start, end, max]
         $schedules = [
-            // dr. Budi (dokter umum, RS 1) — Senin, Rabu, Jumat pagi
-            ['id' => 1, 'doctor_id' => 1, 'day_of_week' => 1, 'start_time' => '08:00', 'end_time' => '12:00', 'max_patients' => 20],
-            ['id' => 2, 'doctor_id' => 1, 'day_of_week' => 3, 'start_time' => '08:00', 'end_time' => '12:00', 'max_patients' => 20],
-            ['id' => 3, 'doctor_id' => 1, 'day_of_week' => 5, 'start_time' => '08:00', 'end_time' => '11:00', 'max_patients' => 15],
-            // dr. Sari (jantung, RS 1) — Selasa dan Kamis
-            ['id' => 4, 'doctor_id' => 2, 'day_of_week' => 2, 'start_time' => '09:00', 'end_time' => '13:00', 'max_patients' => 10],
-            ['id' => 5, 'doctor_id' => 2, 'day_of_week' => 4, 'start_time' => '14:00', 'end_time' => '17:00', 'max_patients' => 8],
-            // dr. Ahmad (anak, RS 2)
-            ['id' => 6, 'doctor_id' => 3, 'day_of_week' => 1, 'start_time' => '13:00', 'end_time' => '17:00', 'max_patients' => 15],
-            ['id' => 7, 'doctor_id' => 3, 'day_of_week' => 3, 'start_time' => '08:00', 'end_time' => '12:00', 'max_patients' => 15],
+            // dr. Budi (umum, RS1) — Senin, Rabu, Jumat
+            [1,  1, 1, '08:00', '12:00', 20],
+            [2,  1, 3, '08:00', '12:00', 20],
+            [3,  1, 5, '08:00', '11:00', 15],
+            // dr. Sari (jantung, RS1) — Selasa, Kamis
+            [4,  2, 2, '09:00', '13:00', 10],
+            [5,  2, 4, '14:00', '17:00', 8],
+            // dr. Teguh (penyakit dalam, RS1) — Senin, Kamis, Sabtu
+            [6,  3, 1, '13:00', '17:00', 12],
+            [7,  3, 4, '08:00', '12:00', 12],
+            [8,  3, 6, '09:00', '12:00', 8],
+            // dr. Ahmad (anak, RS2) — Senin, Rabu
+            [9,  4, 1, '13:00', '17:00', 15],
+            [10, 4, 3, '08:00', '12:00', 15],
+            // dr. Nila (kulit, RS2) — Selasa, Jumat
+            [11, 5, 2, '10:00', '14:00', 10],
+            [12, 5, 5, '13:00', '17:00', 10],
+            // dr. Eko (orthopedi, RS3) — Rabu, Sabtu
+            [13, 6, 3, '09:00', '13:00', 12],
+            [14, 6, 6, '08:00', '12:00', 10],
         ];
 
-        foreach ($schedules as $s) {
-            DB::table('schedules')->insert(array_merge($s, [
-                'is_active'  => 1,
-                'created_at' => now(),
-                'updated_at' => now(),
-            ]));
+        foreach ($schedules as [$id, $docId, $day, $start, $end, $max]) {
+            DB::table('schedules')->insert([
+                'id' => $id, 'doctor_id' => $docId, 'day_of_week' => $day,
+                'start_time' => $start, 'end_time' => $end, 'max_patients' => $max,
+                'is_active' => 1, 'created_at' => now(), 'updated_at' => now(),
+            ]);
         }
     }
 
-   
+    // -------------------------------------------------------------------------
+    // APPOINTMENTS
+    // Skenario: completed (dengan & tanpa bill), scheduled (hari ini), cancelled
+    // -------------------------------------------------------------------------
+
     private function seedAppointments(): void
     {
+        $today     = Carbon::today();
+        $yesterday = Carbon::yesterday();
+        $twoDays   = Carbon::today()->subDays(2);
+        $threeDays = Carbon::today()->subDays(3);
+        $lastWeek  = Carbon::today()->subDays(7);
+
+        // [id, enrollment_id, doctor_id, schedule_id, scheduled_at, status, complaint]
         $appointments = [
-            // Kemarin — completed
-            ['id' => 1,  'patient_enrollment_id' => 1, 'doctor_id' => 1, 'schedule_id' => 1,    'scheduled_at' => Carbon::yesterday()->setTime(9, 0),   'status' => 'completed', 'complaint' => 'Demam dan sakit kepala sejak 2 hari yang lalu'],
-            ['id' => 2,  'patient_enrollment_id' => 2, 'doctor_id' => 1, 'schedule_id' => 1,    'scheduled_at' => Carbon::yesterday()->setTime(9, 30),  'status' => 'completed', 'complaint' => 'Batuk berdahak sudah seminggu'],
-            ['id' => 3,  'patient_enrollment_id' => 3, 'doctor_id' => 2, 'schedule_id' => 4,    'scheduled_at' => Carbon::yesterday()->setTime(10, 0),  'status' => 'completed', 'complaint' => 'Nyeri dada dan sesak napas'],
-            // Hari ini — scheduled
-            ['id' => 4,  'patient_enrollment_id' => 1, 'doctor_id' => 1, 'schedule_id' => 2,    'scheduled_at' => Carbon::today()->setTime(8, 0),       'status' => 'scheduled', 'complaint' => 'Kontrol rutin tekanan darah'],
-            ['id' => 5,  'patient_enrollment_id' => 4, 'doctor_id' => 1, 'schedule_id' => 2,    'scheduled_at' => Carbon::today()->setTime(8, 30),      'status' => 'scheduled', 'complaint' => 'Gatal-gatal di kulit lengan'],
-            ['id' => 6,  'patient_enrollment_id' => 2, 'doctor_id' => 2, 'schedule_id' => 4,    'scheduled_at' => Carbon::today()->setTime(9, 0),       'status' => 'scheduled', 'complaint' => 'Detak jantung tidak teratur'],
-            // Walk-in hari ini (schedule_id = null)
-            ['id' => 7,  'patient_enrollment_id' => 3, 'doctor_id' => 1, 'schedule_id' => null, 'scheduled_at' => Carbon::today()->setTime(10, 15),     'status' => 'completed', 'complaint' => 'Walk-in: pusing mendadak'],
-            // Cancelled & no_show
-            ['id' => 8,  'patient_enrollment_id' => 4, 'doctor_id' => 2, 'schedule_id' => 5,    'scheduled_at' => Carbon::yesterday()->setTime(14, 0),  'status' => 'cancelled', 'complaint' => 'Kontrol jantung'],
-            ['id' => 9,  'patient_enrollment_id' => 1, 'doctor_id' => 1, 'schedule_id' => 3,    'scheduled_at' => Carbon::yesterday()->setTime(8, 30),  'status' => 'no_show',   'complaint' => 'Sakit perut'],
-            // RS 2
-            ['id' => 10, 'patient_enrollment_id' => 5, 'doctor_id' => 3, 'schedule_id' => 6,    'scheduled_at' => Carbon::yesterday()->setTime(13, 0),  'status' => 'completed', 'complaint' => 'Anak demam tinggi 39 derajat'],
+
+            // ── MINGGU LALU — semua completed, ada bill ──────────────────────
+            [1,  1,  1, 1,    $lastWeek->copy()->setTime(8,  0), 'completed', 'Demam dan sakit kepala 3 hari'],
+            [2,  2,  1, 1,    $lastWeek->copy()->setTime(8, 30), 'completed', 'Batuk berdahak sudah seminggu'],
+            [3,  4,  2, 4,    $lastWeek->copy()->setTime(9,  0), 'completed', 'Nyeri dada dan sesak napas'],
+            [4,  8,  4, 9,    $lastWeek->copy()->setTime(13, 0), 'completed', 'Anak sering batuk dan pilek'],
+            [5,  11, 5, 11,   $lastWeek->copy()->setTime(10, 0), 'completed', 'Ruam merah di tangan dan punggung'],
+            [6,  13, 6, 13,   $lastWeek->copy()->setTime(9,  0), 'completed', 'Nyeri lutut kiri setelah jatuh'],
+
+            // ── 3 HARI LALU — completed ───────────────────────────────────────
+            [7,  3,  3, 6,    $threeDays->copy()->setTime(13, 0), 'completed', 'Gula darah tidak terkontrol'],
+            [8,  5,  1, 1,    $threeDays->copy()->setTime(9,  0), 'completed', 'Pusing dan mual saat berdiri'],
+            [9,  10, 4, 9,    $threeDays->copy()->setTime(13, 0), 'completed', 'Anak demam 3 hari tidak turun'],
+            [10, 12, 5, 11,   $threeDays->copy()->setTime(10, 0), 'completed', 'Gatal-gatal setelah makan seafood'],
+
+            // ── 2 HARI LALU — completed ───────────────────────────────────────
+            [11, 6,  1, 1,    $twoDays->copy()->setTime(8,  0),  'completed', 'Kontrol rutin tekanan darah'],
+            [12, 1,  2, 4,    $twoDays->copy()->setTime(9,  0),  'completed', 'Palpitasi jantung saat olahraga'],
+            [13, 14, 6, 13,   $twoDays->copy()->setTime(9,  0),  'completed', 'Sakit punggung bawah kronik'],
+
+            // ── KEMARIN — completed (ada yang sudah dibayar, ada yang belum) ──
+            [14, 1,  1, 1,    $yesterday->copy()->setTime(8,  0), 'completed', 'Lanjutan kontrol demam tifoid'],
+            [15, 2,  3, 6,    $yesterday->copy()->setTime(13, 0), 'completed', 'Kolesterol dan gula darah tinggi'],
+            [16, 4,  2, 4,    $yesterday->copy()->setTime(9,  0), 'completed', 'EKG lanjutan'],
+            [17, 9,  4, 10,   $yesterday->copy()->setTime(8,  0), 'completed', 'Diare berdarah, anak 8 thn'],
+            [18, 15, 6, 14,   $yesterday->copy()->setTime(8,  0), 'completed', 'Cedera pergelangan kaki'],
+
+            // ── KEMARIN — walk-in (schedule_id null) ─────────────────────────
+            [19, 7,  1, null, $yesterday->copy()->setTime(10, 0), 'completed', 'Walk-in: sakit tenggorokan mendadak'],
+            [20, 5,  3, null, $yesterday->copy()->setTime(14, 0), 'completed', 'Walk-in: mual dan muntah sejak pagi'],
+
+            // ── HARI INI — scheduled (menunggu) ──────────────────────────────
+            [21, 1,  1, 2,    $today->copy()->setTime(8,  0),  'scheduled',  'Kontrol rutin, cek tensi'],
+            [22, 2,  1, 2,    $today->copy()->setTime(8, 30),  'scheduled',  'Batuk tidak kunjung sembuh'],
+            [23, 3,  1, 2,    $today->copy()->setTime(9,  0),  'scheduled',  'Minta surat keterangan sehat'],
+            [24, 6,  3, 7,    $today->copy()->setTime(8,  0),  'scheduled',  'Cek diabetes mellitus'],
+            [25, 4,  2, 5,    $today->copy()->setTime(14, 0),  'scheduled',  'Kontrol jantung lanjutan'],
+            [26, 8,  4, 10,   $today->copy()->setTime(8,  0),  'scheduled',  'Imunisasi anak'],
+            [27, 11, 5, 12,   $today->copy()->setTime(13, 0),  'scheduled',  'Jerawat parah di wajah'],
+            [28, 16, 6, 14,   $today->copy()->setTime(8,  0),  'scheduled',  'Fisioterapi lutut'],
+
+            // ── HARI INI — walk-in yang sudah selesai (ada rekam medis, belum complete) ──
+            [29, 7,  1, null, $today->copy()->setTime(10, 0),  'scheduled',  'Walk-in: sakit kepala berat'],
+
+            // ── CANCELLED / NO_SHOW ──────────────────────────────────────────
+            [30, 5,  2, 5,    $yesterday->copy()->setTime(14, 0), 'cancelled', 'Kontrol jantung'],
+            [31, 7,  1, 1,    $twoDays->copy()->setTime(9,  0),   'no_show',   'Sakit perut'],
         ];
 
-        foreach ($appointments as $a) {
-            DB::table('appointments')->insert(array_merge($a, [
-                'created_at' => now(),
-                'updated_at' => now(),
-            ]));
+        foreach ($appointments as [$id, $enrollId, $docId, $schedId, $scheduledAt, $status, $complaint]) {
+            DB::table('appointments')->insert([
+                'id'                    => $id,
+                'patient_enrollment_id' => $enrollId,
+                'doctor_id'             => $docId,
+                'schedule_id'           => $schedId,
+                'scheduled_at'          => $scheduledAt,
+                'status'                => $status,
+                'complaint'             => $complaint,
+                'created_at'            => now(),
+                'updated_at'            => now(),
+            ]);
         }
     }
 
-   
+    // -------------------------------------------------------------------------
+    // QUEUES
+    // -------------------------------------------------------------------------
+
     private function seedQueues(): void
     {
-        $yesterday = Carbon::yesterday()->toDateString();
         $today     = Carbon::today()->toDateString();
+        $yesterday = Carbon::yesterday()->toDateString();
+        $twoDays   = Carbon::today()->subDays(2)->toDateString();
+        $threeDays = Carbon::today()->subDays(3)->toDateString();
+        $lastWeek  = Carbon::today()->subDays(7)->toDateString();
 
+        // [appointment_id, queue_date, queue_number, type, priority, status, called_at, started_at, completed_at]
         $queues = [
+            // Minggu lalu
+            [1,  $lastWeek,  1, 'appointment', 1, 'completed', Carbon::parse($lastWeek)->setTime(8,5),   Carbon::parse($lastWeek)->setTime(8,8),   Carbon::parse($lastWeek)->setTime(8,25)],
+            [2,  $lastWeek,  2, 'appointment', 1, 'completed', Carbon::parse($lastWeek)->setTime(8,35),  Carbon::parse($lastWeek)->setTime(8,38),  Carbon::parse($lastWeek)->setTime(8,55)],
+            [3,  $lastWeek,  1, 'appointment', 1, 'completed', Carbon::parse($lastWeek)->setTime(9,5),   Carbon::parse($lastWeek)->setTime(9,8),   Carbon::parse($lastWeek)->setTime(9,40)],
+            [4,  $lastWeek,  1, 'appointment', 1, 'completed', Carbon::parse($lastWeek)->setTime(13,5),  Carbon::parse($lastWeek)->setTime(13,8),  Carbon::parse($lastWeek)->setTime(13,30)],
+            [5,  $lastWeek,  1, 'appointment', 1, 'completed', Carbon::parse($lastWeek)->setTime(10,5),  Carbon::parse($lastWeek)->setTime(10,8),  Carbon::parse($lastWeek)->setTime(10,35)],
+            [6,  $lastWeek,  1, 'appointment', 1, 'completed', Carbon::parse($lastWeek)->setTime(9,5),   Carbon::parse($lastWeek)->setTime(9,8),   Carbon::parse($lastWeek)->setTime(9,45)],
+
+            // 3 hari lalu
+            [7,  $threeDays, 1, 'appointment', 1, 'completed', Carbon::parse($threeDays)->setTime(13,5),  Carbon::parse($threeDays)->setTime(13,8),  Carbon::parse($threeDays)->setTime(13,40)],
+            [8,  $threeDays, 2, 'appointment', 1, 'completed', Carbon::parse($threeDays)->setTime(9,5),   Carbon::parse($threeDays)->setTime(9,8),   Carbon::parse($threeDays)->setTime(9,25)],
+            [9,  $threeDays, 1, 'appointment', 1, 'completed', Carbon::parse($threeDays)->setTime(13,5),  Carbon::parse($threeDays)->setTime(13,8),  Carbon::parse($threeDays)->setTime(13,35)],
+            [10, $threeDays, 2, 'appointment', 1, 'completed', Carbon::parse($threeDays)->setTime(10,5),  Carbon::parse($threeDays)->setTime(10,8),  Carbon::parse($threeDays)->setTime(10,40)],
+
+            // 2 hari lalu
+            [11, $twoDays,   1, 'appointment', 1, 'completed', Carbon::parse($twoDays)->setTime(8,5),    Carbon::parse($twoDays)->setTime(8,8),    Carbon::parse($twoDays)->setTime(8,25)],
+            [12, $twoDays,   2, 'appointment', 1, 'completed', Carbon::parse($twoDays)->setTime(9,5),    Carbon::parse($twoDays)->setTime(9,8),    Carbon::parse($twoDays)->setTime(9,40)],
+            [13, $twoDays,   1, 'appointment', 1, 'completed', Carbon::parse($twoDays)->setTime(9,5),    Carbon::parse($twoDays)->setTime(9,8),    Carbon::parse($twoDays)->setTime(9,45)],
+
             // Kemarin
-            ['appointment_id' => 1,  'queue_date' => $yesterday, 'queue_number' => 1, 'type' => 'appointment', 'priority' => 1, 'status' => 'completed', 'called_at' => Carbon::yesterday()->setTime(9, 5),   'started_at' => Carbon::yesterday()->setTime(9, 8),   'completed_at' => Carbon::yesterday()->setTime(9, 25)],
-            ['appointment_id' => 2,  'queue_date' => $yesterday, 'queue_number' => 2, 'type' => 'appointment', 'priority' => 1, 'status' => 'completed', 'called_at' => Carbon::yesterday()->setTime(9, 30),  'started_at' => Carbon::yesterday()->setTime(9, 33),  'completed_at' => Carbon::yesterday()->setTime(9, 50)],
-            ['appointment_id' => 3,  'queue_date' => $yesterday, 'queue_number' => 1, 'type' => 'appointment', 'priority' => 1, 'status' => 'completed', 'called_at' => Carbon::yesterday()->setTime(10, 5),  'started_at' => Carbon::yesterday()->setTime(10, 8),  'completed_at' => Carbon::yesterday()->setTime(10, 35)],
-            ['appointment_id' => 9,  'queue_date' => $yesterday, 'queue_number' => 3, 'type' => 'appointment', 'priority' => 1, 'status' => 'skipped',   'called_at' => null,                                 'started_at' => null,                                 'completed_at' => null],
-            // Hari ini
-            ['appointment_id' => 4,  'queue_date' => $today,     'queue_number' => 1, 'type' => 'appointment', 'priority' => 1, 'status' => 'waiting',   'called_at' => null,                                 'started_at' => null,                                 'completed_at' => null],
-            ['appointment_id' => 5,  'queue_date' => $today,     'queue_number' => 2, 'type' => 'appointment', 'priority' => 1, 'status' => 'waiting',   'called_at' => null,                                 'started_at' => null,                                 'completed_at' => null],
-            ['appointment_id' => 6,  'queue_date' => $today,     'queue_number' => 1, 'type' => 'appointment', 'priority' => 1, 'status' => 'waiting',   'called_at' => null,                                 'started_at' => null,                                 'completed_at' => null],
-            ['appointment_id' => 7,  'queue_date' => $today,     'queue_number' => 3, 'type' => 'walk_in',     'priority' => 2, 'status' => 'completed', 'called_at' => Carbon::today()->setTime(10, 20),     'started_at' => Carbon::today()->setTime(10, 23),     'completed_at' => Carbon::today()->setTime(10, 45)],
-            // RS 2
-            ['appointment_id' => 10, 'queue_date' => $yesterday, 'queue_number' => 1, 'type' => 'appointment', 'priority' => 1, 'status' => 'completed', 'called_at' => Carbon::yesterday()->setTime(13, 10), 'started_at' => Carbon::yesterday()->setTime(13, 12), 'completed_at' => Carbon::yesterday()->setTime(13, 30)],
+            [14, $yesterday, 1, 'appointment', 1, 'completed', Carbon::parse($yesterday)->setTime(8,5),  Carbon::parse($yesterday)->setTime(8,8),  Carbon::parse($yesterday)->setTime(8,30)],
+            [15, $yesterday, 1, 'appointment', 1, 'completed', Carbon::parse($yesterday)->setTime(13,5), Carbon::parse($yesterday)->setTime(13,8), Carbon::parse($yesterday)->setTime(13,40)],
+            [16, $yesterday, 2, 'appointment', 1, 'completed', Carbon::parse($yesterday)->setTime(9,5),  Carbon::parse($yesterday)->setTime(9,8),  Carbon::parse($yesterday)->setTime(9,45)],
+            [17, $yesterday, 1, 'appointment', 1, 'completed', Carbon::parse($yesterday)->setTime(8,5),  Carbon::parse($yesterday)->setTime(8,8),  Carbon::parse($yesterday)->setTime(8,35)],
+            [18, $yesterday, 1, 'appointment', 1, 'completed', Carbon::parse($yesterday)->setTime(8,5),  Carbon::parse($yesterday)->setTime(8,8),  Carbon::parse($yesterday)->setTime(8,50)],
+            [19, $yesterday, 3, 'walk_in',     2, 'completed', Carbon::parse($yesterday)->setTime(10,5), Carbon::parse($yesterday)->setTime(10,8), Carbon::parse($yesterday)->setTime(10,30)],
+            [20, $yesterday, 2, 'walk_in',     2, 'completed', Carbon::parse($yesterday)->setTime(14,5), Carbon::parse($yesterday)->setTime(14,8), Carbon::parse($yesterday)->setTime(14,30)],
+            [30, $yesterday, 4, 'appointment', 1, 'skipped',   null,                                     null,                                     null],
+
+            // Hari ini — menunggu
+            [21, $today,     1, 'appointment', 1, 'waiting',   null, null, null],
+            [22, $today,     2, 'appointment', 1, 'waiting',   null, null, null],
+            [23, $today,     3, 'appointment', 1, 'waiting',   null, null, null],
+            [24, $today,     1, 'appointment', 1, 'waiting',   null, null, null],
+            [25, $today,     1, 'appointment', 1, 'waiting',   null, null, null],
+            [26, $today,     1, 'appointment', 1, 'waiting',   null, null, null],
+            [27, $today,     1, 'appointment', 1, 'waiting',   null, null, null],
+            [28, $today,     1, 'appointment', 1, 'waiting',   null, null, null],
+            [29, $today,     4, 'walk_in',     2, 'waiting',   null, null, null],
         ];
 
-        foreach ($queues as $q) {
-            DB::table('queues')->insert(array_merge($q, [
-                'created_at' => now(),
-                'updated_at' => now(),
-            ]));
+        foreach ($queues as [$aptId, $date, $num, $type, $priority, $status, $calledAt, $startedAt, $completedAt]) {
+            DB::table('queues')->insert([
+                'appointment_id' => $aptId,
+                'queue_date'     => $date,
+                'queue_number'   => $num,
+                'type'           => $type,
+                'priority'       => $priority,
+                'status'         => $status,
+                'called_at'      => $calledAt,
+                'started_at'     => $startedAt,
+                'completed_at'   => $completedAt,
+                'created_at'     => now(),
+                'updated_at'     => now(),
+            ]);
         }
     }
 
+    // -------------------------------------------------------------------------
+    // MEDICAL RECORDS  (hanya untuk appointment completed)
+    // -------------------------------------------------------------------------
 
     private function seedMedicalRecords(): void
     {
+        $lastWeek  = Carbon::today()->subDays(7);
+        $threeDays = Carbon::today()->subDays(3);
+        $twoDays   = Carbon::today()->subDays(2);
+        $yesterday = Carbon::yesterday();
+        $today     = Carbon::today();
+
+        // [id, appointment_id, visit_date, diagnosis, treatment_plan, notes, case_status]
         $records = [
-            ['id' => 1, 'appointment_id' => 1,  'visit_date' => Carbon::yesterday()->setTime(9, 8),   'diagnosis' => 'Demam tifoid ringan',              'treatment_plan' => 'Pemberian antibiotik, istirahat cukup, minum banyak air putih',                  'notes' => 'Pasien disarankan kontrol kembali dalam 5 hari', 'case_status' => 'active'],
-            ['id' => 2, 'appointment_id' => 2,  'visit_date' => Carbon::yesterday()->setTime(9, 33),  'diagnosis' => 'Bronkitis akut',                   'treatment_plan' => 'Pemberian mukolitik dan ekspektoran, hindari rokok dan polusi',                  'notes' => 'Jika tidak membaik dalam 3 hari, rontgen thorax', 'case_status' => 'active'],
-            ['id' => 3, 'appointment_id' => 3,  'visit_date' => Carbon::yesterday()->setTime(10, 8),  'diagnosis' => 'Angina pektoris stabil',           'treatment_plan' => 'Pemberian nitrat sublingual, beta blocker, dan modifikasi gaya hidup',          'notes' => 'Jadwalkan stress test dan echocardiography',     'case_status' => 'active'],
-            ['id' => 4, 'appointment_id' => 7,  'visit_date' => Carbon::today()->setTime(10, 23),     'diagnosis' => 'Vertigo perifer (BPPV)',            'treatment_plan' => 'Manuver Epley, betahistin jika perlu',                                          'notes' => 'Hindari perubahan posisi mendadak',              'case_status' => 'healed'],
-            ['id' => 5, 'appointment_id' => 10, 'visit_date' => Carbon::yesterday()->setTime(13, 12), 'diagnosis' => 'Febris e.c. infeksi virus (common cold)', 'treatment_plan' => 'Antipiretik, perbanyak minum dan istirahat',                            'notes' => 'Kompres hangat jika demam di atas 38.5°C',       'case_status' => 'healed'],
+            // Minggu lalu
+            [1,  1,  $lastWeek->copy()->setTime(8,8),    'Demam tifoid ringan',                   'Pemberian antibiotik, istirahat, banyak minum',                 'Kontrol 5 hari lagi',                         'healed'],
+            [2,  2,  $lastWeek->copy()->setTime(8,38),   'Bronkitis akut',                        'Mukolitik dan ekspektoran, hindari rokok',                      'Rontgen thorax jika tidak membaik',           'healed'],
+            [3,  3,  $lastWeek->copy()->setTime(9,8),    'Angina pektoris stabil',                'Nitrat sublingual, beta blocker, modifikasi gaya hidup',        'Jadwalkan stress test',                       'active'],
+            [4,  4,  $lastWeek->copy()->setTime(13,8),   'Infeksi saluran napas atas (ISPA)',     'Antipiretik, minum cukup, istirahat',                           'Bila 3 hari tidak membaik, kembali ke RS',    'healed'],
+            [5,  5,  $lastWeek->copy()->setTime(10,8),   'Dermatitis kontak alergi',              'Kortikosteroid topikal, hindari iritan',                        'Patch test jika kambuh',                      'active'],
+            [6,  6,  $lastWeek->copy()->setTime(9,8),    'Ruptur ligamen kolateral medial grade I','RICE (Rest, Ice, Compression, Elevation), analgesik',           'Fisioterapi 2 minggu',                        'active'],
+
+            // 3 hari lalu
+            [7,  7,  $threeDays->copy()->setTime(13,8),  'Diabetes mellitus tipe 2 tidak terkontrol', 'Penyesuaian dosis metformin, edukasi diet',                'Cek HbA1c 3 bulan lagi',                      'active'],
+            [8,  8,  $threeDays->copy()->setTime(9,8),   'Vertigo perifer (BPPV)',                 'Manuver Epley, betahistin',                                    'Hindari perubahan posisi mendadak',            'healed'],
+            [9,  9,  $threeDays->copy()->setTime(13,8),  'Febris e.c. infeksi virus',              'Antipiretik, kompres hangat, cairan cukup',                    'Kembali jika demam > 38.5°C',                 'healed'],
+            [10, 10, $threeDays->copy()->setTime(10,8),  'Urtikaria akut',                        'Antihistamin oral, hindari seafood',                            'Epipen jika reaksi berat',                    'healed'],
+
+            // 2 hari lalu
+            [11, 11, $twoDays->copy()->setTime(8,8),     'Hipertensi grade I terkontrol',          'Lanjutkan Amlodipine, diit rendah garam',                      'Pantau tensi tiap bulan',                     'active'],
+            [12, 12, $twoDays->copy()->setTime(9,8),     'Aritmia supraventrikular',               'EKG 24 jam (Holter monitoring), beta blocker',                 'Rujuk jika frekuensi meningkat',              'active'],
+            [13, 13, $twoDays->copy()->setTime(9,8),     'Low back pain kronik',                   'Analgesik, muscle relaxant, fisioterapi',                      'MRI lumbal jika tidak membaik',               'active'],
+
+            // Kemarin
+            [14, 14, $yesterday->copy()->setTime(8,8),   'Resolusi demam tifoid',                 'Lanjutkan antibiotik 2 hari, probiotik',                       'Pasien membaik, tidak perlu kontrol jika baik','healed'],
+            [15, 15, $yesterday->copy()->setTime(13,8),  'Dislipidemia + pre-diabetes',           'Simvastatin, metformin dosis rendah, diet',                    'Cek lipid profil 1 bulan lagi',               'active'],
+            [16, 16, $yesterday->copy()->setTime(9,8),   'Angina stabil, EKG normal sinus',       'Lanjutkan terapi, tambah Losartan',                            'Jadwalkan echo 1 bulan',                      'active'],
+            [17, 17, $yesterday->copy()->setTime(8,8),   'Disentri basiler',                      'Ciprofloxacin, oral rehidrasi, diet lunak',                    'Isolasi dari teman bermain sementara',         'active'],
+            [18, 18, $yesterday->copy()->setTime(8,8),   'Sprain ankle grade II',                  'Imobilisasi brace, analgesik, fisioterapi',                    'Hindari olahraga 3 minggu',                   'active'],
+            [19, 19, $yesterday->copy()->setTime(10,8),  'Faringitis akut',                       'Antibiotik, kumur air garam, analgesik',                       null,                                          'active'],
+            [20, 20, $yesterday->copy()->setTime(14,8),  'Gastroenteritis akut',                  'Rehidrasi oral, antasida, diet BRAT',                          'Hindari susu dan makanan berlemak',            'active'],
+
+            // Hari ini — appointment 29 (walk-in, sudah ada rekam medis tapi belum complete)
+            [21, 29, $today->copy()->setTime(10,15),     'Tension headache',                      'Ibuprofen 400mg, relaksasi, kompres dingin',                   'Kurangi stres dan kafein',                    'active'],
         ];
 
-        foreach ($records as $r) {
-            DB::table('medical_records')->insert(array_merge($r, [
-                'created_at' => now(),
-                'updated_at' => now(),
-            ]));
+        foreach ($records as [$id, $aptId, $visitDate, $diagnosis, $treatment, $notes, $caseStatus]) {
+            DB::table('medical_records')->insert([
+                'id'             => $id,
+                'appointment_id' => $aptId,
+                'visit_date'     => $visitDate,
+                'diagnosis'      => $diagnosis,
+                'treatment_plan' => $treatment,
+                'notes'          => $notes,
+                'case_status'    => $caseStatus,
+                'created_at'     => now(),
+                'updated_at'     => now(),
+            ]);
         }
     }
 
+    // -------------------------------------------------------------------------
+    // PRESCRIPTIONS
+    // -------------------------------------------------------------------------
 
     private function seedPrescriptions(): void
     {
+        // [medical_record_id, medication_id, dosage, duration, quantity, notes]
         $prescriptions = [
-            // Medical record 1 — demam tifoid
-            ['medical_record_id' => 1, 'medication_id' => 2, 'dosage' => '3x1',   'duration' => '7 hari',  'quantity' => 21, 'notes' => 'Habiskan antibiotik'],
-            ['medical_record_id' => 1, 'medication_id' => 1, 'dosage' => '3x1',   'duration' => '5 hari',  'quantity' => 15, 'notes' => 'Minum jika demam di atas 38°C'],
-            ['medical_record_id' => 1, 'medication_id' => 7, 'dosage' => '1x1',   'duration' => '10 hari', 'quantity' => 10, 'notes' => null],
-            // Medical record 2 — bronkitis
-            ['medical_record_id' => 2, 'medication_id' => 9, 'dosage' => '3x1',   'duration' => '5 hari',  'quantity' => 15, 'notes' => 'Minum setelah makan'],
-            ['medical_record_id' => 2, 'medication_id' => 1, 'dosage' => '3x1',   'duration' => '3 hari',  'quantity' => 9,  'notes' => 'Jika perlu saja'],
-            // Medical record 3 — angina
-            ['medical_record_id' => 3, 'medication_id' => 4, 'dosage' => '1x1',   'duration' => '30 hari', 'quantity' => 30, 'notes' => 'Minum pagi hari'],
-            ['medical_record_id' => 3, 'medication_id' => 3, 'dosage' => '1x1',   'duration' => '14 hari', 'quantity' => 14, 'notes' => 'Minum 30 menit sebelum makan'],
-            // Medical record 4 — vertigo
-            ['medical_record_id' => 4, 'medication_id' => 6, 'dosage' => '1x1',   'duration' => '3 hari',  'quantity' => 3,  'notes' => 'Minum malam sebelum tidur'],
-            // Medical record 5 — demam anak
-            ['medical_record_id' => 5, 'medication_id' => 1, 'dosage' => '4x0.5', 'duration' => '3 hari',  'quantity' => 6,  'notes' => 'Dosis anak disesuaikan berat badan 15kg'],
-            ['medical_record_id' => 5, 'medication_id' => 7, 'dosage' => '1x1',   'duration' => '5 hari',  'quantity' => 5,  'notes' => null],
+            // MR 1 — demam tifoid
+            [1, 2,  '3x1',    '7 hari',   21, 'Habiskan antibiotik'],
+            [1, 1,  '3x1',    '5 hari',   15, 'Minum jika demam > 38°C'],
+            [1, 7,  '1x1',    '10 hari',  10, null],
+
+            // MR 2 — bronkitis
+            [2, 9,  '3x1',    '5 hari',   15, 'Minum setelah makan'],
+            [2, 1,  '3x1',    '3 hari',    9, 'Jika perlu saja'],
+
+            // MR 3 — angina
+            [3, 4,  '1x1',    '30 hari',  30, 'Minum pagi hari'],
+            [3, 3,  '1x1',    '14 hari',  14, '30 menit sebelum makan'],
+
+            // MR 4 — ISPA anak (tanpa resep — cocok untuk testing skenario tanpa prescription)
+
+            // MR 5 — dermatitis
+            [5, 10, '2x1',    '7 hari',   14, 'Oleskan tipis pada area merah'],
+            [5, 16, '1x1',    '5 hari',    5, 'Minum malam hari'],
+
+            // MR 6 — ligamen — tanpa obat (hanya fisioterapi)
+
+            // MR 7 — DM
+            [7, 5,  '3x1',    '30 hari',  90, 'Minum bersama makan'],
+
+            // MR 8 — vertigo
+            [8, 6,  '1x1',    '3 hari',    3, 'Minum malam sebelum tidur'],
+
+            // MR 9 — febris anak — tanpa resep
+
+            // MR 10 — urtikaria
+            [10, 6, '1x1',   '5 hari',    5, 'Minum malam hari'],
+
+            // MR 11 — hipertensi
+            [11, 4,  '1x1',   '30 hari',  30, 'Minum pagi hari, pantau tekanan darah'],
+
+            // MR 12 — aritmia
+            [12, 4,  '1x1',   '14 hari',  14, 'Pantau denyut nadi'],
+            [12, 3,  '1x1',   '14 hari',  14, '30 menit sebelum makan'],
+
+            // MR 13 — LBP
+            [13, 15, '3x1',   '5 hari',   15, 'Setelah makan, jangan perut kosong'],
+            [13, 16, '1x1',   '5 hari',    5, 'Malam hari'],
+
+            // MR 14 — resolusi tifoid
+            [14, 2,  '3x1',   '2 hari',    6, 'Habiskan'],
+            [14, 3,  '1x1',   '7 hari',    7, 'Jaga lambung'],
+
+            // MR 15 — dislipidemia + pre-DM
+            [15, 13, '1x1',   '30 hari',  30, 'Minum malam setelah makan'],
+            [15, 5,  '3x1',   '30 hari',  90, 'Bersama makan'],
+
+            // MR 16 — angina + losartan
+            [16, 4,  '1x1',   '30 hari',  30, 'Pagi hari'],
+            [16, 12, '1x1',   '30 hari',  30, 'Malam hari'],
+
+            // MR 17 — disentri
+            [17, 14, '2x1',   '5 hari',   10, 'Habiskan, jangan setengah-setengah'],
+
+            // MR 18 — sprain ankle
+            [18, 15, '3x1',   '5 hari',   15, 'Setelah makan'],
+
+            // MR 19 — faringitis
+            [19, 2,  '3x1',   '5 hari',   15, 'Habiskan antibiotik'],
+            [19, 1,  '3x1',   '3 hari',    9, 'Jika perlu'],
+            [19, 8,  '3x1',   '3 hari',    9, 'Setelah makan'],
+
+            // MR 20 — gastroenteritis
+            [20, 8,  '3x1',   '3 hari',    9, 'Setelah makan'],
+            [20, 1,  '3x1',   '3 hari',    9, 'Jika kram atau nyeri'],
+
+            // MR 21 — tension headache (hari ini, appointment belum complete)
+            [21, 15, '3x1',   '3 hari',    9, 'Setelah makan'],
         ];
 
-        foreach ($prescriptions as $p) {
-            DB::table('prescriptions')->insert(array_merge($p, [
-                'created_at' => now(),
-                'updated_at' => now(),
-            ]));
+        foreach ($prescriptions as [$mrId, $medId, $dosage, $duration, $qty, $notes]) {
+            DB::table('prescriptions')->insert([
+                'medical_record_id' => $mrId,
+                'medication_id'     => $medId,
+                'dosage'            => $dosage,
+                'duration'          => $duration,
+                'quantity'          => $qty,
+                'notes'             => $notes,
+                'created_at'        => now(),
+                'updated_at'        => now(),
+            ]);
         }
     }
 
+    // -------------------------------------------------------------------------
+    // BILLS
+    // -------------------------------------------------------------------------
 
     private function seedBills(): void
     {
+        $yesterday = Carbon::yesterday();
+        $twoDays   = Carbon::today()->subDays(2);
+        $threeDays = Carbon::today()->subDays(3);
+        $lastWeek  = Carbon::today()->subDays(7);
+
+        // [patient_enrollment_id, appointment_id, status, payment_due_date, payment_method, payment_date, reference_number]
         $bills = [
-            // [0] — demam tifoid, RS 1, BPJS (insurance)
-            [
-                'patient_enrollment_id' => 1,
-                'appointment_id'        => 1,
-                'total_amount'          => 0,
-                'status'                => 'paid',
-                'payment_due_date'      => Carbon::yesterday()->toDateString(),
-                'payment_method'        => 'insurance',
-                'payment_date'          => Carbon::yesterday()->setTime(10, 0),
-                'reference_number'      => null,
-            ],
-            // [1] — bronkitis, RS 1, cash
-            [
-                'patient_enrollment_id' => 2,
-                'appointment_id'        => 2,
-                'total_amount'          => 0,
-                'status'                => 'paid',
-                'payment_due_date'      => Carbon::yesterday()->toDateString(),
-                'payment_method'        => 'cash',
-                'payment_date'          => Carbon::yesterday()->setTime(10, 30),
-                'reference_number'      => null,
-            ],
-            // [2] — angina, RS 1, bank_transfer
-            [
-                'patient_enrollment_id' => 3,
-                'appointment_id'        => 3,
-                'total_amount'          => 0,
-                'status'                => 'paid',
-                'payment_due_date'      => Carbon::yesterday()->toDateString(),
-                'payment_method'        => 'bank_transfer',
-                'payment_date'          => Carbon::yesterday()->setTime(11, 15),
-                'reference_number'      => 'TRF-' . Carbon::yesterday()->format('Ymd') . '-001',
-            ],
-            // [3] — walk-in vertigo, RS 1, qris
-            [
-                'patient_enrollment_id' => 3,
-                'appointment_id'        => 7,
-                'total_amount'          => 0,
-                'status'                => 'paid',
-                'payment_due_date'      => Carbon::today()->toDateString(),
-                'payment_method'        => 'qris',
-                'payment_date'          => Carbon::today()->setTime(11, 0),
-                'reference_number'      => 'QRIS-' . Carbon::today()->format('Ymd') . '-001',
-            ],
-            // [4] — kontrol tekanan darah, RS 1, belum lunas
-            [
-                'patient_enrollment_id' => 1,
-                'appointment_id'        => 4,
-                'total_amount'          => 0,
-                'status'                => 'unpaid',
-                'payment_due_date'      => Carbon::today()->addDays(3)->toDateString(),
-                'payment_method'        => null,
-                'payment_date'          => null,
-                'reference_number'      => null,
-            ],
-            // [5] — demam anak, RS 2, asuransi swasta
-            [
-                'patient_enrollment_id' => 5,
-                'appointment_id'        => 10,
-                'total_amount'          => 0,
-                'status'                => 'paid',
-                'payment_due_date'      => Carbon::yesterday()->toDateString(),
-                'payment_method'        => 'insurance',
-                'payment_date'          => Carbon::yesterday()->setTime(14, 0),
-                'reference_number'      => 'INS-AM-' . Carbon::yesterday()->format('Ymd') . '-001',
-            ],
+            // Minggu lalu — semua paid
+            [1,  1,  'paid',   $lastWeek->copy()->addDays(7)->toDateString(), 'insurance',     $lastWeek->copy()->setTime(10,0),  null],
+            [2,  2,  'paid',   $lastWeek->copy()->addDays(7)->toDateString(), 'cash',          $lastWeek->copy()->setTime(10,30), null],
+            [4,  3,  'paid',   $lastWeek->copy()->addDays(7)->toDateString(), 'bank_transfer', $lastWeek->copy()->setTime(11,0),  'TRF-' . $lastWeek->format('Ymd') . '-001'],
+            [8,  4,  'paid',   $lastWeek->copy()->addDays(7)->toDateString(), 'insurance',     $lastWeek->copy()->setTime(14,0),  null],
+            [11, 5,  'paid',   $lastWeek->copy()->addDays(7)->toDateString(), 'qris',          $lastWeek->copy()->setTime(11,0),  'QRIS-' . $lastWeek->format('Ymd') . '-001'],
+            [13, 6,  'paid',   $lastWeek->copy()->addDays(7)->toDateString(), 'cash',          $lastWeek->copy()->setTime(10,0),  null],
+
+            // 3 hari lalu
+            [3,  7,  'paid',   $threeDays->copy()->addDays(7)->toDateString(), 'insurance',    $threeDays->copy()->setTime(14,30), null],
+            [5,  8,  'paid',   $threeDays->copy()->addDays(7)->toDateString(), 'cash',         $threeDays->copy()->setTime(10,0),  null],
+            [9,  9,  'paid',   $threeDays->copy()->addDays(7)->toDateString(), 'insurance',    $threeDays->copy()->setTime(14,0),  null],
+            [10, 10, 'paid',   $threeDays->copy()->addDays(7)->toDateString(), 'qris',         $threeDays->copy()->setTime(11,0),  'QRIS-' . $threeDays->format('Ymd') . '-001'],
+
+            // 2 hari lalu
+            [6,  11, 'paid',   $twoDays->copy()->addDays(7)->toDateString(),  'cash',          $twoDays->copy()->setTime(9,30),  null],
+            [1,  12, 'paid',   $twoDays->copy()->addDays(7)->toDateString(),  'bank_transfer', $twoDays->copy()->setTime(10,30), 'TRF-' . $twoDays->format('Ymd') . '-001'],
+            [14, 13, 'paid',   $twoDays->copy()->addDays(7)->toDateString(),  'cash',          $twoDays->copy()->setTime(10,0),  null],
+
+            // Kemarin — mix paid & unpaid
+            [1,  14, 'paid',   $yesterday->copy()->addDays(7)->toDateString(), 'insurance',    $yesterday->copy()->setTime(9,30),  null],
+            [2,  15, 'unpaid', $yesterday->copy()->addDays(7)->toDateString(), null,            null,                               null],
+            [4,  16, 'paid',   $yesterday->copy()->addDays(7)->toDateString(), 'qris',         $yesterday->copy()->setTime(10,30), 'QRIS-' . $yesterday->format('Ymd') . '-001'],
+            [9,  17, 'unpaid', $yesterday->copy()->addDays(7)->toDateString(), null,            null,                               null],
+            [15, 18, 'unpaid', $yesterday->copy()->addDays(7)->toDateString(), null,            null,                               null],
+            [7,  19, 'paid',   $yesterday->copy()->addDays(7)->toDateString(), 'cash',         $yesterday->copy()->setTime(11,30), null],
+            [5,  20, 'unpaid', $yesterday->copy()->addDays(7)->toDateString(), null,            null,                               null],
         ];
 
-        foreach ($bills as $b) {
-            $this->billIds[] = DB::table('bills')->insertGetId(array_merge($b, [
-                'created_at' => now(),
-                'updated_at' => now(),
-            ]));
+        foreach ($bills as [$enrollId, $aptId, $status, $dueDate, $method, $paidAt, $ref]) {
+            $this->billIds[] = DB::table('bills')->insertGetId([
+                'patient_enrollment_id' => $enrollId,
+                'appointment_id'        => $aptId,
+                'total_amount'          => 0, // sync setelah bill_items
+                'status'                => $status,
+                'payment_due_date'      => $dueDate,
+                'payment_method'        => $method,
+                'payment_date'          => $paidAt,
+                'reference_number'      => $ref,
+                'created_at'            => now(),
+                'updated_at'            => now(),
+            ]);
         }
     }
 
+    // -------------------------------------------------------------------------
+    // BILL ITEMS
+    // -------------------------------------------------------------------------
 
     private function seedBillItems(): void
     {
-        [$b0, $b1, $b2, $b3, $b4, $b5] = $this->billIds;
+        // consultation_fee: dr. Budi=150k, dr.Sari=350k, dr.Teguh=275k, dr.Ahmad=300k, dr.Nila=325k, dr.Eko=400k
+        $adm = 15000;
+        $admSpec = 25000;
 
-        $items = [
-            // Bill 0 — demam tifoid
-            [$b0, 'consultation',  'Biaya Konsultasi Dokter Umum',      1,  150000],
-            [$b0, 'medication',    'Amoxicillin 500mg (21 kapsul)',     21,    2500],
-            [$b0, 'medication',    'Paracetamol 500mg (15 tablet)',     15,     500],
-            [$b0, 'medication',    'Vitamin C 500mg (10 tablet)',       10,     500],
-            [$b0, 'administration','Biaya Administrasi',                 1,   15000],
-
-            // Bill 1 — bronkitis
-            [$b1, 'consultation',  'Biaya Konsultasi Dokter Umum',      1,  150000],
-            [$b1, 'medication',    'Salbutamol 4mg (15 tablet)',        15,    1200],
-            [$b1, 'medication',    'Paracetamol 500mg (9 tablet)',       9,     500],
-            [$b1, 'administration','Biaya Administrasi',                 1,   15000],
-
-            // Bill 2 — angina pektoris
-            [$b2, 'consultation',  'Biaya Konsultasi Spesialis Jantung', 1, 350000],
-            [$b2, 'medication',    'Amlodipine 5mg (30 tablet)',        30,    1500],
-            [$b2, 'medication',    'Omeprazole 20mg (14 kapsul)',       14,    3000],
-            [$b2, 'procedure',     'Biaya EKG',                          1,  150000],
-            [$b2, 'administration','Biaya Administrasi',                  1,  25000],
-
-            // Bill 3 — walk-in vertigo
-            [$b3, 'consultation',  'Biaya Konsultasi Dokter Umum',      1,  150000],
-            [$b3, 'medication',    'Cetirizine 10mg (3 tablet)',         3,    2000],
-            [$b3, 'administration','Biaya Administrasi',                  1,  15000],
-
-            // Bill 4 — kontrol tekanan darah (belum lunas)
-            [$b4, 'consultation',  'Biaya Konsultasi Dokter Umum',      1,  150000],
-            [$b4, 'administration','Biaya Administrasi',                  1,  15000],
-
-            // Bill 5 — demam anak RS 2
-            [$b5, 'consultation',  'Biaya Konsultasi Spesialis Anak',   1,  300000],
-            [$b5, 'medication',    'Paracetamol 500mg (6 tablet)',       6,     500],
-            [$b5, 'medication',    'Vitamin C 500mg (5 tablet)',         5,     500],
-            [$b5, 'administration','Biaya Administrasi',                  1,  25000],
+        // Map [bill_index => [[type, desc, qty, price], ...]]
+        // bill index sesuai urutan $this->billIds
+        $billItems = [
+            // 0: apt1 — demam tifoid, dr.Budi, RS1
+            [['consultation','Biaya Konsultasi Dokter Umum',1,150000],['medication','Amoxicillin 500mg (21 kapsul)',21,2500],['medication','Paracetamol 500mg (15 tablet)',15,500],['medication','Vitamin C 500mg (10 tablet)',10,500],['administration','Biaya Administrasi',1,$adm]],
+            // 1: apt2 — bronkitis, dr.Budi
+            [['consultation','Biaya Konsultasi Dokter Umum',1,150000],['medication','Salbutamol 4mg (15 tablet)',15,1200],['medication','Paracetamol 500mg (9 tablet)',9,500],['administration','Biaya Administrasi',1,$adm]],
+            // 2: apt3 — angina, dr.Sari
+            [['consultation','Biaya Konsultasi Spesialis Jantung',1,350000],['medication','Amlodipine 5mg (30 tablet)',30,1500],['medication','Omeprazole 20mg (14 kapsul)',14,3000],['procedure','Biaya EKG',1,150000],['administration','Biaya Administrasi',1,$admSpec]],
+            // 3: apt4 — ISPA anak, dr.Ahmad (tanpa resep)
+            [['consultation','Biaya Konsultasi Spesialis Anak',1,300000],['administration','Biaya Administrasi',1,$admSpec]],
+            // 4: apt5 — dermatitis, dr.Nila
+            [['consultation','Biaya Konsultasi Spesialis Kulit',1,325000],['medication','Dexamethasone 0.5mg (14 tablet)',14,600],['medication','Methylprednisolone 4mg (5 tablet)',5,1500],['administration','Biaya Administrasi',1,$admSpec]],
+            // 5: apt6 — ligamen, dr.Eko (tanpa obat)
+            [['consultation','Biaya Konsultasi Spesialis Orthopedi',1,400000],['procedure','Biaya Rontgen Lutut',1,200000],['administration','Biaya Administrasi',1,$admSpec]],
+            // 6: apt7 — DM, dr.Teguh
+            [['consultation','Biaya Konsultasi Spesialis Penyakit Dalam',1,275000],['medication','Metformin 500mg (90 tablet)',90,1000],['procedure','Biaya Cek Gula Darah',1,50000],['administration','Biaya Administrasi',1,$admSpec]],
+            // 7: apt8 — vertigo, dr.Budi
+            [['consultation','Biaya Konsultasi Dokter Umum',1,150000],['medication','Cetirizine 10mg (3 tablet)',3,2000],['administration','Biaya Administrasi',1,$adm]],
+            // 8: apt9 — febris anak, dr.Ahmad (tanpa resep)
+            [['consultation','Biaya Konsultasi Spesialis Anak',1,300000],['administration','Biaya Administrasi',1,$admSpec]],
+            // 9: apt10 — urtikaria, dr.Nila
+            [['consultation','Biaya Konsultasi Spesialis Kulit',1,325000],['medication','Cetirizine 10mg (5 tablet)',5,2000],['administration','Biaya Administrasi',1,$admSpec]],
+            // 10: apt11 — hipertensi, dr.Budi
+            [['consultation','Biaya Konsultasi Dokter Umum',1,150000],['medication','Amlodipine 5mg (30 tablet)',30,1500],['administration','Biaya Administrasi',1,$adm]],
+            // 11: apt12 — aritmia, dr.Sari
+            [['consultation','Biaya Konsultasi Spesialis Jantung',1,350000],['medication','Amlodipine 5mg (14 tablet)',14,1500],['medication','Omeprazole 20mg (14 kapsul)',14,3000],['procedure','Biaya EKG',1,150000],['administration','Biaya Administrasi',1,$admSpec]],
+            // 12: apt13 — LBP, dr.Eko
+            [['consultation','Biaya Konsultasi Spesialis Orthopedi',1,400000],['medication','Ibuprofen 400mg (15 tablet)',15,1000],['medication','Methylprednisolone 4mg (5 tablet)',5,1500],['procedure','Biaya Fisioterapi',1,175000],['administration','Biaya Administrasi',1,$admSpec]],
+            // 13: apt14 — resolusi tifoid, dr.Budi
+            [['consultation','Biaya Konsultasi Dokter Umum',1,150000],['medication','Amoxicillin 500mg (6 kapsul)',6,2500],['medication','Omeprazole 20mg (7 kapsul)',7,3000],['administration','Biaya Administrasi',1,$adm]],
+            // 14: apt15 — dislipidemia, dr.Teguh (unpaid)
+            [['consultation','Biaya Konsultasi Spesialis Penyakit Dalam',1,275000],['medication','Simvastatin 20mg (30 tablet)',30,1800],['medication','Metformin 500mg (90 tablet)',90,1000],['procedure','Biaya Cek Lipid Profil',1,120000],['administration','Biaya Administrasi',1,$admSpec]],
+            // 15: apt16 — angina + losartan, dr.Sari
+            [['consultation','Biaya Konsultasi Spesialis Jantung',1,350000],['medication','Amlodipine 5mg (30 tablet)',30,1500],['medication','Losartan 50mg (30 tablet)',30,2000],['procedure','Biaya EKG',1,150000],['administration','Biaya Administrasi',1,$admSpec]],
+            // 16: apt17 — disentri, dr.Ahmad (unpaid)
+            [['consultation','Biaya Konsultasi Spesialis Anak',1,300000],['medication','Ciprofloxacin 500mg (10 tablet)',10,3500],['administration','Biaya Administrasi',1,$admSpec]],
+            // 17: apt18 — sprain ankle, dr.Eko (unpaid)
+            [['consultation','Biaya Konsultasi Spesialis Orthopedi',1,400000],['medication','Ibuprofen 400mg (15 tablet)',15,1000],['procedure','Biaya Rontgen Kaki',1,150000],['administration','Biaya Administrasi',1,$admSpec]],
+            // 18: apt19 — faringitis walk-in, dr.Budi
+            [['consultation','Biaya Konsultasi Dokter Umum',1,150000],['medication','Amoxicillin 500mg (15 kapsul)',15,2500],['medication','Paracetamol 500mg (9 tablet)',9,500],['medication','Antasida Doen (9 tablet)',9,800],['administration','Biaya Administrasi',1,$adm]],
+            // 19: apt20 — gastroenteritis walk-in, dr.Teguh (unpaid)
+            [['consultation','Biaya Konsultasi Spesialis Penyakit Dalam',1,275000],['medication','Antasida Doen (9 tablet)',9,800],['medication','Paracetamol 500mg (9 tablet)',9,500],['administration','Biaya Administrasi',1,$admSpec]],
         ];
 
-        foreach ($items as [$billId, $type, $desc, $qty, $price]) {
-            DB::table('bill_items')->insert([
-                'bill_id'     => $billId,
-                'item_type'   => $type,
-                'description' => $desc,
-                'quantity'    => $qty,
-                'unit_price'  => $price,
-                'subtotal'    => $qty * $price,
-                'created_at'  => now(),
-                'updated_at'  => now(),
-            ]);
+        foreach ($billItems as $idx => $items) {
+            $billId = $this->billIds[$idx] ?? null;
+            if (! $billId) {
+                continue;
+            }
+            foreach ($items as [$type, $desc, $qty, $price]) {
+                DB::table('bill_items')->insert([
+                    'bill_id'     => $billId,
+                    'item_type'   => $type,
+                    'description' => $desc,
+                    'quantity'    => $qty,
+                    'unit_price'  => $price,
+                    'subtotal'    => $qty * $price,
+                    'created_at'  => now(),
+                    'updated_at'  => now(),
+                ]);
+            }
         }
 
         // Sync bills.total_amount dari SUM(bill_items.subtotal)
-        DB::statement("
+        DB::statement('
             UPDATE bills b
             SET b.total_amount = (
                 SELECT COALESCE(SUM(bi.subtotal), 0)
                 FROM bill_items bi
                 WHERE bi.bill_id = b.id
             )
-        ");
+        ');
     }
 }

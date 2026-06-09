@@ -4,54 +4,119 @@ namespace App\Http\Controllers\Doctor;
 
 use App\Http\Controllers\Controller;
 use App\Models\Appointment;
+use App\Models\Bill;
+use App\Models\Prescription;
+use App\Models\MedicalRecord;
+use App\Models\Queue;
 use Illuminate\Support\Facades\DB;
 
 class DashboardController extends Controller
 {
     public function index()
     {
-        // Simulasi ID Dokter yang login adalah Dr. Budi Santoso (ID User: 3, ID Dokter: 1)
-        $doctorId = 1;
+        $user     = auth()->user();
+        $doctor   = $user?->doctor;
+        $doctorId = $doctor?->id;
 
-        // 1. Hitung total janji temu/antrean hari ini (2026-06-01 sesuai dump sql)
-        // Pakai tanggal hari ini (bukan hardcoded dump date)
-        $todayDate = now()->toDateString();
+        if (! $doctorId) {
+            // Kirim data kosong agar view tidak error
+            return view('doctor.dashboard', [
+                'todayQueue'         => 0,
+                'waitingCount'       => 0,
+                'completedVisits'    => 0,
+                'consultationFee'    => 0,
+                'totalAllTime'       => 0,
+                'prescriptionsToday' => 0,
+                'revenueToday'       => 0,
+                'monthlyVisits'      => array_fill(0, 12, 0),
+                'recentAppointments' => collect(),
+                'nextQueue'          => null,
+            ]);
+        }
 
-        // 1. Total antrean hari ini (termasuk yang sudah selesai)
-        $todayQueue = DB::table('appointments')
-            ->where('doctor_id', $doctorId)
-            ->whereDate('scheduled_at', $todayDate)
+        $today = now()->toDateString();
+
+        // Appointment hari ini (semua status kecuali cancelled)
+        $todayQueue = Appointment::where('doctor_id', $doctorId)
+            ->whereDate('scheduled_at', $today)
+            ->whereNotIn('status', ['cancelled'])
             ->count();
 
-        // 2. Total kunjungan yang berstatus 'completed' pada hari ini
-        $completedVisits = DB::table('appointments')
-            ->where('doctor_id', $doctorId)
-            ->whereDate('scheduled_at', $todayDate)
+        // Menunggu diperiksa hari ini (scheduled)
+        $waitingCount = Appointment::where('doctor_id', $doctorId)
+            ->whereDate('scheduled_at', $today)
+            ->where('status', 'scheduled')
+            ->count();
+
+        // Selesai diperiksa hari ini
+        $completedVisits = Appointment::where('doctor_id', $doctorId)
+            ->whereDate('scheduled_at', $today)
             ->where('status', 'completed')
             ->count();
 
-        // 3. Ambil data tarif konsultasi dokter dari tabel doctors
-        $doctorInfo = DB::table('doctors')->where('id', $doctorId)->first();
-        $consultationFee = $doctorInfo ? $doctorInfo->consultation_fee : 0;
+        // Tarif konsultasi dokter
+        $consultationFee = $doctor->consultation_fee ?? 0;
 
-        // Recent appointments (data nyata, bukan dummy)
-        $recentAppointments = Appointment::query()
-            ->where('doctor_id', $doctorId)
-            ->whereDate('scheduled_at', now()->toDateString())
-            ->with(['patientEnrollment.user'])
-            ->orderBy('scheduled_at', 'desc')
+        // Total semua kunjungan (all-time, status completed)
+        $totalAllTime = Appointment::where('doctor_id', $doctorId)
+            ->where('status', 'completed')
+            ->count();
+
+        // Resep yang dikeluarkan hari ini
+        // Prescription → MedicalRecord → Appointment (doctor_id + hari ini)
+        $prescriptionsToday = Prescription::whereHas('medicalRecord.appointment', function ($q) use ($doctorId, $today) {
+            $q->where('doctor_id', $doctorId)
+              ->whereDate('scheduled_at', $today);
+        })->count();
+
+        // Pendapatan hari ini dari bills yang sudah paid,
+        // melalui appointment dokter ini hari ini
+        $revenueToday = Bill::whereHas('appointment', function ($q) use ($doctorId, $today) {
+            $q->where('doctor_id', $doctorId)
+              ->whereDate('scheduled_at', $today);
+        })->where('status', 'paid')->sum('total_amount');
+
+        // Kunjungan per bulan tahun ini (untuk chart)
+        $monthlyRaw = Appointment::where('doctor_id', $doctorId)
+            ->whereYear('scheduled_at', now()->year)
+            ->whereNotIn('status', ['cancelled'])
+            ->selectRaw('MONTH(scheduled_at) as month, COUNT(*) as total')
+            ->groupBy('month')
+            ->pluck('total', 'month');
+
+        $monthlyVisits = collect(range(1, 12))
+            ->map(fn($m) => $monthlyRaw->get($m, 0))
+            ->values()
+            ->toArray();
+
+        // 5 appointment terbaru hari ini
+        $recentAppointments = Appointment::where('doctor_id', $doctorId)
+            ->whereDate('scheduled_at', $today)
+            ->with(['patientEnrollment.user', 'patientEnrollment.hospital'])
+            ->orderBy('scheduled_at', 'asc')
             ->limit(5)
             ->get();
 
-        return view('doctor.dashboard', compact('todayQueue', 'completedVisits', 'consultationFee', 'recentAppointments'));
+        // Pasien berikutnya di antrian
+        $nextQueue = Queue::getNextQueue($doctorId);
+
+        return view('doctor.dashboard', compact(
+            'todayQueue',
+            'waitingCount',
+            'completedVisits',
+            'consultationFee',
+            'totalAllTime',
+            'prescriptionsToday',
+            'revenueToday',
+            'monthlyVisits',
+            'recentAppointments',
+            'nextQueue',
+        ));
     }
 
     public function today()
     {
-        $user = auth()->user();
-
-        // Ambil doctor dari relasi user->doctor
-        // Catatan: pada model User relasinya bernama `doctor()` (return hasOne(Doctor::class)).
+        $user   = auth()->user();
         $doctor = $user?->doctor;
         $doctorId = $doctor?->id;
 
@@ -59,16 +124,21 @@ class DashboardController extends Controller
             abort(403, 'Dokter tidak ditemukan untuk user yang sedang login.');
         }
 
-        // Ambil antrean periksa hari ini untuk doctor login.
-        // Kita prioritaskan appointment yang statusnya scheduled/confirmed.
-        $todayAppointments = Appointment::query()
-            ->where('doctor_id', $doctorId)
+        $todayAppointments = Appointment::where('doctor_id', $doctorId)
             ->whereDate('scheduled_at', now()->toDateString())
-            ->whereIn('status', ['scheduled', 'confirmed'])
-            ->with(['patientEnrollment.hospital', 'patientEnrollment.user', 'doctor.specialization'])
+            ->with([
+                'patientEnrollment.hospital',
+                'patientEnrollment.user',
+                'doctor.specialization',
+                'medicalRecord.prescriptions',
+                'bill',
+                'queue',
+            ])
             ->orderBy('scheduled_at', 'asc')
             ->get();
 
-        return view('doctor.today', compact('doctorId', 'todayAppointments'));
+        $nextQueue = Queue::getNextQueue($doctorId);
+
+        return view('doctor.today', compact('doctorId', 'todayAppointments', 'nextQueue'));
     }
 }

@@ -19,19 +19,22 @@ class PrescriptionController extends Controller
         $appointments = DB::table('appointments')
             ->join('patient_enrollments', 'appointments.patient_enrollment_id', '=', 'patient_enrollments.id')
             ->join('users', 'patient_enrollments.user_id', '=', 'users.id')
-            ->leftJoin('medical_records', 'medical_records.appointment_id', '=', 'appointments.id')
+            ->join('medical_records', 'medical_records.appointment_id', '=', 'appointments.id') // INNER JOIN → hanya yang punya rekam medis
             ->where('appointments.doctor_id', $doctorId)
             ->whereDate('appointments.scheduled_at', $today)
-            ->where('appointments.status', 'scheduled')
-            ->whereNull('medical_records.id')
+            ->where('appointments.status', 'scheduled')   // belum selesai (enum: scheduled|completed|cancelled|no_show)
+            ->whereNull('medical_records.deleted_at')
+            ->whereNull('appointments.deleted_at')
             ->select([
                 'appointments.id as appointment_id',
                 'users.name as patient_name',
+                'appointments.scheduled_at as visit_date',
             ])
             ->orderBy('appointments.scheduled_at', 'asc')
             ->get();
 
         $medications = DB::table('medications')
+            ->where('is_active', true)
             ->select('id', 'name')
             ->orderBy('name')
             ->get();
@@ -43,6 +46,7 @@ class PrescriptionController extends Controller
             ->join('patient_enrollments', 'appointments.patient_enrollment_id', '=', 'patient_enrollments.id')
             ->join('users', 'patient_enrollments.user_id', '=', 'users.id')
             ->where('appointments.doctor_id', $doctorId)
+            ->whereNull('medical_records.deleted_at')
             ->select(
                 'users.name as patient_name',
                 'medical_records.diagnosis',
@@ -68,16 +72,12 @@ class PrescriptionController extends Controller
             $q->where('prescriptions.medication_id', $filterMedicationId);
         }
 
-        $filterStatus = request()->query('status');
-        if ($filterStatus) {
-
-        }
-
-        $perPage = 5;
         $prescriptions = $q->orderBy('medical_records.visit_date', 'desc')
-            ->paginate($perPage)
+            ->paginate(5)
             ->withQueryString();
 
-        return view('doctor.prescription', compact('prescriptions', 'appointments', 'medications', 'search', 'filterMedicationId'));
+        return view('doctor.prescription', compact(
+            'prescriptions', 'appointments', 'medications', 'search', 'filterMedicationId'
+        ));
     }
 }

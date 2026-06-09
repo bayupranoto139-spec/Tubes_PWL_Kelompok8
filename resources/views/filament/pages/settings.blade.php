@@ -29,7 +29,7 @@
     }
 
     .settings-card{
-        background:rgba(148,163,184,.20);
+        background:rgba(255, 255, 255, 0.995);
         border:1px solid var(--c-gray-200);
     }
 

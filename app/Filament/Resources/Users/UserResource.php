@@ -5,6 +5,7 @@ namespace App\Filament\Resources\Users;
 use App\Filament\Resources\Users\Pages\CreateUser;
 use App\Filament\Resources\Users\Pages\EditUser;
 use App\Filament\Resources\Users\Pages\ListUsers;
+use App\Filament\Resources\Users\Pages\ViewUser;
 use App\Filament\Resources\Users\Schemas\UserForm;
 use App\Filament\Resources\Users\Tables\UsersTable;
 use App\Models\User;
@@ -126,6 +127,49 @@ class UserResource extends Resource
             return $query;
         }
 
+        // Eager-load hospital relations for performance.
+        // For pasien, hospital will be resolved through patient_enrollments (handled in queries below).
+        $query->with(['hospital']);
+
+        // Exclude pasien users that do not have an enrollment/hospital.
+        // This ensures: pasien must exist in patient_enrollments (with hospital_id), otherwise not shown.
+        // Note: for filtering by hospital on the table, hospital filter is handled in UsersTable.
+        // Here we only enforce existence of an enrollment record with hospital_id.
+        $query->where(function ($q) {
+            $q
+                ->where('role', '!=', 'pasien')
+                ->orWhereHas('patientEnrollments', function ($sub) {
+                    $sub->whereNotNull('hospital_id');
+                });
+        });
+
+        // If the UI applies role=pasien filter + hospital filter, force-synchronize them
+        // by applying hospital constraint on patient_enrollments.
+        $filters = request()->input('tableFilters', []);
+        $hospitalId = $filters['hospital_id'] ?? null;
+        $roleFilter = $filters['role'] ?? null;
+
+        if ($roleFilter === 'pasien' && filled($hospitalId)) {
+            $query->whereHas('patientEnrollments', function ($sub) use ($hospitalId) {
+                $sub->where('hospital_id', $hospitalId);
+            });
+        }
+
+        // Final guard (to avoid UI filter order/interaction issues):
+        // if role filter is pasien, ensure user has enrollment for the selected hospital.
+        // If hospital_id filter is not set to specific value (e.g. "all"), then only require hospital_id not null.
+        if ($roleFilter === 'pasien') {
+            if (filled($hospitalId)) {
+                $query->whereHas('patientEnrollments', function ($sub) use ($hospitalId) {
+                    $sub->where('hospital_id', $hospitalId);
+                });
+            } else {
+                $query->whereHas('patientEnrollments', function ($sub) {
+                    $sub->whereNotNull('hospital_id');
+                });
+            }
+        }
+
         /*
         |--------------------------------------------------------------------------
         | SUPER ADMIN
@@ -149,10 +193,25 @@ class UserResource extends Resource
         */
 
         if ($user->role === 'admin_rs') {
-            return $query->where(
-                'hospital_id',
-                $user->hospital_id
-            );
+            // For admin_rs, keep only users related to the same hospital.
+            // Requirement: patient hospital is stored in patient_enrollments.hospital_id,
+            // while doctor/staff hospital is stored in users.hospital_id.
+            return $query
+                ->where(function ($q) use ($user) {
+                    $q
+                        // doctors & staff use users.hospital_id
+                        ->whereIn('role', ['dokter', 'staff'])
+                        ->where('hospital_id', $user->hospital_id);
+                })
+                ->orWhere(function ($q) use ($user) {
+                    // patients use patient_enrollments.hospital_id
+                    $q->where('role', 'pasien')
+                        ->whereIn('id', function ($sub) use ($user) {
+                            $sub->select('user_id')
+                                ->from('patient_enrollments')
+                                ->where('hospital_id', $user->hospital_id);
+                        });
+                });
         }
 
         return $query;
@@ -178,10 +237,10 @@ class UserResource extends Resource
     public static function getPages(): array
     {
         return [
-            'index'  => ListUsers::route('/'),
+            'index' => ListUsers::route('/'),
             'create' => CreateUser::route('/create'),
-            'view'   => \App\Filament\Resources\Users\Pages\ViewUser::route('/{record}'),
-            'edit'   => EditUser::route('/{record}/edit'),
+            'view' => ViewUser::route('/{record}'),
+            'edit' => EditUser::route('/{record}/edit'),
         ];
     }
 }

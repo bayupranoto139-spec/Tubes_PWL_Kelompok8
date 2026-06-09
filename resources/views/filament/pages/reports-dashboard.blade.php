@@ -15,7 +15,7 @@
     }
 
     .dashboard-card{
-        background:rgba(148,163,184,.20);
+        background:rgba(255, 255, 255, 0.995);
         padding:25px;
         border-radius:18px;
         border:1px solid var(--c-gray-200);
