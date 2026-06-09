@@ -59,20 +59,23 @@ class UserForm
 
                             Select::make('role')
                                 ->label('Role')
-                                ->options(
-                                    filament()->auth()->user()?->role === 'super_admin'
-                                        ? [
+                                ->options(function () {
+                                    $authRole = filament()->auth()->user()?->role;
+
+                                    return match ($authRole) {
+                                        'super_admin' => [
                                             'admin_rs' => 'Admin Rumah Sakit',
-                                            'dokter'   => 'Dokter',
-                                            'staff'    => 'Staff',
-                                            'pasien'   => 'Pasien',
-                                        ]
-                                        : [
+                                        ],
+                                        'admin_rs' => [
                                             'dokter' => 'Dokter',
-                                            'staff'  => 'Staff',
                                             'pasien' => 'Pasien',
-                                        ]
-                                )
+                                        ],
+                                        'staff' => [
+                                            'pasien' => 'Pasien',
+                                        ],
+                                        default => [],
+                                    };
+                                })
                                 ->required()
                                 ->searchable()
                                 ->native(false)
