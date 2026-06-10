@@ -1,10 +1,11 @@
-FROM php:8.2-cli
+FROM php:8.3-cli
 
 WORKDIR /app
 
+# Install system dependencies including libicu-dev for intl and libzip-dev for zip
 RUN apt-get update && apt-get install -y \
-    git unzip curl libzip-dev zip \
-    && docker-php-ext-install pdo pdo_mysql
+    git unzip curl libzip-dev zip libicu-dev nodejs npm \
+    && docker-php-ext-install pdo pdo_mysql intl zip
 
 COPY . .
 
@@ -16,4 +17,4 @@ RUN npm install && npm run build
 
 EXPOSE 10000
 
-CMD php artisan serve --host=0.0.0.0 --port=10000
+CMD php artisan serve --host=0.0.0.0 --port=${PORT:-10000}
