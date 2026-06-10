@@ -43,7 +43,7 @@ class Bill extends Model
 
     public function billItems()
     {
-        return $this->hasMany(BillItem::class);
+        return $this->hasMany(Billitem::class);
     }
 
     public function isPaid(): bool
