@@ -11,6 +11,8 @@ class PrescriptionsTable
 {
     public static function configure(Table $table): Table
     {
+        $isSuperAdmin = filament()->auth()->user()?->role === 'super_admin';
+
         return $table
 
             ->defaultSort('id', 'asc')
@@ -36,15 +38,7 @@ class PrescriptionsTable
                     ->label('Diagnosis')
                     ->searchable()
                     ->limit(50)
-                    ->tooltip(
-                        fn ($record) => $record->medicalRecord?->diagnosis
-                    ),
-
-                /*
-                |--------------------------------------------------------------------------
-                | MEDICATION ID
-                |--------------------------------------------------------------------------
-                */
+                    ->tooltip(fn ($record) => $record->medicalRecord?->diagnosis),
 
                 TextColumn::make('medication_id')
                     ->label('Medicine ID')
@@ -52,23 +46,11 @@ class PrescriptionsTable
                     ->color('success')
                     ->sortable(),
 
-                /*
-                |--------------------------------------------------------------------------
-                | DOSAGE
-                |--------------------------------------------------------------------------
-                */
-
                 TextColumn::make('dosage')
                     ->label('Dosage')
                     ->badge()
                     ->color('info')
                     ->sortable(),
-
-                /*
-                |--------------------------------------------------------------------------
-                | DURATION
-                |--------------------------------------------------------------------------
-                */
 
                 TextColumn::make('duration')
                     ->label('Duration')
@@ -76,31 +58,17 @@ class PrescriptionsTable
                     ->color('warning')
                     ->sortable(),
 
-                /*
-                |--------------------------------------------------------------------------
-                | QUANTITY
-                |--------------------------------------------------------------------------
-                */
-
                 TextColumn::make('quantity')
                     ->label('Qty')
                     ->badge()
                     ->color('gray')
                     ->sortable(),
 
-                /*
-                |--------------------------------------------------------------------------
-                | NOTES
-                |--------------------------------------------------------------------------
-                */
-
                 TextColumn::make('notes')
                     ->label('Notes')
                     ->placeholder('-')
                     ->limit(40)
-                    ->tooltip(
-                        fn ($record) => $record->notes
-                    ),
+                    ->tooltip(fn ($record) => $record->notes),
 
                 TextColumn::make('created_at')
                     ->label('Created At')
@@ -111,15 +79,15 @@ class PrescriptionsTable
 
             ->recordActions([
                 \Filament\Actions\ViewAction::make()->color('warning'),
-                EditAction::make(),
+                EditAction::make()
+                    ->visible(! $isSuperAdmin),
                 DeleteAction::make()
-                    ->requiresConfirmation(),
+                    ->requiresConfirmation()
+                    ->visible(! $isSuperAdmin),
             ])
 
             ->emptyStateHeading('No Prescriptions Found')
 
-            ->emptyStateDescription(
-                'No prescription records have been created yet.'
-            );
+            ->emptyStateDescription('No prescription records have been created yet.');
     }
 }

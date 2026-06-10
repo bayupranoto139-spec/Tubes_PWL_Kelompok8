@@ -12,8 +12,11 @@ class ListPrescriptions extends ListRecords
 
     protected function getHeaderActions(): array
     {
+        $isSuperAdmin = filament()->auth()->user()?->role === 'super_admin';
+
         return [
-            CreateAction::make(),
+            CreateAction::make()
+                ->visible(! $isSuperAdmin),
         ];
     }
 }

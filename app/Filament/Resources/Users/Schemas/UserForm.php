@@ -3,7 +3,10 @@
 namespace App\Filament\Resources\Users\Schemas;
 
 use App\Models\Hospital;
+use App\Models\Specialization;
 use Filament\Forms\Components\DatePicker;
+use Filament\Forms\Components\Repeater;
+use Filament\Forms\Components\TimePicker;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Textarea;
@@ -67,6 +70,7 @@ class UserForm
                                             'admin_rs' => 'Admin Rumah Sakit',
                                         ],
                                         'admin_rs' => [
+                                            'staff' => 'Staff',
                                             'dokter' => 'Dokter',
                                             'pasien' => 'Pasien',
                                         ],
@@ -190,6 +194,128 @@ class UserForm
                         ->label('Address')
                         ->rows(4)
                         ->columnSpanFull(),
+
+                ]),
+            /*
+            |--------------------------------------------------------------------------
+            | DOCTOR INFORMATION
+            |--------------------------------------------------------------------------
+            */
+
+            Section::make('Doctor Information')
+                ->description('Professional details for doctor role')
+                ->columnSpanFull()
+                ->visible(fn (Get $get, $record) => ($get('role') ?? $record?->role) === 'dokter')
+                ->schema([
+
+                    Grid::make(2)
+                        ->schema([
+
+                            Select::make('doctor.specialization_id')
+                                ->label('Specialization')
+                                ->options(Specialization::pluck('name', 'id'))
+                                ->searchable()
+                                ->preload()
+                                ->native(false)
+                                ->required(fn (Get $get, $record) => ($get('role') ?? $record?->role) === 'dokter'),
+
+                            TextInput::make('doctor.licence_number')
+                                ->label('Licence Number')
+                                ->maxLength(100)
+                                ->required(fn (Get $get, $record) => ($get('role') ?? $record?->role) === 'dokter'),
+
+                            TextInput::make('doctor.consultation_fee')
+                                ->label('Consultation Fee (Rp)')
+                                ->numeric()
+                                ->minValue(0)
+                                ->default(0)
+                                ->prefix('Rp'),
+
+                            TextInput::make('doctor.years_of_experience')
+                                ->label('Years of Experience')
+                                ->numeric()
+                                ->minValue(0)
+                                ->default(0)
+                                ->suffix('tahun'),
+
+                        ]),
+                ]),
+
+            /*
+            |--------------------------------------------------------------------------
+            | DOCTOR SCHEDULES
+            |--------------------------------------------------------------------------
+            */
+
+            Section::make('Doctor Schedules')
+                ->description('Set practice schedule for this doctor')
+                ->columnSpanFull()
+                ->visible(fn (Get $get, $record) => ($get('role') ?? $record?->role) === 'dokter')
+                ->schema([
+
+                    Repeater::make('doctor_schedules')
+                        ->label('')
+                        ->schema([
+
+                            Grid::make(5)
+                                ->schema([
+
+                                    Select::make('day_of_week')
+                                        ->label('Day')
+                                        ->options([
+                                            1 => 'Senin',
+                                            2 => 'Selasa',
+                                            3 => 'Rabu',
+                                            4 => 'Kamis',
+                                            5 => 'Jumat',
+                                            6 => 'Sabtu',
+                                            7 => 'Minggu',
+                                        ])
+                                        ->native(false)
+                                        ->required(),
+
+                                    TimePicker::make('start_time')
+                                        ->label('Start Time')
+                                        ->seconds(false)
+                                        ->required(),
+
+                                    TimePicker::make('end_time')
+                                        ->label('End Time')
+                                        ->seconds(false)
+                                        ->required(),
+
+                                    TextInput::make('max_patients')
+                                        ->label('Max Patients')
+                                        ->numeric()
+                                        ->minValue(1)
+                                        ->default(10)
+                                        ->required(),
+
+                                    Toggle::make('is_active')
+                                        ->label('Active')
+                                        ->default(true)
+                                        ->inline(false),
+
+                                ]),
+
+                        ])
+                        ->addActionLabel('Add Schedule')
+                        ->defaultItems(0)
+                        ->reorderable(false)
+                        ->collapsible()
+                        ->itemLabel(function (array $state): ?string {
+                            $days = [
+                                1 => 'Senin', 2 => 'Selasa', 3 => 'Rabu',
+                                4 => 'Kamis', 5 => 'Jumat', 6 => 'Sabtu', 7 => 'Minggu',
+                            ];
+                            $day   = $days[$state['day_of_week'] ?? null] ?? '—';
+                            $start = isset($state['start_time']) ? substr($state['start_time'], 0, 5) : '--:--';
+                            $end   = isset($state['end_time'])   ? substr($state['end_time'],   0, 5) : '--:--';
+
+                            return "{$day}  {$start} – {$end}";
+                        })
+                        ->columnSpanFull()
+                        ->dehydrated(false), // handled manually in afterCreate / afterSave
 
                 ]),
         ]);

@@ -34,12 +34,9 @@ class EditBill extends EditRecord
     protected function afterSave(): void
     {
         if ($this->record->status === 'paid') {
-
             $this->record
                 ->appointment
-                ?->update([
-                    'status' => 'completed',
-                ]);
+                ?->update(['status' => 'completed']);
         }
     }
 }
