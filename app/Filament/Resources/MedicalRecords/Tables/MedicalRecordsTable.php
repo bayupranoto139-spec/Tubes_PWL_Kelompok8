@@ -8,6 +8,7 @@ use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\EditAction;
 use Filament\Actions\ForceDeleteBulkAction;
 use Filament\Actions\RestoreBulkAction;
+use Filament\Actions\ViewAction;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\TrashedFilter;
 use Filament\Tables\Table;
@@ -71,9 +72,21 @@ class MedicalRecordsTable
             ])
 
             ->recordActions([
-                \Filament\Actions\ViewAction::make()->color('warning'),
-                EditAction::make(),
-                DeleteAction::make(),
+                ViewAction::make()->color('warning'),
+
+                EditAction::make()
+                    ->visible(fn () => in_array(
+                        filament()->auth()->user()?->role,
+                        ['admin_rs', 'staff']
+                    )
+                    ),
+
+                DeleteAction::make()
+                    ->visible(fn () => in_array(
+                        filament()->auth()->user()?->role,
+                        ['admin_rs', 'staff']
+                    )
+                    ),
             ])
 
             ->toolbarActions([

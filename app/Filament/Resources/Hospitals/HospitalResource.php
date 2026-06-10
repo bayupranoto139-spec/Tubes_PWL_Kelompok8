@@ -5,15 +5,22 @@ namespace App\Filament\Resources\Hospitals;
 use App\Filament\Resources\Hospitals\Pages\CreateHospital;
 use App\Filament\Resources\Hospitals\Pages\EditHospital;
 use App\Filament\Resources\Hospitals\Pages\ListHospitals;
+use App\Filament\Resources\Hospitals\Pages\ViewHospital;
 use App\Models\Hospital;
 use BackedEnum;
 use Filament\Actions;
-use Filament\Forms\Components\TextInput;
+use Filament\Actions\DeleteAction;
+use Filament\Actions\EditAction;
+use Filament\Actions\ForceDeleteAction;
+use Filament\Actions\RestoreAction;
+use Filament\Actions\ViewAction;
 use Filament\Forms\Components\Textarea;
+use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Toggle;
 use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
 use Filament\Tables;
+use Filament\Tables\Filters\TrashedFilter;
 use Filament\Tables\Table;
 
 class HospitalResource extends Resource
@@ -147,6 +154,17 @@ class HospitalResource extends Resource
                 Actions\BulkActionGroup::make([
                     Actions\DeleteBulkAction::make(),
                 ]),
+            ])
+
+            ->filters([
+                TrashedFilter::make(),
+            ])
+            ->actions([
+                ViewAction::make()->color('warning'),
+                EditAction::make(),
+                DeleteAction::make(),
+                ForceDeleteAction::make(),
+                RestoreAction::make(),
             ]);
     }
 
@@ -172,7 +190,7 @@ class HospitalResource extends Resource
         return [
             'index' => ListHospitals::route('/'),
             'create' => CreateHospital::route('/create'),
-            'view' => \App\Filament\Resources\Hospitals\Pages\ViewHospital::route('/{record}'),
+            'view' => ViewHospital::route('/{record}'),
             'edit' => EditHospital::route('/{record}/edit'),
         ];
     }

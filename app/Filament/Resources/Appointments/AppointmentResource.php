@@ -5,6 +5,7 @@ namespace App\Filament\Resources\Appointments;
 use App\Filament\Resources\Appointments\Pages\CreateAppointment;
 use App\Filament\Resources\Appointments\Pages\EditAppointment;
 use App\Filament\Resources\Appointments\Pages\ListAppointments;
+use App\Filament\Resources\Appointments\Pages\ViewAppointment;
 use App\Filament\Resources\Appointments\Schemas\AppointmentForm;
 use App\Filament\Resources\Appointments\Tables\AppointmentsTable;
 use App\Models\Appointment;
@@ -77,10 +78,25 @@ class AppointmentResource extends Resource
         return in_array(
             filament()->auth()->user()?->role,
             [
-                'super_admin',
                 'admin_rs',
                 'staff',
             ]
+        );
+    }
+
+    public static function canEdit($record): bool
+    {
+        return in_array(
+            filament()->auth()->user()?->role,
+            ['admin_rs', 'staff']
+        );
+    }
+
+    public static function canDelete($record): bool
+    {
+        return in_array(
+            filament()->auth()->user()?->role,
+            ['admin_rs', 'staff']
         );
     }
 
@@ -156,10 +172,10 @@ class AppointmentResource extends Resource
     public static function getPages(): array
     {
         return [
-            'index'  => ListAppointments::route('/'),
+            'index' => ListAppointments::route('/'),
             'create' => CreateAppointment::route('/create'),
-            'view'   => \App\Filament\Resources\Appointments\Pages\ViewAppointment::route('/{record}'),
-            'edit'   => EditAppointment::route('/{record}/edit'),
+            'view' => ViewAppointment::route('/{record}'),
+            'edit' => EditAppointment::route('/{record}/edit'),
         ];
     }
 }

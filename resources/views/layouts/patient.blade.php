@@ -84,7 +84,7 @@
             <div class="px-6 py-5 flex items-center gap-3 border-b border-white/10">
                 <div class="flex-shrink-0 w-9 h-9 rounded-xl flex items-center justify-center"
                     style="background:linear-gradient(135deg,#14b8a6,#06b6d4)">
-                    <i class="fa-solid fa-heart-pulse text-white text-base"></i>
+                    <i class="fa-solid fa-stethoscope text-white text-base"></i>
                 </div>
                 <div>
                     <span class="text-base font-bold tracking-wide text-white">HealthMesh</span>

@@ -6,41 +6,43 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Login — HealthMesh</title>
     @vite(['resources/css/app.css', 'resources/js/app.js'])
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css">
     <style>
-    body {
-        background: linear-gradient(135deg, #f0fdfa 0%, #ffffff 50%, #ecfeff 100%);
-    }
-
-    @keyframes loginPop {
-        from {
-            opacity: 0;
-            transform: translateY(20px) scale(0.96);
+        body {
+            background: linear-gradient(135deg, #f0fdfa 0%, #ffffff 50%, #ecfeff 100%);
         }
 
-        to {
-            opacity: 1;
-            transform: translateY(0) scale(1);
-        }
-    }
+        @keyframes loginPop {
+            from {
+                opacity: 0;
+                transform: translateY(20px) scale(0.96);
+            }
 
-    .login-popup {
-        animation: loginPop 0.6s ease-out forwards;
-    }
-    @keyframes slideRight {
-        from {
-            opacity: 0;
-            transform: translateX(40px);
+            to {
+                opacity: 1;
+                transform: translateY(0) scale(1);
+            }
         }
 
-        to {
-            opacity: 1;
-            transform: translateX(0);
+        .login-popup {
+            animation: loginPop 0.6s ease-out forwards;
         }
-    }
 
-    .hero-animation {
-        animation: slideRight 0.8s ease-out;
-    }
+        @keyframes slideRight {
+            from {
+                opacity: 0;
+                transform: translateX(40px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+
+        .hero-animation {
+            animation: slideRight 0.8s ease-out;
+        }
     </style>
 </head>
 
@@ -58,11 +60,7 @@
                     <div class="flex items-center space-x-3 mb-4">
                         <div
                             class="w-12 h-12 bg-gradient-to-br from-[#14b8a6] to-[#0d9488] rounded-xl flex items-center justify-center">
-                            <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                    d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4">
-                                </path>
-                            </svg>
+                            <i class="fa-solid fa-stethoscope text-white text-xl"></i>
                         </div>
 
                         <div>
@@ -99,7 +97,7 @@
                                     class="inline-flex items-center gap-1.5 px-3 py-1.5 bg-white border border-red-300 text-red-600 hover:bg-red-50 rounded-lg text-xs font-semibold transition-all">
                                     <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                            d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
+                                            d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
                                     </svg>
                                     Kirim Ulang Email Verifikasi
                                 </button>
@@ -208,8 +206,8 @@
                 </form>
 
                 <p class="mt-6 text-center text-gray-600 text-sm">
-                    Belum punya akun?
-                    <a href="{{ route('register') }}" class="font-medium text-[#14b8a6] hover:text-[#0d9488]">Daftar sebagai pasien</a>
+                    Don't have an account?
+                    <a href="{{ route('register') }}" class="font-medium text-[#14b8a6] hover:text-[#0d9488]">Register as a patient</a>
                 </p>
 
             </div>
@@ -228,11 +226,7 @@
 
                     <div
                         class="w-28 h-28 bg-white/20 rounded-3xl flex items-center justify-center mx-auto mb-8 backdrop-blur-sm">
-                        <svg class="w-14 h-14 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4">
-                            </path>
-                        </svg>
+                        <i class="fa-solid fa-stethoscope text-white text-5xl"></i>
                     </div>
 
                     <h2 class="text-4xl font-bold mb-4">

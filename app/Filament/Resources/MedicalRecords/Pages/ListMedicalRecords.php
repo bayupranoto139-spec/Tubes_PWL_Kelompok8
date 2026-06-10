@@ -12,8 +12,8 @@ class ListMedicalRecords extends ListRecords
 
     protected function getHeaderActions(): array
     {
-        return [
-            CreateAction::make(),
-        ];
+        return MedicalRecordResource::canCreate()
+            ? [CreateAction::make()]
+            : [];
     }
 }

@@ -5,6 +5,7 @@ namespace App\Filament\Resources\Bills;
 use App\Filament\Resources\Bills\Pages\CreateBill;
 use App\Filament\Resources\Bills\Pages\EditBill;
 use App\Filament\Resources\Bills\Pages\ListBills;
+use App\Filament\Resources\Bills\Pages\ViewBill;
 use App\Filament\Resources\Bills\Schemas\BillForm;
 use App\Filament\Resources\Bills\Tables\BillsTable;
 use App\Models\Bill;
@@ -75,14 +76,20 @@ class BillResource extends Resource
 
     public static function canCreate(): bool
     {
+        return false;
+    }
+
+    public static function canEdit($record): bool
+    {
         return in_array(
             filament()->auth()->user()?->role,
-            [
-                'super_admin',
-                'admin_rs',
-                'staff',
-            ]
+            ['admin_rs', 'staff']
         );
+    }
+
+    public static function canDelete($record): bool
+    {
+        return false;
     }
 
     /*
@@ -123,7 +130,7 @@ class BillResource extends Resource
             return $query;
         }
 
-        if ($user->role === 'admin_rs') {
+        if (in_array($user->role, ['admin_rs', 'staff'])) {
 
             $query->whereHas(
                 'patientEnrollment',
@@ -159,7 +166,7 @@ class BillResource extends Resource
         return [
             'index' => ListBills::route('/'),
             'create' => CreateBill::route('/create'),
-            'view' => \App\Filament\Resources\Bills\Pages\ViewBill::route('/{record}'),
+            'view' => ViewBill::route('/{record}'),
             'edit' => EditBill::route('/{record}/edit'),
         ];
     }

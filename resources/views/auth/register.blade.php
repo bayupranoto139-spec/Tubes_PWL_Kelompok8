@@ -8,6 +8,8 @@
 
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css">
+
     <style>
         body {
             background: linear-gradient(135deg, #f0fdfa 0%, #ffffff 50%, #ecfeff 100%);
@@ -63,10 +65,7 @@
                     <div class="flex items-center space-x-3 mb-4">
                         <div
                             class="w-12 h-12 bg-gradient-to-br from-[#14b8a6] to-[#0d9488] rounded-xl flex items-center justify-center">
-                            <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                    d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4" />
-                            </svg>
+                            <i class="fa-solid fa-stethoscope text-white text-lg"></i>
                         </div>
 
                         <div>
@@ -223,7 +222,7 @@
                             </span>
                         </div>
                     </div>
-                    
+
                     <div class="text-center">
                         <a href="{{ url('/') }}"
                             class="inline-flex items-center gap-2 text-sm font-medium text-[#14b8a6] hover:text-[#0d9488] transition-colors">
@@ -235,10 +234,11 @@
                             Continue as guest
                         </a>
                     </div>
-                    
+
                     <p class="mt-6 text-center text-gray-600 text-sm">
-                    Already have an account?
-                    <a href="{{ route('login') }}" class="font-medium text-[#14b8a6] hover:text-[#0d9488]">Sign In</a>
+                        Already have an account?
+                        <a href="{{ route('login') }}" class="font-medium text-[#14b8a6] hover:text-[#0d9488]">Sign
+                            In</a>
                     </p>
 
                 </form>
@@ -256,19 +256,16 @@
 
                     <div
                         class="w-28 h-28 bg-white/20 rounded-3xl flex items-center justify-center mx-auto mb-8 backdrop-blur-sm">
-                        <svg class="w-14 h-14 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4" />
-                        </svg>
+                        <i class="fa-solid fa-stethoscope text-white text-6xl drop-shadow-lg"></i>
                     </div>
 
                     <h2 class="text-4xl font-bold mb-4">
-                        Join HealthMesh
+                        HealthMesh
                     </h2>
 
                     <p class="text-xl text-white max-w-md">
-                        Create your patient account, verify your email, and connect to multiple hospitals using one
-                        account.
+                        Access patient records, appointments, billing,
+                        and hospital management tools in one platform.
                     </p>
 
                 </div>

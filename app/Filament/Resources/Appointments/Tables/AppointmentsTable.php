@@ -6,6 +6,7 @@ use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteAction;
 use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\EditAction;
+use Filament\Actions\ViewAction;
 use Filament\Tables;
 use Filament\Tables\Table;
 
@@ -56,7 +57,7 @@ class AppointmentsTable
                         'scheduled' => 'primary',
                         'completed' => 'success',
                         'cancelled' => 'danger',
-                        default     => 'gray',
+                        default => 'gray',
                     }),
 
                 // COMPLAINT
@@ -95,14 +96,28 @@ class AppointmentsTable
             )
 
             ->recordActions([
-                \Filament\Actions\ViewAction::make()->color('warning'),
-                EditAction::make(),
-                DeleteAction::make(),
+                ViewAction::make()->color('warning'),
+
+                EditAction::make()
+                    ->visible(fn () => in_array(
+                        filament()->auth()->user()?->role,
+                        ['admin_rs', 'staff']
+                    )),
+
+                DeleteAction::make()
+                    ->visible(fn () => in_array(
+                        filament()->auth()->user()?->role,
+                        ['admin_rs', 'staff']
+                    )),
             ])
 
             ->toolbarActions([
                 BulkActionGroup::make([
-                    DeleteBulkAction::make(),
+                    DeleteBulkAction::make()
+                        ->visible(fn () => in_array(
+                            filament()->auth()->user()?->role,
+                            ['admin_rs', 'staff']
+                        )),
                 ]),
             ])
 
