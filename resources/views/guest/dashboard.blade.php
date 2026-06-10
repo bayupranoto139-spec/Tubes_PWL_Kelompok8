@@ -33,9 +33,6 @@
 </head>
 <body class="antialiased bg-gray-50" x-data="{ mobileOpen: false }">
 
-{{-- ============================================================ --}}
-{{--  NAVBAR  (identik public.blade.php exampleProject)           --}}
-{{-- ============================================================ --}}
 <nav class="bg-white/95 backdrop-blur-md shadow-sm sticky top-0 z-50">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div class="flex justify-between h-16">
@@ -138,14 +135,14 @@
                 Mode Tamu — Hanya dapat melihat data
             </div>
             <h1 class="text-4xl sm:text-5xl font-bold text-gray-900 leading-tight mb-4">
-                Selamat Datang di
+                Wellcome to <span
                 <span class="bg-gradient-to-r from-teal-500 to-cyan-500 bg-clip-text text-transparent">Health Mesh</span>
             </h1>
             <p class="text-lg text-gray-600 mb-8 max-w-2xl">
-                Platform manajemen layanan kesehatan terpadu. Pantau statistik rumah sakit, dokter, dan pasien secara real-time.
+                Access patient records, appointments, billing,
+                and hospital management tools in one platform.
                 <a href="/login" class="text-teal-600 font-semibold hover:underline">Sign in</a>
-
-                untuk mengakses semua fitur.
+                to acces all features.
             </p>
             <div class="flex flex-wrap gap-4">
                 <a href="/login"
@@ -284,9 +281,9 @@
         </div>
         <div class="grid md:grid-cols-3 gap-6 mb-10 fade-in">
             @foreach([
-                ['icon'=>'fa-location-dot', 'title'=>'Alamat',   'detail'=>'Jl. Kesehatan No. 123, Jakarta 12345',  'color'=>'teal'],
-                ['icon'=>'fa-phone',        'title'=>'Telepon',  'detail'=>'+62 21 1234 5678',                      'color'=>'cyan'],
-                ['icon'=>'fa-envelope',     'title'=>'Email',    'detail'=>'info@healthmesh.id',                    'color'=>'blue'],
+                ['icon'=>'fa-location-dot', 'title'=>'Alamat',   'detail'=>'Jl. Kesehatan No. 123, Medan','color'=>'teal'],
+                ['icon'=>'fa-phone',        'title'=>'Telepon',  'detail'=>'+62 812 3456 789','color'=>'cyan'],
+                ['icon'=>'fa-envelope',     'title'=>'Email',    'detail'=>'healthmesh.noreply@gmail.com','color'=>'blue'],
             ] as $c)
             <div class="text-center p-6 rounded-2xl bg-gray-50 border border-gray-100 card-hover">
                 <div class="w-12 h-12 rounded-xl bg-{{ $c['color'] }}-100 flex items-center justify-center mx-auto mb-4">
@@ -407,15 +404,15 @@
                 <ul class="space-y-3">
                     <li class="flex items-start space-x-3">
                         <i class="fa-solid fa-location-dot text-teal-400 mt-1 flex-shrink-0"></i>
-                        <span class="text-gray-400 text-sm">Jl. Kesehatan No. 123, Jakarta 12345</span>
+                        <span class="text-gray-400 text-sm">Jl. Kesehatan No. 123, Medan</span>
                     </li>
                     <li class="flex items-center space-x-3">
                         <i class="fa-solid fa-phone text-teal-400 flex-shrink-0"></i>
-                        <span class="text-gray-400 text-sm">+62 21 1234 5678</span>
+                        <span class="text-gray-400 text-sm">+62 812 3456 789</span>
                     </li>
                     <li class="flex items-center space-x-3">
                         <i class="fa-solid fa-envelope text-teal-400 flex-shrink-0"></i>
-                        <span class="text-gray-400 text-sm">info@healthmesh.id</span>
+                        <span class="text-gray-400 text-sm">healthmesh.noreply@gmail.com</span>
                     </li>
                 </ul>
             </div>

@@ -206,9 +206,8 @@
                 </form>
 
                 <p class="mt-6 text-center text-gray-600 text-sm">
-                    Belum punya akun?
-                    <a href="{{ route('register') }}" class="font-medium text-[#14b8a6] hover:text-[#0d9488]">Daftar
-                        sebagai pasien</a>
+                    Don't have an account?
+                    <a href="{{ route('register') }}" class="font-medium text-[#14b8a6] hover:text-[#0d9488]">Register as a patient</a>
                 </p>
 
             </div>
