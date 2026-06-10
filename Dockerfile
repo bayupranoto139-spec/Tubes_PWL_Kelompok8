@@ -11,7 +11,9 @@ COPY . .
 
 COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 
-RUN composer install
+ENV COMPOSER_ALLOW_SUPERUSER=1
+
+RUN composer install --no-interaction
 
 RUN npm install && npm run build
 
