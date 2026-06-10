@@ -22,14 +22,12 @@
             $tabs = [
                 null          => 'All',
                 'scheduled'   => '⏳ Scheduled',
-                'confirmed'   => '✓ Confirmed',
                 'completed'   => '🩺 Completed',
                 'cancelled'   => '✗ Cancelled',
             ];
             $tabColors = [
                 null          => 'bg-teal-500 text-white',
                 'scheduled'   => 'bg-blue-500 text-white',
-                'confirmed'   => 'bg-teal-500 text-white',
                 'completed'   => 'bg-green-500 text-white',
                 'cancelled'   => 'bg-red-500 text-white',
             ];

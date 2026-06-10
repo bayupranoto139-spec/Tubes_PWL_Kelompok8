@@ -16,8 +16,10 @@ class ViewAppointment extends ViewRecord
 
     protected function getHeaderActions(): array
     {
+        $role = filament()->auth()->user()?->role;
+        $isSuperAdmin = $role === 'super_admin';
+
         return [
-            // Tombol Complete (hanya muncul jika belum completed)
             Action::make('complete_appointment')
                 ->label('Selesaikan & Buat Tagihan')
                 ->icon('heroicon-o-check-circle')
@@ -26,7 +28,7 @@ class ViewAppointment extends ViewRecord
                 ->modalHeading('Selesaikan Appointment')
                 ->modalDescription('Appointment akan ditandai selesai dan tagihan akan dibuat otomatis berdasarkan biaya konsultasi dan resep obat (jika ada). Lanjutkan?')
                 ->modalSubmitActionLabel('Ya, Selesaikan')
-                ->visible(fn () => $this->getRecord()->status !== 'completed')
+                ->visible(fn () => ! $isSuperAdmin && $this->getRecord()->status !== 'completed')
                 ->action(function () {
                     $appointment = $this->getRecord()->load([
                         'medicalRecord.prescriptions.medication',
@@ -35,7 +37,6 @@ class ViewAppointment extends ViewRecord
                         'bill',
                     ]);
 
-                    // Validasi: harus ada medical record
                     if (! $appointment->medicalRecord) {
                         Notification::make()
                             ->title('Rekam medis belum diisi')
@@ -65,7 +66,8 @@ class ViewAppointment extends ViewRecord
                     $this->refreshFormData(['status']);
                 }),
 
-            EditAction::make(),
+            EditAction::make()
+                ->visible(! $isSuperAdmin),
         ];
     }
 }

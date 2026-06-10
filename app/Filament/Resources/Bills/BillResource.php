@@ -48,17 +48,17 @@ class BillResource extends Resource
     |--------------------------------------------------------------------------
     | ACCESS CONTROL
     |--------------------------------------------------------------------------
+    | super_admin  → view only (no create / edit / delete)
+    | admin_rs     → edit only (bills are auto-generated, not manually created)
+    | staff        → edit only
+    |--------------------------------------------------------------------------
     */
 
     public static function shouldRegisterNavigation(): bool
     {
         return in_array(
             filament()->auth()->user()?->role,
-            [
-                'super_admin',
-                'admin_rs',
-                'staff',
-            ]
+            ['super_admin', 'admin_rs', 'staff']
         );
     }
 
@@ -66,17 +66,13 @@ class BillResource extends Resource
     {
         return in_array(
             filament()->auth()->user()?->role,
-            [
-                'super_admin',
-                'admin_rs',
-                'staff',
-            ]
+            ['super_admin', 'admin_rs', 'staff']
         );
     }
 
     public static function canCreate(): bool
     {
-        return false;
+        return false; // bills are auto-generated; no role may create manually
     }
 
     public static function canEdit($record): bool
@@ -89,7 +85,7 @@ class BillResource extends Resource
 
     public static function canDelete($record): bool
     {
-        return false;
+        return false; // no role may delete bills
     }
 
     /*
@@ -130,14 +126,14 @@ class BillResource extends Resource
             return $query;
         }
 
-        if (in_array($user->role, ['admin_rs', 'staff'])) {
+        if ($user->role === 'super_admin') {
+            return $query;
+        }
 
+        if (in_array($user->role, ['admin_rs', 'staff'])) {
             $query->whereHas(
                 'patientEnrollment',
-                fn ($q) => $q->where(
-                    'hospital_id',
-                    $user->hospital_id
-                )
+                fn ($q) => $q->where('hospital_id', $user->hospital_id)
             );
         }
 
@@ -164,10 +160,10 @@ class BillResource extends Resource
     public static function getPages(): array
     {
         return [
-            'index' => ListBills::route('/'),
+            'index'  => ListBills::route('/'),
             'create' => CreateBill::route('/create'),
-            'view' => ViewBill::route('/{record}'),
-            'edit' => EditBill::route('/{record}/edit'),
+            'view'   => ViewBill::route('/{record}'),
+            'edit'   => EditBill::route('/{record}/edit'),
         ];
     }
 

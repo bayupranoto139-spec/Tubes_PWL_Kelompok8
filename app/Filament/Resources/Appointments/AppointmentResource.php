@@ -18,19 +18,7 @@ use Illuminate\Database\Eloquent\Builder;
 
 class AppointmentResource extends Resource
 {
-    /*
-    |--------------------------------------------------------------------------
-    | MODEL
-    |--------------------------------------------------------------------------
-    */
-
     protected static ?string $model = Appointment::class;
-
-    /*
-    |--------------------------------------------------------------------------
-    | NAVIGATION
-    |--------------------------------------------------------------------------
-    */
 
     protected static string|BackedEnum|null $navigationIcon =
         Heroicon::OutlinedCalendarDays;
@@ -53,11 +41,7 @@ class AppointmentResource extends Resource
     {
         return in_array(
             filament()->auth()->user()?->role,
-            [
-                'super_admin',
-                'admin_rs',
-                'staff',
-            ]
+            ['super_admin', 'admin_rs', 'staff']
         );
     }
 
@@ -65,11 +49,7 @@ class AppointmentResource extends Resource
     {
         return in_array(
             filament()->auth()->user()?->role,
-            [
-                'super_admin',
-                'admin_rs',
-                'staff',
-            ]
+            ['super_admin', 'admin_rs', 'staff']
         );
     }
 
@@ -77,10 +57,7 @@ class AppointmentResource extends Resource
     {
         return in_array(
             filament()->auth()->user()?->role,
-            [
-                'admin_rs',
-                'staff',
-            ]
+            ['admin_rs', 'staff']
         );
     }
 
@@ -138,14 +115,16 @@ class AppointmentResource extends Resource
             return $query;
         }
 
-        if ($user->role === 'admin_rs') {
+        // super_admin sees all appointments across all hospitals
+        if ($user->role === 'super_admin') {
+            return $query;
+        }
 
-            $query->whereHas(
+        // admin_rs and staff only see appointments within their own hospital
+        if (in_array($user->role, ['admin_rs', 'staff'])) {
+            return $query->whereHas(
                 'patientEnrollment',
-                fn ($q) => $q->where(
-                    'hospital_id',
-                    $user->hospital_id
-                )
+                fn ($q) => $q->where('hospital_id', $user->hospital_id)
             );
         }
 
@@ -172,10 +151,10 @@ class AppointmentResource extends Resource
     public static function getPages(): array
     {
         return [
-            'index' => ListAppointments::route('/'),
+            'index'  => ListAppointments::route('/'),
             'create' => CreateAppointment::route('/create'),
-            'view' => ViewAppointment::route('/{record}'),
-            'edit' => EditAppointment::route('/{record}/edit'),
+            'view'   => ViewAppointment::route('/{record}'),
+            'edit'   => EditAppointment::route('/{record}/edit'),
         ];
     }
 }

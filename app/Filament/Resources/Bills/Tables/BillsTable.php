@@ -16,6 +16,8 @@ class BillsTable
 {
     public static function configure(Table $table): Table
     {
+        $isSuperAdmin = filament()->auth()->user()?->role === 'super_admin';
+
         return $table
 
             ->defaultSort('id', 'desc')
@@ -43,10 +45,10 @@ class BillsTable
                 TextColumn::make('status')
                     ->badge()
                     ->color(fn (string $state): string => match ($state) {
-                        'paid' => 'success',
+                        'paid'    => 'success',
                         'partial' => 'warning',
-                        'unpaid' => 'danger',
-                        default => 'gray',
+                        'unpaid'  => 'danger',
+                        default   => 'gray',
                     }),
 
                 TextColumn::make('payment_due_date')
@@ -80,8 +82,10 @@ class BillsTable
 
             ->recordActions([
                 \Filament\Actions\ViewAction::make()->color('warning'),
-                EditAction::make(),
-                DeleteAction::make(),
+                EditAction::make()
+                    ->visible(! $isSuperAdmin),
+                DeleteAction::make()
+                    ->visible(! $isSuperAdmin),
             ])
 
             ->toolbarActions([

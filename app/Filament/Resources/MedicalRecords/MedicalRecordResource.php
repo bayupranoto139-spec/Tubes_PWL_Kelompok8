@@ -50,10 +50,10 @@ class MedicalRecordResource extends Resource
     public static function getPages(): array
     {
         return [
-            'index' => ListMedicalRecords::route('/'),
+            'index'  => ListMedicalRecords::route('/'),
             'create' => CreateMedicalRecord::route('/create'),
-            'view' => ViewMedicalRecord::route('/{record}'),
-            'edit' => EditMedicalRecord::route('/{record}/edit'),
+            'view'   => ViewMedicalRecord::route('/{record}'),
+            'edit'   => EditMedicalRecord::route('/{record}/edit'),
         ];
     }
 
@@ -64,6 +64,16 @@ class MedicalRecordResource extends Resource
                 SoftDeletingScope::class,
             ]);
     }
+
+    /*
+    |--------------------------------------------------------------------------
+    | ACCESS CONTROL
+    |--------------------------------------------------------------------------
+    | super_admin  → view only (no create / edit / delete)
+    | admin_rs     → create, edit, delete
+    | staff        → create, edit, delete
+    |--------------------------------------------------------------------------
+    */
 
     public static function canCreate(): bool
     {
@@ -89,6 +99,12 @@ class MedicalRecordResource extends Resource
         );
     }
 
+    /*
+    |--------------------------------------------------------------------------
+    | QUERY FILTER
+    |--------------------------------------------------------------------------
+    */
+
     public static function getEloquentQuery(): Builder
     {
         $query = parent::getEloquentQuery();
@@ -105,10 +121,7 @@ class MedicalRecordResource extends Resource
 
         return $query->whereHas(
             'appointment.patientEnrollment',
-            fn ($q) => $q->where(
-                'hospital_id',
-                $user->hospital_id
-            )
+            fn ($q) => $q->where('hospital_id', $user->hospital_id)
         );
     }
 }

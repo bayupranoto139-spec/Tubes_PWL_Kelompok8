@@ -34,14 +34,11 @@ class PrescriptionResource extends Resource
     protected static string|BackedEnum|null $navigationIcon =
         'heroicon-o-clipboard-document-list';
 
-    protected static ?string $navigationLabel =
-        'Prescriptions';
+    protected static ?string $navigationLabel = 'Prescriptions';
 
-    protected static ?string $modelLabel =
-        'Prescription';
+    protected static ?string $modelLabel = 'Prescription';
 
-    protected static ?string $pluralModelLabel =
-        'Prescriptions';
+    protected static ?string $pluralModelLabel = 'Prescriptions';
 
     protected static ?int $navigationSort = 7;
 
@@ -49,17 +46,17 @@ class PrescriptionResource extends Resource
     |--------------------------------------------------------------------------
     | ACCESS CONTROL
     |--------------------------------------------------------------------------
+    | super_admin  → view only (no create / edit / delete)
+    | admin_rs     → create, edit
+    | staff        → create, edit
+    |--------------------------------------------------------------------------
     */
 
     public static function shouldRegisterNavigation(): bool
     {
         return in_array(
             filament()->auth()->user()?->role,
-            [
-                'super_admin',
-                'admin_rs',
-                'staff',
-            ]
+            ['super_admin', 'admin_rs', 'staff']
         );
     }
 
@@ -67,11 +64,7 @@ class PrescriptionResource extends Resource
     {
         return in_array(
             filament()->auth()->user()?->role,
-            [
-                'super_admin',
-                'admin_rs',
-                'staff',
-            ]
+            ['super_admin', 'admin_rs', 'staff']
         );
     }
 
@@ -79,11 +72,21 @@ class PrescriptionResource extends Resource
     {
         return in_array(
             filament()->auth()->user()?->role,
-            [
-                'admin_rs',
-                'staff',
-            ]
+            ['admin_rs', 'staff']
         );
+    }
+
+    public static function canEdit($record): bool
+    {
+        return in_array(
+            filament()->auth()->user()?->role,
+            ['admin_rs', 'staff']
+        );
+    }
+
+    public static function canDelete($record): bool
+    {
+        return false; // no role may delete prescriptions
     }
 
     /*
@@ -124,14 +127,14 @@ class PrescriptionResource extends Resource
             return $query;
         }
 
-        if ($user->role === 'admin_rs') {
+        if ($user->role === 'super_admin') {
+            return $query;
+        }
 
+        if (in_array($user->role, ['admin_rs', 'staff'])) {
             $query->whereHas(
                 'medicalRecord.appointment.patientEnrollment',
-                fn ($q) => $q->where(
-                    'hospital_id',
-                    $user->hospital_id
-                )
+                fn ($q) => $q->where('hospital_id', $user->hospital_id)
             );
         }
 
@@ -158,10 +161,10 @@ class PrescriptionResource extends Resource
     public static function getPages(): array
     {
         return [
-            'index' => ListPrescriptions::route('/'),
+            'index'  => ListPrescriptions::route('/'),
             'create' => CreatePrescription::route('/create'),
-            'view' => ViewPrescription::route('/{record}'),
-            'edit' => EditPrescription::route('/{record}/edit'),
+            'view'   => ViewPrescription::route('/{record}'),
+            'edit'   => EditPrescription::route('/{record}/edit'),
         ];
     }
 }
