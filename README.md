@@ -1,58 +1,382 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+# 🏥 HealthMesh
 
-<p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
+HealthMesh adalah platform manajemen layanan kesehatan berbasis web yang menghubungkan pasien, dokter, staf rumah sakit, dan administrator dalam satu sistem terintegrasi. Aplikasi ini dibangun menggunakan Laravel 13, Filament, MariaDB, dan Midtrans untuk mendukung proses pendaftaran pasien, penjadwalan dokter, rekam medis elektronik, antrean, hingga pembayaran tagihan.
 
-## About Laravel
+## 🌐 Live Demo
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+**Production Deployment**
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+https://healthmesh.site
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+---
 
-## Learning Laravel
+## ✨ Fitur Utama
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework.
+### 👤 Pasien
 
-In addition, [Laracasts](https://laracasts.com) contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
+* Registrasi akun pasien
+* Login dan autentikasi pengguna
+* Verifikasi email
+* Melihat daftar rumah sakit yang tersedia
+* Enrollment ke rumah sakit
+* Booking jadwal dokter
+* Melihat riwayat appointment
+* Membatalkan appointment
+* Melihat rekam medis
+* Melihat resep obat
+* Melihat tagihan
+* Pembayaran tagihan secara online
+* Mengelola profil pribadi
 
-You can also watch bite-sized lessons with real-world projects on [Laravel Learn](https://laravel.com/learn), where you will be guided through building a Laravel application from scratch while learning PHP fundamentals.
+### 👨‍⚕️ Dokter
 
-## Agentic Development
+* Melihat daftar pasien
+* Mengakses data appointment
+* Membuat dan mengelola rekam medis
+* Membuat resep obat
+* Melihat jadwal praktik
 
-Laravel's predictable structure and conventions make it ideal for AI coding agents like Claude Code, Cursor, and GitHub Copilot. Install [Laravel Boost](https://laravel.com/docs/ai) to supercharge your AI workflow:
+### 👨‍💼 Staff Rumah Sakit
 
-```bash
-composer require laravel/boost --dev
+* Registrasi pasien walk-in
+* Mengelola antrean pasien
+* Membantu proses administrasi layanan
 
-php artisan boost:install
+### 👨‍💻 Administrator
+
+* Mengelola rumah sakit
+* Mengelola dokter
+* Mengelola staf
+* Mengelola spesialisasi dokter
+* Mengelola jadwal praktik
+* Monitoring data sistem melalui Filament Admin Panel
+
+---
+
+## 🏗️ Teknologi yang Digunakan
+
+### Backend
+
+* PHP 8.3
+* Laravel 13
+
+### Admin Panel
+
+* Filament
+
+### Database
+
+* MariaDB / MySQL
+
+### Frontend
+
+* Blade
+* Tailwind CSS
+* Vite
+
+### Integrasi
+
+* Midtrans Payment Gateway
+* Resend Email Service
+
+### Deployment
+
+* Railway
+* Ngrok (untuk pengembangan lokal dan pengujian email)
+
+---
+
+## 📦 Package Utama
+
+```json
+{
+  "laravel/framework": "^13.0",
+  "filament/filament": "*",
+  "livewire/livewire": "^4.3",
+  "midtrans/midtrans-php": "^2.6",
+  "resend/resend-php": "^1.3",
+  "laravel/sanctum": "^4.0"
+}
 ```
 
-Boost provides your agent 15+ tools and skills that help agents build Laravel applications while following best practices.
+---
 
-## Contributing
+## 🗄️ Struktur Data Utama
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+Sistem menggunakan beberapa entitas utama:
 
-## Code of Conduct
+* Users
+* Hospitals
+* Doctors
+* Staff
+* Specializations
+* Schedules
+* Appointments
+* Medical Records
+* Prescriptions
+* Medications
+* Bills
+* Bill Items
+* Queues
+* Patient Enrollments
+* Patient Medical Information
 
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
+---
 
-## Security Vulnerabilities
+## 🔐 Role Pengguna
 
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
+| Role     | Deskripsi                           |
+| -------  | ---------------------------------   |
+| S. Admin | Mengelola seluruh sistem            |
+| Admin    | Mengelola sistem sebuah rumah sakit |
+| Doctor   | Mengelola layanan medis             |
+| Staff    | Mengelola operasional rumah sakit   |
+| Patient  | Mengakses layanan kesehatan         |
+---
 
-## License
+## 💳 Sistem Pembayaran
 
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+HealthMesh terintegrasi dengan Midtrans untuk mendukung pembayaran tagihan pasien secara online.
+
+Fitur pembayaran meliputi:
+
+* Pembuatan transaksi pembayaran
+* Status pembayaran
+* Halaman sukses pembayaran
+* Halaman pembayaran gagal
+* Halaman pembayaran tertunda
+
+Route terkait:
+
+```text
+/payment/{bill}
+/payment/success
+/payment/unfinish
+/payment/error
+```
+
+---
+
+## 📧 Pengiriman Email
+
+Sistem menggunakan layanan email untuk:
+
+* Verifikasi email pengguna
+* Notifikasi autentikasi
+* Proses reset password
+
+Saat pengembangan lokal digunakan Ngrok agar URL aplikasi dapat diakses dari luar localhost dan tautan yang dikirim melalui email tetap dapat digunakan.
+
+Contoh:
+
+```bash
+php artisan serve
+ngrok http 8000
+```
+
+Kemudian ubah:
+
+```env
+APP_URL=https://your-ngrok-url.ngrok-free.app
+```
+
+---
+
+## 🚀 Instalasi Lokal
+
+### 1. Clone Repository
+
+```bash
+git clone https://github.com/byuubub/Tubes_PWL_Kelompok8.git
+cd Tubes_PWL_Kelompok8
+```
+
+### 2. Install Dependency
+
+```bash
+composer install
+npm install
+```
+
+### 3. Salin Environment
+
+```bash
+cp .env.example .env
+```
+
+### 4. Generate Key
+
+```bash
+php artisan key:generate
+```
+
+### 5. Konfigurasi Database
+
+Edit file `.env`
+
+```env
+DB_CONNECTION=mysql
+DB_HOST=127.0.0.1
+DB_PORT=3306
+DB_DATABASE=healthmesh
+DB_USERNAME=root
+DB_PASSWORD=
+```
+
+### 6. Jalankan Migrasi
+
+```bash
+php artisan migrate
+```
+
+Jika menggunakan seeder:
+
+```bash
+php artisan db:seed
+```
+
+### 7. Jalankan Aplikasi
+
+```bash
+php artisan serve
+npm run dev
+```
+
+Aplikasi dapat diakses pada:
+
+```text
+http://127.0.0.1:8000
+```
+
+---
+
+## 🛠️ Development Command
+
+Menjalankan seluruh service development:
+
+```bash
+composer run dev
+```
+
+Perintah ini akan menjalankan:
+
+* Laravel Server
+* Queue Listener
+* Laravel Pail
+* Vite Development Server
+
+---
+
+## 📂 Struktur Route Penting
+
+### Guest
+
+```text
+/
+```
+
+### Patient Panel
+
+```text
+/user/patient/dashboard
+/user/patient/appointments
+/user/patient/medical-records
+/user/patient/prescriptions
+/user/patient/bills
+/user/patient/profile
+/user/patient/hospitals
+```
+
+### Admin Panel
+
+```text
+/admin
+```
+
+---
+
+## 👨‍🎓 Proyek Akademik
+
+HealthMesh dikembangkan sebagai proyek mata kuliah **Pemrograman Web Lanjut (PWL)** untuk mengimplementasikan konsep:
+
+* Laravel Framework
+* MVC Architecture
+* Authentication & Authorization
+* Database Relationship
+* Payment Gateway Integration
+* Email Verification
+* Admin Panel Development
+* Deployment dan DevOps Dasar
+
+---
+
+## 🏛️ Application Architecture
+
+```mermaid
+flowchart LR
+
+    subgraph Client
+        P[Patient]
+        D[Doctor]
+        S[Staff]
+        A[Admin]
+    end
+
+    subgraph Frontend
+        B[Blade Views]
+        F[Filament Panels]
+    end
+
+    subgraph Backend
+        APP[Laravel Application]
+        AUTH[Authentication]
+        SERVICE[Business Logic]
+    end
+
+    subgraph Database
+        DB[(MariaDB)]
+    end
+
+    subgraph External Services
+        MID[Midtrans]
+        MAIL[Resend Email]
+    end
+
+    P --> B
+    D --> B
+    S --> F
+    A --> F
+
+    B --> APP
+    F --> APP
+
+    APP --> AUTH
+    APP --> SERVICE
+
+    SERVICE --> DB
+
+    SERVICE --> MID
+    SERVICE --> MAIL
+```
+
+## 👨‍💻 Tim Pengembang
+
+Proyek **HealthMesh** dikembangkan sebagai bagian dari tugas mata kuliah **Pemrograman Web Lanjut (PWL)**.
+
+### Kelompok 8
+
+| Nama                  | NIM       | Peran           |
+| --------------------- | --------- | --------------- |
+| Bayu Pranoto          | 251402066 | Project Manager |
+| Yabesh Day Siahaan    | 251402004 | Developer       |
+| Chris Martin          | 251402116 | Developer       |
+| Muhammad Kevin        | 251402013 | Developer       |
+| Muhammad Izyan Roshan | 251402110 | Developer       |
+
+
+Melalui kolaborasi tim, HealthMesh berhasil mengimplementasikan sistem layanan kesehatan digital yang mencakup manajemen pasien, dokter, rumah sakit, rekam medis, pembayaran online, serta administrasi layanan kesehatan secara terintegrasi.
+
+
+## 📄 Lisensi
+
+Proyek ini dikembangkan untuk tujuan pembelajaran dan akademik.
